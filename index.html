@@ -108,6 +108,7 @@
 
   #top-right-controls{
     position:absolute; top:20px; right:20px; display:flex; gap:8px;
+    align-items:center;
   }
   .icon-btn{
     width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center;
@@ -119,6 +120,12 @@
     position:absolute; top:-4px; right:-4px; background:var(--terracotta); color:var(--ivory);
     font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:8px;
     display:flex; align-items:center; justify-content:center; padding:0 4px;
+  }
+  /* Ocultar alguns botões em mobile serão movidos para o menu */
+  .hide-on-mobile{ display:flex; }
+  @media (max-width:640px){
+    .hide-on-mobile{ display:none; }
+    #top-right-controls .icon-btn{ width:40px; height:40px; }
   }
 
   #level-bar{
@@ -179,7 +186,79 @@
   @keyframes toast-in{ from{ opacity:0; transform:translateY(-10px) scale(0.95);} to{ opacity:1; transform:translateY(0) scale(1);} }
   @keyframes toast-out{ from{ opacity:1; transform:translateY(0) scale(1);} to{ opacity:0; transform:translateY(-8px) scale(0.96);} }
 
-  /* Painéis Modais Estilo iOS (Apple Glass Sheets) */
+  /* ---------- Menu Hambúrguer ---------- */
+  #menu-overlay{
+    position:fixed; inset:0; z-index:65;
+    display:flex; justify-content:flex-end;
+    background:rgba(0,0,0,0.4);
+    opacity:0; pointer-events:none;
+    transition:opacity .3s ease;
+  }
+  #menu-overlay.open{ opacity:1; pointer-events:auto; }
+  #menu-panel{
+    width:min(300px, 80vw);
+    height:100vh;
+    background:linear-gradient(165deg, rgba(28,52,38,0.98), rgba(12,24,17,0.99));
+    border-left:1px solid rgba(243,238,228,0.18);
+    box-shadow:-8px 0 40px rgba(0,0,0,0.5);
+    transform:translateX(100%);
+    transition:transform .35s cubic-bezier(0.32, 0.72, 0, 1);
+    padding:20px 16px 30px;
+    display:flex;
+    flex-direction:column;
+  }
+  #menu-overlay.open #menu-panel{
+    transform:translateX(0);
+  }
+  .menu-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-bottom:16px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    margin-bottom:20px;
+  }
+  .menu-header span{
+    font-size:20px;
+    font-weight:700;
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .menu-items{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    flex:1;
+  }
+  .menu-item{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.06);
+    font-size:15px;
+    font-weight:600;
+    transition:background .15s ease, transform .15s ease;
+    text-align:left;
+  }
+  .menu-item:hover{ background:rgba(255,255,255,0.1); transform:translateX(4px); }
+  .menu-item .mi-icon{ width:24px; height:24px; flex-shrink:0; }
+  .menu-item .mi-badge{
+    margin-left:auto;
+    background:var(--terracotta);
+    color:var(--ivory);
+    font-size:11px;
+    font-weight:700;
+    padding:2px 10px;
+    border-radius:100px;
+  }
+
+  @media (min-width:641px){
+    #menu-overlay{ display:none; }
+  }
+
+  /* ---------- Painéis Modais ---------- */
   .overlay{
     position:absolute; inset:0; z-index:55; display:flex; align-items:center; justify-content:center;
     background:rgba(6,12,8,0.58); backdrop-filter:blur(20px) saturate(180%);
@@ -356,7 +435,7 @@
   @media (max-width:640px){
     body.has-touch #resource-bar{ transform:scale(0.88); transform-origin:top left; }
     body.has-touch #level-bar{ transform:scale(0.88); }
-    body.has-touch #top-right-controls .icon-btn{ width:40px; height:40px; }
+    #top-right-controls .icon-btn{ width:40px; height:40px; }
     body.has-touch #interact-hint{ bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
     #minimap-card{ display:none; }
   }
@@ -490,12 +569,57 @@
     </div>
 
     <div id="top-right-controls">
-      <button class="icon-btn glass" id="btn-audio" title="Alternar Áudio (M)"><svg id="audio-icon" viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button>
-      <button class="icon-btn glass" id="btn-character" title="Santiago (P)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.2"/><path d="M5.5 20c0-4 3-6.5 6.5-6.5s6.5 2.5 6.5 6.5"/></svg></button>
-      <button class="icon-btn glass" id="btn-roads" title="Estradas (R)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 L11 4"/><path d="M15 20 L13 4"/><path d="M12 6.5v2"/><path d="M12 11v2"/><path d="M12 15.5v2"/></svg></button>
-      <button class="icon-btn glass" id="btn-build" title="Construir (B)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-2.5 2.5-4-4L14 6Z"/><path d="M3 21l6.5-6.5"/><path d="M15.5 4.5l4 4"/></svg></button>
-      <button class="icon-btn glass" id="btn-missions" title="Objetivos (M)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span class="badge" id="mission-badge" style="display:none">0</span></button>
-      <button class="icon-btn glass" id="btn-collection" title="Coleção (C)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.5-1.2 5-1.2 7 0v13c-2-1.2-4.5-1.2-7 0v-13Z"/><path d="M18 5.5c-2.5-1.2-5-1.2-7 0"/><path d="M11 18.5v-13"/></svg><span class="badge" id="dex-badge" style="display:none">0</span></button>
+      <!-- Botões principais sempre visíveis -->
+      <button class="icon-btn glass hide-on-mobile" id="btn-collection" title="Coleção (C)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.5-1.2 5-1.2 7 0v13c-2-1.2-4.5-1.2-7 0v-13Z"/><path d="M18 5.5c-2.5-1.2-5-1.2-7 0"/><path d="M11 18.5v-13"/></svg><span class="badge" id="dex-badge" style="display:none">0</span></button>
+      <button class="icon-btn glass hide-on-mobile" id="btn-missions" title="Objetivos (M)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span class="badge" id="mission-badge" style="display:none">0</span></button>
+      <button class="icon-btn glass hide-on-mobile" id="btn-build" title="Construir (B)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-2.5 2.5-4-4L14 6Z"/><path d="M3 21l6.5-6.5"/><path d="M15.5 4.5l4 4"/></svg></button>
+
+      <!-- Botão do menu hambúrguer (visível sempre, mas em desktop pode ser escondido ou mantido) -->
+      <button class="icon-btn glass" id="btn-menu-toggle" title="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Menu Hambúrguer Overlay -->
+    <div id="menu-overlay">
+      <div id="menu-panel" class="glass">
+        <div class="menu-header">
+          <span>Menu</span>
+          <button class="close-btn" id="menu-close">✕</button>
+        </div>
+        <div class="menu-items">
+          <button class="menu-item" data-action="collection">
+            <span class="mi-icon">📚</span> Coleção
+            <span class="mi-badge" id="menu-dex-badge" style="display:none">0</span>
+          </button>
+          <button class="menu-item" data-action="missions">
+            <span class="mi-icon">🎯</span> Objetivos
+            <span class="mi-badge" id="menu-mission-badge" style="display:none">0</span>
+          </button>
+          <button class="menu-item" data-action="build">
+            <span class="mi-icon">🔨</span> Construir
+          </button>
+          <button class="menu-item" data-action="roads">
+            <span class="mi-icon">🛤️</span> Estradas (R)
+          </button>
+          <button class="menu-item" data-action="character">
+            <span class="mi-icon">🧑</span> Santiago (P)
+          </button>
+          <button class="menu-item" data-action="age">
+            <span class="mi-icon">⏳</span> Era
+          </button>
+          <button class="menu-item" data-action="howto">
+            <span class="mi-icon">❓</span> Como Jogar
+          </button>
+          <button class="menu-item" data-action="audio">
+            <span class="mi-icon">🔊</span> Áudio
+          </button>
+        </div>
+      </div>
     </div>
 
     <div id="objective-tracker" class="glass">
@@ -765,7 +889,8 @@ class SoundEngine {
 }
 const sfx = new SoundEngine();
 
-document.getElementById('btn-audio').addEventListener('click', ()=>{
+// Áudio: o toggle será feito pelo menu, mas mantemos o listener do botão original
+document.getElementById('btn-audio')?.addEventListener('click', ()=>{
   const active = sfx.toggle();
   document.getElementById('audio-icon').style.opacity = active ? '1' : '0.4';
   showToast(active ? 'Som ativado' : 'Som desativado', null);
@@ -2473,7 +2598,7 @@ window.addEventListener('keydown', (e)=>{
   if(e.key.toLowerCase()==='c') toggleOverlay('overlay-collection');
   if(e.key.toLowerCase()==='r') toggleRoadMode();
   if(e.key.toLowerCase()==='p') toggleOverlay('overlay-character');
-  if(e.key==='Escape'){ closeAllOverlays(); cancelPlacement(); exitRoadMode(); }
+  if(e.key==='Escape'){ closeAllOverlays(); cancelPlacement(); exitRoadMode(); closeMenu(); }
 });
 window.addEventListener('keyup', (e)=>{ state.keys[e.key.toLowerCase()] = false; });
 
@@ -2720,8 +2845,8 @@ function exitRoadMode(){
   document.getElementById('road-banner').classList.remove('show');
   document.getElementById('btn-roads').style.background = '';
 }
-document.getElementById('btn-roads').addEventListener('click', toggleRoadMode);
-document.getElementById('road-mode-exit').addEventListener('click', exitRoadMode);
+document.getElementById('btn-roads')?.addEventListener('click', toggleRoadMode);
+document.getElementById('road-mode-exit')?.addEventListener('click', exitRoadMode);
 
 function roadCost(len){ return Math.max(1, Math.round(len/ROAD_GRID)); }
 
@@ -2792,6 +2917,7 @@ function openBuildingInspector(b){
   state.inspectingBuilding = b;
   demolishConfirming = false;
   closeAllOverlays();
+  closeMenu();
   document.getElementById('overlay-inspector').classList.add('open');
   renderInspector();
 }
@@ -2903,6 +3029,7 @@ function startMoveBuilding(b){
   state.movingBuilding = b;
   demolishConfirming = false;
   closeAllOverlays();
+  closeMenu();
   document.getElementById('placement-text').textContent = 'Clica num piso para mover '+(levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' — Esc para cancelar';
   document.getElementById('placement-banner').classList.add('show');
 }
@@ -2992,6 +3119,7 @@ function toggleOverlay(id){
   cancelPlacement();
   cancelFoundingCamp();
   cancelMove();
+  closeMenu();
   // Esconde banners
   document.getElementById('placement-banner').classList.remove('show');
   document.getElementById('road-banner').classList.remove('show');
@@ -3048,10 +3176,80 @@ document.querySelectorAll('[data-close]').forEach(btn=>{
   });
 });
 
+// ---------- Menu Hambúrguer ----------
+function toggleMenu(){
+  const overlay = document.getElementById('menu-overlay');
+  overlay.classList.toggle('open');
+}
+function closeMenu(){
+  document.getElementById('menu-overlay').classList.remove('open');
+}
+document.getElementById('btn-menu-toggle').addEventListener('click', toggleMenu);
+document.getElementById('menu-close').addEventListener('click', closeMenu);
+// Fechar ao clicar fora do painel
+document.getElementById('menu-overlay').addEventListener('click', (e)=>{
+  if(e.target === document.getElementById('menu-overlay')) closeMenu();
+});
+// Itens do menu
+document.querySelectorAll('.menu-item[data-action]').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    const action = item.dataset.action;
+    closeMenu();
+    switch(action){
+      case 'collection': toggleOverlay('overlay-collection'); break;
+      case 'missions': toggleOverlay('overlay-missions'); break;
+      case 'build': toggleOverlay('overlay-build'); break;
+      case 'roads': toggleRoadMode(); break;
+      case 'character': toggleOverlay('overlay-character'); break;
+      case 'age': toggleOverlay('overlay-age'); break;
+      case 'howto': toggleOverlay('overlay-howto'); break;
+      case 'audio': {
+        const active = sfx.toggle();
+        document.getElementById('audio-icon').style.opacity = active ? '1' : '0.4';
+        showToast(active ? 'Som ativado' : 'Som desativado', null);
+        break;
+      }
+    }
+  });
+});
+
+// Atualizar badges do menu
+function updateMenuBadges(){
+  const menuDex = document.getElementById('menu-dex-badge');
+  const menuMission = document.getElementById('menu-mission-badge');
+  if(state.discovered.size>0){ menuDex.style.display='inline'; menuDex.textContent=state.discovered.size; } else menuDex.style.display='none';
+  const objectives = currentObjectives();
+  const remaining = objectives.filter(o=>!o.met).length;
+  if(remaining>0){ menuMission.style.display='inline'; menuMission.textContent=remaining; } else menuMission.style.display='none';
+}
+
+// Chamar updateMenuBadges nos locais apropriados (dentro de renderDexGrid, renderMissionList, etc.)
+// Vamos sobrescrever as funções originais para incluir updateMenuBadges
+const origRenderDexGrid = renderDexGrid;
+renderDexGrid = function(){
+  origRenderDexGrid();
+  updateMenuBadges();
+};
+const origRenderMissionList = renderMissionList;
+renderMissionList = function(){
+  origRenderMissionList();
+  updateMenuBadges();
+};
+const origUpdateMissionBadge = updateMissionBadge;
+updateMissionBadge = function(){
+  origUpdateMissionBadge();
+  updateMenuBadges();
+};
+const origUpdateDexBadge = updateDexBadge;
+updateDexBadge = function(){
+  origUpdateDexBadge();
+  updateMenuBadges();
+};
+
+// Botões principais ainda funcionam (já estavam)
 document.getElementById('btn-collection').addEventListener('click', ()=>toggleOverlay('overlay-collection'));
 document.getElementById('btn-missions').addEventListener('click', ()=>toggleOverlay('overlay-missions'));
 document.getElementById('btn-build').addEventListener('click', ()=>toggleOverlay('overlay-build'));
-document.getElementById('btn-character').addEventListener('click', ()=>toggleOverlay('overlay-character'));
 document.getElementById('btn-title-collection').addEventListener('click', ()=>{ renderDexGrid(); document.getElementById('overlay-collection').classList.add('open'); });
 document.getElementById('btn-title-howto').addEventListener('click', ()=>{ document.getElementById('overlay-howto').classList.add('open'); });
 document.getElementById('age-chip').addEventListener('click', ()=>toggleOverlay('overlay-age'));
@@ -3522,6 +3720,7 @@ function advanceAge(){
   const na = nextAge();
   if(!na) return;
   closeAllOverlays();
+  closeMenu();
   state.paused = true;
   state.transitioning = true;
   sfx.play('ageup');
