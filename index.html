@@ -1,0 +1,4024 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Valeborn - Um Vale Pré-Histórico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --ivory:#F3EEE4;
+    --sand:#D9C4A0;
+    --stone-gray:#9C9186;
+    --charcoal:#15161A;
+    --forest:#1E3A2B;
+    --forest-deep:#0E1E15;
+    --moss:#6B8F5C;
+    --earth:#6E4B34;
+    --terracotta:#C2653F;
+    --soft-blue:#6C9EAA;
+    --amber:#E3A75B;
+    --danger:#B4482F;
+    --glass: rgba(243,238,228,0.07);
+    --glass-strong: rgba(243,238,228,0.13);
+    --glass-border: rgba(243,238,228,0.16);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    width:100%; height:100%; overflow:hidden;
+    background:var(--forest-deep);
+    font-family:'Inter',sans-serif;
+    color:var(--ivory);
+    -webkit-user-select:none; user-select:none;
+  }
+  h1,h2,h3,.display{ font-family:'Space Grotesk',sans-serif; letter-spacing:-0.01em; }
+  #app{ position:relative; width:100vw; height:100vh; }
+  canvas{ position:absolute; top:0; left:0; display:block; }
+  #game-canvas{ cursor:default; touch-action:none; }
+
+  button{ font-family:'Inter',sans-serif; cursor:pointer; border:none; outline:none; background:none; color:inherit; touch-action:manipulation; }
+  button:focus-visible, .clickable:focus-visible{ outline:2px solid var(--amber); outline-offset:2px; }
+
+  /* ---------- Base Painel de Vidro ---------- */
+  .glass{
+    background:var(--glass);
+    backdrop-filter:blur(24px) saturate(140%);
+    -webkit-backdrop-filter:blur(24px) saturate(140%);
+    border:1px solid var(--glass-border);
+    box-shadow:0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  /* ---------- Ecrã do Título ---------- */
+  #title-screen{
+    position:absolute; inset:0; z-index:50;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+    padding-bottom:7vh;
+    transition:opacity .9s ease;
+  }
+  #title-screen.hidden{ opacity:0; pointer-events:none; }
+  #title-canvas{ position:absolute; inset:0; z-index:-1; }
+  .title-vignette{
+    position:absolute; inset:0; z-index:-1;
+    background:linear-gradient(180deg, rgba(14,30,21,0) 40%, rgba(9,18,13,0.88) 100%);
+  }
+  .brand-eyebrow{
+    font-size:12px; letter-spacing:0.3em; text-transform:uppercase; color:var(--amber);
+    opacity:0.85; margin-bottom:14px; font-weight:600;
+  }
+  .brand-title{
+    font-size:clamp(48px,9vw,110px); font-weight:700; line-height:0.92;
+    color:var(--ivory); text-shadow:0 4px 40px rgba(0,0,0,0.5);
+    margin-bottom:10px;
+  }
+  .brand-tagline{
+    font-size:clamp(14px,1.6vw,18px); color:var(--sand); max-width:560px; text-align:center;
+    margin-bottom:36px; font-weight:400; line-height:1.5;
+  }
+  .title-buttons{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+  .btn{
+    font-size:14px; font-weight:600; padding:14px 28px; border-radius:100px;
+    transition:transform .18s ease, background .18s ease, box-shadow .18s ease;
+    letter-spacing:0.02em;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn:active{ transform:translateY(0px) scale(0.98); }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--terracotta), #a8532f);
+    color:var(--ivory); box-shadow:0 8px 24px rgba(194,101,63,0.35);
+  }
+  .btn-primary:hover{ box-shadow:0 10px 30px rgba(194,101,63,0.5); }
+  .btn-ghost{
+    background:var(--glass-strong); border:1px solid var(--glass-border); color:var(--ivory);
+  }
+  .btn-ghost:hover{ background:rgba(243,238,228,0.18); }
+
+  /* ---------- HUD ---------- */
+  #hud{ position:absolute; inset:0; z-index:20; pointer-events:none; opacity:0; transition:opacity .6s ease; }
+  #hud.visible{ opacity:1; }
+  #hud > *{ pointer-events:auto; }
+
+  #resource-bar{
+    position:absolute; top:20px; left:20px;
+    display:flex; gap:8px; padding:8px; border-radius:18px;
+  }
+  .res-chip{ display:flex; align-items:center; gap:7px; padding:6px 12px 6px 8px; border-radius:14px; }
+  .res-chip svg{ width:18px; height:18px; flex-shrink:0; }
+  .res-chip span{ font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; min-width:16px; }
+
+  #top-right-controls{
+    position:absolute; top:20px; right:20px; display:flex; gap:8px;
+  }
+  .icon-btn{
+    width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    transition:background .15s ease, transform .15s ease; position:relative;
+  }
+  .icon-btn:hover{ background:var(--glass-strong); transform:translateY(-1px); }
+  .icon-btn svg{ width:21px; height:21px; }
+  .icon-btn .badge{
+    position:absolute; top:-4px; right:-4px; background:var(--terracotta); color:var(--ivory);
+    font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; padding:0 4px;
+  }
+
+  #level-bar{
+    position:absolute; top:20px; left:50%; transform:translateX(-50%);
+    display:flex; align-items:center; gap:10px; padding:8px 16px; border-radius:16px;
+    min-width:220px;
+  }
+  #level-badge{
+    width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--amber),#c07f3a);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:#241407;
+    flex-shrink:0;
+  }
+  #xp-track{ flex:1; height:6px; background:rgba(255,255,255,0.12); border-radius:4px; overflow:hidden; }
+  #xp-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--amber),var(--terracotta)); transition:width .4s ease; }
+
+  #interact-hint{
+    position:absolute; bottom:30px; left:50%; transform:translateX(-50%) translateY(10px);
+    padding:10px 20px; border-radius:100px; font-size:13px; font-weight:600;
+    opacity:0; transition:opacity .2s ease, transform .2s ease; white-space:nowrap;
+    display:flex; align-items:center; gap:8px;
+  }
+  #interact-hint.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .key-chip{
+    background:rgba(255,255,255,0.14); border-radius:6px; padding:2px 7px; font-size:12px; font-weight:700;
+  }
+
+  #objective-tracker{
+    position:absolute; bottom:30px; left:20px; padding:14px 18px; border-radius:16px;
+    max-width:260px;
+  }
+  #objective-tracker .ot-label{ font-size:10px; text-transform:uppercase; letter-spacing:0.15em; color:var(--amber); font-weight:700; margin-bottom:6px; }
+  #objective-tracker .ot-title{ font-size:14px; font-weight:600; margin-bottom:3px; }
+  #objective-tracker .ot-desc{ font-size:12px; color:var(--sand); line-height:1.4; }
+
+  /* Minimapa HUD Widget */
+  #minimap-card{
+    position:absolute; bottom:30px; right:20px; width:160px; height:110px;
+    border-radius:16px; overflow:hidden; display:flex; flex-direction:column;
+    cursor:pointer; transition:transform .18s ease;
+  }
+  #minimap-card:hover{ transform:scale(1.03); }
+  #minimap-canvas{ width:100%; height:100%; display:block; }
+
+  /* Notificações (Toasts) */
+  #toast-container{
+    position:absolute; top:80px; left:50%; transform:translateX(-50%); z-index:60;
+    display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;
+  }
+  .toast{
+    padding:11px 20px; border-radius:100px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; gap:8px;
+    animation:toast-in .35s ease forwards;
+  }
+  .toast.leaving{ animation:toast-out .35s ease forwards; }
+  .toast .dot{ width:7px; height:7px; border-radius:50%; background:var(--amber); flex-shrink:0; }
+  .toast.mission .dot{ background:var(--moss); }
+  .toast.level .dot{ background:var(--terracotta); }
+  @keyframes toast-in{ from{ opacity:0; transform:translateY(-10px) scale(0.95);} to{ opacity:1; transform:translateY(0) scale(1);} }
+  @keyframes toast-out{ from{ opacity:1; transform:translateY(0) scale(1);} to{ opacity:0; transform:translateY(-8px) scale(0.96);} }
+
+  /* Painéis Modais Estilo iOS (Apple Glass Sheets) */
+  .overlay{
+    position:absolute; inset:0; z-index:55; display:flex; align-items:center; justify-content:center;
+    background:rgba(6,12,8,0.58); backdrop-filter:blur(20px) saturate(180%);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    opacity:0; pointer-events:none; transition:opacity .35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  .panel{
+    position:relative;
+    width:min(880px, 92vw); max-height:84vh; overflow-y:auto;
+    border-radius:28px; padding:28px 32px 32px;
+    background:linear-gradient(165deg, rgba(28,52,38,0.95), rgba(12,24,17,0.98));
+    border:1px solid rgba(243,238,228,0.18);
+    box-shadow:0 30px 90px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.12);
+    transform:scale(0.94) translateY(24px);
+    transition:transform .38s cubic-bezier(0.32, 0.72, 0, 1), opacity .35s ease;
+  }
+  .overlay.open .panel{
+    transform:scale(1) translateY(0);
+  }
+  .sheet-handle{
+    width:36px; height:5px; border-radius:3px; background:rgba(255,255,255,0.22);
+    margin:0 auto 18px; display:none; cursor:grab; transition:background .15s ease;
+  }
+  .sheet-handle:active{ background:rgba(227,167,88,0.6); }
+
+  @media (max-width:768px){
+    .overlay{ align-items:flex-end; }
+    .panel{
+      width:100vw; max-height:84vh; border-radius:28px 28px 0 0;
+      padding:16px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+      transform:translateY(100%);
+      border-bottom:none;
+    }
+    .overlay.open .panel{
+      transform:translateY(0);
+    }
+    .sheet-handle{ display:block; }
+  }
+
+  /* Auto-recessed HUD em foco de movimento */
+  #resource-bar, #objective-tracker, #level-bar, #minimap-card, #age-chip {
+    transition: opacity 0.45s cubic-bezier(0.32, 0.72, 0, 1), transform 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .hud-recessed #resource-bar,
+  .hud-recessed #objective-tracker,
+  .hud-recessed #level-bar,
+  .hud-recessed #minimap-card,
+  .hud-recessed #age-chip {
+    opacity: 0.35 !important;
+  }
+
+  .panel::-webkit-scrollbar{ width:6px; }
+  .panel::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.18); border-radius:4px; }
+  .panel-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .panel-header h2{ font-size:24px; font-weight:700; }
+  .panel-sub{ font-size:13px; color:var(--sand); margin-bottom:24px; }
+  .close-btn{
+    width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--glass-strong); transition:background .15s ease, transform .15s ease;
+  }
+  .close-btn:hover{ background:rgba(243,238,228,0.22); transform:scale(1.05); }
+  .close-btn:active{ transform:scale(0.95); }
+
+  /* Grelha da Coleção */
+  #dex-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:14px; align-items:start; }
+  .dex-card{
+    border-radius:18px; padding:16px; cursor:pointer; transition:transform .15s ease, background .15s ease;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  }
+  .dex-card:hover{ transform:translateY(-3px); background:rgba(255,255,255,0.07); }
+  .dex-card.locked{ opacity:0.55; cursor:default; }
+  .dex-card.locked:hover{ transform:none; }
+  .dex-icon-wrap{
+    width:100%; height:110px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    margin-bottom:10px; background:radial-gradient(circle at 50% 40%, rgba(255,255,255,0.08), rgba(255,255,255,0.01));
+    overflow:hidden;
+  }
+  .dex-icon-wrap canvas{ width:100px; height:100px; display:block; flex-shrink:0; }
+  .dex-name{ font-size:14px; font-weight:700; margin-bottom:2px; }
+  .dex-rarity{ font-size:10px; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; padding:2px 8px; border-radius:100px; display:inline-block; margin-bottom:8px; }
+  .dex-detail{ margin-top:10px; font-size:12.5px; color:var(--sand); line-height:1.55; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px; display:none; }
+  .dex-card.expanded .dex-detail{ display:block; }
+  .stat-row{ display:flex; align-items:center; gap:8px; margin-top:5px; font-size:11px; }
+  .stat-row .stat-label{ width:64px; color:var(--sand); flex-shrink:0; }
+  .stat-track{ flex:1; height:5px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+  .stat-fill{ height:100%; border-radius:3px; background:var(--moss); }
+  .trait-chip{ display:inline-block; font-size:10.5px; background:rgba(255,255,255,0.08); padding:3px 9px; border-radius:100px; margin:3px 4px 0 0; }
+
+  /* Objetivos */
+  .mission-row{
+    display:flex; gap:14px; align-items:flex-start; padding:16px; border-radius:16px; margin-bottom:10px;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);
+  }
+  .mission-row.done{ opacity:0.55; }
+  .mission-check{
+    width:26px; height:26px; border-radius:50%; border:2px solid rgba(255,255,255,0.25); flex-shrink:0; margin-top:2px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mission-row.done .mission-check{ background:var(--moss); border-color:var(--moss); }
+  .mission-title{ font-size:14.5px; font-weight:700; margin-bottom:3px; }
+  .mission-desc{ font-size:12.5px; color:var(--sand); line-height:1.5; }
+  .mission-reward{ font-size:11px; color:var(--amber); font-weight:700; margin-top:6px; }
+
+  /* Painel de Construção */
+  #build-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+  .build-card{
+    border-radius:18px; padding:18px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .build-icon-wrap{ width:100%; height:80px; border-radius:12px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; }
+  .build-icon-wrap canvas{ width:70px; height:70px; }
+  .build-name{ font-size:14.5px; font-weight:700; }
+  .build-cost{ display:flex; gap:10px; font-size:12px; color:var(--sand); align-items:center; }
+  .build-cost span{ display:flex; align-items:center; gap:4px; }
+  .build-cost svg{ width:13px; height:13px; }
+  .build-place-btn{
+    margin-top:auto; padding:10px; border-radius:10px; font-size:13px; font-weight:600;
+    background:var(--terracotta); color:var(--ivory); text-align:center; transition:opacity .15s ease, transform .15s ease;
+  }
+  .build-place-btn:hover{ transform:translateY(-1px); }
+  .build-place-btn.disabled{ opacity:0.4; pointer-events:none; }
+  .build-locked-tag{ font-size:11px; color:var(--stone-gray); font-weight:600; }
+
+  .action-btn{
+    flex:1; padding:10px; border-radius:10px; font-size:13px; font-weight:600; text-align:center;
+    background:var(--glass-strong); border:1px solid var(--glass-border); color:var(--ivory);
+    transition:background .15s ease, transform .15s ease;
+  }
+  .action-btn:hover{ background:rgba(243,238,228,0.2); transform:translateY(-1px); }
+  .action-btn.danger{ background:rgba(180,72,47,0.18); border-color:rgba(180,72,47,0.4); color:#E8A08D; }
+  .action-btn.danger:hover{ background:rgba(180,72,47,0.3); }
+  .action-btn.danger.confirming{ background:var(--danger); border-color:var(--danger); color:var(--ivory); }
+
+  #placement-banner, #road-banner{
+    position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
+    padding:12px 22px; border-radius:100px; display:none; align-items:center; gap:14px; z-index:25;
+    font-size:13px; font-weight:600;
+  }
+  #placement-banner.show, #road-banner.show{ display:flex; }
+  #placement-banner button, #road-banner button{ background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600; }
+
+  /* Controlo Tátil */
+  .touch-only{ display:none; }
+  body.has-touch .touch-only{ display:block; }
+
+  #touch-joystick{
+    position:absolute; left:24px; bottom:calc(24px + env(safe-area-inset-bottom,0px));
+    width:120px; height:120px; z-index:22; touch-action:none;
+  }
+  #joystick-base{
+    width:120px; height:120px; border-radius:50%;
+    background:rgba(243,238,228,0.08); border:1px solid rgba(243,238,228,0.18);
+    display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  #joystick-knob{
+    width:52px; height:52px; border-radius:50%;
+    background:rgba(243,238,228,0.28); border:1px solid rgba(243,238,228,0.4);
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    transition:background .15s ease;
+  }
+  #joystick-knob.active{ background:rgba(227,167,88,0.55); }
+
+  body.has-touch #touch-interact-btn{ display:flex; }
+  #touch-interact-btn{
+    position:absolute; right:24px; bottom:calc(24px + env(safe-area-inset-bottom,0px));
+    width:84px; height:84px; border-radius:50%; z-index:22; touch-action:none;
+    align-items:center; justify-content:center; font-size:12.5px; font-weight:700;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .15s ease;
+  }
+  #touch-interact-btn.show{ opacity:1; pointer-events:auto; }
+  #touch-interact-btn:active{ transform:scale(0.92); background:rgba(227,167,88,0.35); }
+
+  @media (max-width:640px){
+    body.has-touch #resource-bar{ transform:scale(0.88); transform-origin:top left; }
+    body.has-touch #level-bar{ transform:scale(0.88); }
+    body.has-touch #top-right-controls .icon-btn{ width:40px; height:40px; }
+    body.has-touch #interact-hint{ bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
+    #minimap-card{ display:none; }
+  }
+
+  /* Instruções */
+  .howto-row{ display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .howto-row:last-child{ border-bottom:none; }
+  .howto-key{ min-width:64px; text-align:center; font-size:12px; font-weight:700; background:rgba(255,255,255,0.1); border-radius:8px; padding:6px 8px; }
+  .howto-desc{ font-size:13px; color:var(--sand); }
+
+  /* Revelação de Descoberta */
+  #discovery-overlay{
+    position:absolute; inset:0; z-index:70; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at 50% 40%, rgba(30,58,43,0.5), rgba(6,12,8,0.94));
+    opacity:0; pointer-events:none; transition:opacity .5s ease;
+  }
+  #discovery-overlay.open{ opacity:1; pointer-events:auto; }
+  #discovery-canvas{ width:min(320px,42vw); height:min(320px,42vw); margin-bottom:6px; opacity:0; transform:scale(0.8); transition:opacity .7s ease .15s, transform .7s cubic-bezier(.2,.8,.3,1.1) .15s; }
+  #discovery-overlay.open #discovery-canvas{ opacity:1; transform:scale(1); }
+  #discovery-eyebrow{ font-size:11px; letter-spacing:0.28em; text-transform:uppercase; color:var(--amber); font-weight:700; opacity:0; transition:opacity .5s ease .5s; }
+  #discovery-overlay.open #discovery-eyebrow{ opacity:1; }
+  #discovery-name{ font-size:clamp(30px,5vw,46px); font-weight:700; margin-top:6px; opacity:0; transition:opacity .5s ease .6s; }
+  #discovery-overlay.open #discovery-name{ opacity:1; }
+  #discovery-rarity{ margin-top:8px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:100px; opacity:0; transition:opacity .5s ease .7s; }
+  #discovery-overlay.open #discovery-rarity{ opacity:1; }
+  #discovery-desc{ max-width:460px; text-align:center; font-size:13.5px; color:var(--sand); line-height:1.6; margin-top:16px; opacity:0; transition:opacity .5s ease .8s; }
+  #discovery-overlay.open #discovery-desc{ opacity:1; }
+  #discovery-continue{ margin-top:26px; opacity:0; transition:opacity .5s ease .95s; }
+  #discovery-overlay.open #discovery-continue{ opacity:1; }
+
+  #floating-text-layer{ position:absolute; inset:0; z-index:15; pointer-events:none; overflow:hidden; }
+
+  /* Indicador de Era */
+  #age-chip{
+    position:absolute; top:76px; left:50%; transform:translateX(-50%);
+    display:flex; align-items:center; gap:9px; padding:7px 16px 7px 8px; border-radius:100px;
+    cursor:pointer; transition:background .15s ease;
+  }
+  #age-chip:hover{ background:var(--glass-strong); }
+  #age-chip .age-dot{ width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#1a1305; flex-shrink:0; }
+  #age-chip .age-label{ font-size:11.5px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; }
+  #age-chip .age-name{ font-size:11.5px; color:var(--sand); }
+
+  /* Painel de Era */
+  .req-row{ display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .req-row:last-child{ border-bottom:none; }
+  .req-check{ width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,0.25); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; margin-top:1px; }
+  .req-row.met .req-check{ background:var(--moss); border-color:var(--moss); }
+  .req-text{ font-size:13px; }
+  .req-row.met .req-text{ color:var(--ivory); }
+  .req-row:not(.met) .req-text{ color:var(--sand); }
+  .req-hint{ font-size:11.5px; color:var(--stone-gray); margin-top:3px; line-height:1.4; }
+  .req-progress{ font-size:11.5px; font-weight:700; color:var(--amber); flex-shrink:0; white-space:nowrap; margin-top:1px; }
+  #age-unlock-preview{ display:flex; flex-wrap:wrap; gap:10px; margin:18px 0; }
+  .unlock-chip{ display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:100px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); font-size:12.5px; font-weight:600; }
+
+  /* Guarda-Roupa */
+  .outfit-swatch{ padding:10px 6px; border-radius:14px; cursor:pointer; background:rgba(255,255,255,0.04); border:2px solid transparent; transition:all .15s ease; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .outfit-swatch:hover{ background:rgba(255,255,255,0.08); transform:translateY(-2px); }
+  .outfit-swatch.selected{ border-color:var(--amber); background:rgba(227,167,88,0.12); }
+  .outfit-swatch .swatch-dot{ width:26px; height:26px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.15); }
+  .outfit-swatch .swatch-label{ font-size:10.5px; font-weight:600; color:var(--sand); }
+  #age-advance-btn{ width:100%; padding:15px; border-radius:14px; font-size:13.5px; font-weight:700; text-align:center; margin-top:6px; background:var(--glass-strong); border:1px solid var(--glass-border); color:var(--sand); }
+  #age-advance-btn.ready{ background:linear-gradient(135deg, var(--terracotta), #a8532f); color:var(--ivory); animation:ready-pulse 1.6s ease infinite; }
+  @keyframes ready-pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(194,101,63,0.5);} 50%{ box-shadow:0 0 0 8px rgba(194,101,63,0);} }
+  #age-timeline{ margin-top:22px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.08); }
+  .timeline-row{ display:flex; gap:12px; font-size:12px; color:var(--sand); padding:4px 0; }
+  .timeline-row b{ color:var(--amber); min-width:52px; display:inline-block; }
+
+  /* Transição de Era */
+  #age-transition{
+    position:absolute; inset:0; z-index:80; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:#08110B; opacity:0; pointer-events:none; transition:opacity .5s ease;
+  }
+  #age-transition.open{ opacity:1; pointer-events:auto; }
+  #transition-canvas{ width:min(520px,70vw); height:min(220px,30vw); }
+  #transition-years{ font-size:12px; letter-spacing:0.25em; text-transform:uppercase; color:var(--amber); font-weight:700; opacity:0; transition:opacity .35s ease; margin-top:14px; }
+  #age-transition.reveal #transition-years{ opacity:1; }
+  #transition-title{ font-size:clamp(30px,5vw,50px); font-weight:700; margin-top:8px; opacity:0; transition:opacity .35s ease .08s; }
+  #age-transition.reveal #transition-title{ opacity:1; }
+  #transition-tagline{ font-size:13.5px; color:var(--sand); margin-top:10px; opacity:0; transition:opacity .35s ease .16s; max-width:420px; text-align:center; }
+  #age-transition.reveal #transition-tagline{ opacity:1; }
+
+  /* Vitória */
+  #overlay-victory .panel{ text-align:center; }
+  #victory-stats{ display:flex; justify-content:center; gap:28px; margin:22px 0; flex-wrap:wrap; }
+  .victory-stat{ display:flex; flex-direction:column; align-items:center; }
+  .victory-stat .v-num{ font-size:28px; font-weight:700; color:var(--amber); font-family:'Space Grotesk',sans-serif; }
+  .victory-stat .v-label{ font-size:11px; color:var(--sand); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px; }
+  #victory-timeline{ text-align:left; max-width:420px; margin:0 auto; }
+
+  @media (max-width:640px){
+    #objective-tracker{ display:none; }
+    #age-chip{ top:70px; }
+    .brand-title{ font-size:56px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="game-canvas"></canvas>
+  <div id="floating-text-layer"></div>
+
+  <!-- ECRÃ DO TÍTULO -->
+  <div id="title-screen">
+    <canvas id="title-canvas"></canvas>
+    <div class="title-vignette"></div>
+    <div class="brand-eyebrow">Um Vale Pré-Histórico</div>
+    <h1 class="brand-title display">VALEBORN</h1>
+    <p class="brand-tagline">Num vale escondido onde os dinossauros nunca se extinguiram, Santiago irá ganhar a confiança de criaturas ancestrais e expandir um povoado ao redor dos laços que formar.</p>
+    <div class="title-buttons">
+      <button class="btn btn-primary" id="btn-continue" style="display:none">Continuar a Tua Civilização</button>
+      <button class="btn btn-primary" id="btn-play">Entrar no Vale</button>
+      <button class="btn btn-ghost" id="btn-title-collection">Coleção de Dinossauros</button>
+      <button class="btn btn-ghost" id="btn-title-howto">Como Jogar</button>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div id="resource-bar" class="glass"></div>
+
+    <div id="level-bar" class="glass">
+      <div id="level-badge">1</div>
+      <div id="xp-track"><div id="xp-fill"></div></div>
+    </div>
+
+    <div id="age-chip" class="glass" title="Ver o progresso da Era da tua civilização">
+      <div class="age-dot" id="age-dot">1</div>
+      <div><div class="age-label" id="age-label-num">Era 1</div><div class="age-name" id="age-label-name">Primal</div></div>
+    </div>
+
+    <div id="top-right-controls">
+      <button class="icon-btn glass" id="btn-audio" title="Alternar Áudio (M)"><svg id="audio-icon" viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button>
+      <button class="icon-btn glass" id="btn-character" title="Santiago (P)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.2"/><path d="M5.5 20c0-4 3-6.5 6.5-6.5s6.5 2.5 6.5 6.5"/></svg></button>
+      <button class="icon-btn glass" id="btn-roads" title="Estradas (R)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 L11 4"/><path d="M15 20 L13 4"/><path d="M12 6.5v2"/><path d="M12 11v2"/><path d="M12 15.5v2"/></svg></button>
+      <button class="icon-btn glass" id="btn-build" title="Construir (B)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-2.5 2.5-4-4L14 6Z"/><path d="M3 21l6.5-6.5"/><path d="M15.5 4.5l4 4"/></svg></button>
+      <button class="icon-btn glass" id="btn-missions" title="Objetivos (M)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span class="badge" id="mission-badge" style="display:none">0</span></button>
+      <button class="icon-btn glass" id="btn-collection" title="Coleção (C)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.5-1.2 5-1.2 7 0v13c-2-1.2-4.5-1.2-7 0v-13Z"/><path d="M18 5.5c-2.5-1.2-5-1.2-7 0"/><path d="M11 18.5v-13"/></svg><span class="badge" id="dex-badge" style="display:none">0</span></button>
+    </div>
+
+    <div id="objective-tracker" class="glass">
+      <div class="ot-label">Objetivo Atual</div>
+      <div class="ot-title" id="ot-title">—</div>
+      <div class="ot-desc" id="ot-desc">—</div>
+    </div>
+
+    <div id="minimap-card" class="glass" title="Clica no minimapa para saltar a câmara">
+      <canvas id="minimap-canvas"></canvas>
+    </div>
+
+    <div id="interact-hint" class="glass"><span class="key-chip">E</span><span id="interact-label">Interagir</span></div>
+    <div id="placement-banner" class="glass">
+      <span id="placement-text">Escolhe um piso no teu acampamento para construir</span>
+      <button id="placement-cancel">Cancelar</button>
+    </div>
+    <div id="road-banner" class="glass">
+      <span>Clica e arrasta para traçar uma estrada — <span class="key-chip">Esc</span> para sair</span>
+      <button id="road-mode-exit">Concluído</button>
+    </div>
+
+    <div id="touch-joystick" class="touch-only">
+      <div id="joystick-base"><div id="joystick-knob"></div></div>
+    </div>
+    <button id="touch-interact-btn" class="touch-only glass">Interagir</button>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <!-- COLEÇÃO OVERLAY -->
+  <div class="overlay" id="overlay-collection">
+    <div class="panel">
+      <div class="sheet-handle"></div>
+      <div class="panel-header">
+        <h2>Coleção de Dinossauros</h2>
+        <button class="close-btn" data-close="overlay-collection">✕</button>
+      </div>
+      <p class="panel-sub" id="dex-progress">0 de 5 espécies descobertas</p>
+      <div id="dex-grid"></div>
+    </div>
+  </div>
+
+  <!-- OBJETIVOS OVERLAY -->
+  <div class="overlay" id="overlay-missions">
+    <div class="panel" style="width:min(560px,92vw)">
+      <div class="sheet-handle"></div>
+      <div class="panel-header">
+        <h2 id="mission-panel-title">Objetivos</h2>
+        <button class="close-btn" data-close="overlay-missions">✕</button>
+      </div>
+      <p class="panel-sub" id="mission-panel-sub">Os objetivos guiam os teus primeiros dias no vale.</p>
+      <div id="mission-list"></div>
+    </div>
+  </div>
+
+  <!-- CONSTRUÇÃO OVERLAY -->
+  <div class="overlay" id="overlay-build">
+    <div class="panel">
+      <div class="sheet-handle"></div>
+      <div class="panel-header">
+        <h2>Construir no Acampamento</h2>
+        <button class="close-btn" data-close="overlay-build">✕</button>
+      </div>
+      <p class="panel-sub">Seleciona uma estrutura e coloca-a dentro do limite do teu acampamento (linha tracejada).</p>
+      <div id="build-grid"></div>
+    </div>
+  </div>
+
+  <!-- COMO JOGAR OVERLAY -->
+  <div class="overlay" id="overlay-howto">
+    <div class="panel" style="width:min(520px,92vw)">
+      <div class="sheet-handle"></div>
+      <div class="panel-header">
+        <h2>Como Jogar</h2>
+        <button class="close-btn" data-close="overlay-howto">✕</button>
+      </div>
+      <div class="howto-row"><div class="howto-key">WASD / Toque</div><div class="howto-desc">Mover pelo vale ou arrastar para deslocar a câmara</div></div>
+      <div class="howto-row"><div class="howto-key">Zoom</div><div class="howto-desc">Roda do rato ou gesto de pinça no ecrã para aproximar/afastar</div></div>
+      <div class="howto-row"><div class="howto-key">Duplo Clique</div><div class="howto-desc">Duplo toque em Dinossauros, Edifícios ou no Santiago para ações rápidas</div></div>
+      <div class="howto-row"><div class="howto-key">E</div><div class="howto-desc">Recolher recursos ou estudar um dinossauro quando o aviso surgir</div></div>
+      <div class="howto-row"><div class="howto-key">B</div><div class="howto-desc">Abrir o menu de construção do acampamento (podes arrastar edifícios diretamente para o mapa!)</div></div>
+      <div class="howto-row"><div class="howto-key">M</div><div class="howto-desc">Consultar os teus objetivos atuais</div></div>
+      <div class="howto-row"><div class="howto-key">C</div><div class="howto-desc">Abrir a coleção de dinossauros</div></div>
+      <div class="howto-row"><div class="howto-key">Esc</div><div class="howto-desc">Fechar qualquer painel aberto</div></div>
+    </div>
+  </div>
+
+  <!-- ERA OVERLAY -->
+  <div class="overlay" id="overlay-age">
+    <div class="panel" style="width:min(620px,92vw)">
+      <div class="sheet-handle"></div>
+      <div class="panel-header">
+        <h2 id="age-panel-title">Era do Progresso</h2>
+        <button class="close-btn" data-close="overlay-age">✕</button>
+      </div>
+      <p class="panel-sub" id="age-panel-tagline">—</p>
+      <div id="age-requirements"></div>
+      <div id="age-unlock-preview"></div>
+      <div id="age-advance-btn" style="width:100%; text-align:center; margin-top:6px; cursor:default;">Avançar Era</div>
+      <div id="age-timeline"></div>
+    </div>
+  </div>
+
+  <!-- TRANSIÇÃO DE ERA CINEMÁTICA -->
+  <div id="age-transition">
+    <canvas id="transition-canvas" width="900" height="380"></canvas>
+    <div id="transition-years">Passam-se Anos</div>
+    <div id="transition-title" class="display">—</div>
+    <div id="transition-tagline">—</div>
+  </div>
+
+  <!-- VITÓRIA OVERLAY -->
+  <div class="overlay" id="overlay-victory">
+    <div class="panel" style="width:min(640px,92vw)">
+      <div class="panel-header" style="justify-content:center; flex-direction:column; gap:4px;">
+        <div class="brand-eyebrow" style="margin:0">Do Primeiro Acampamento ao Mundo Moderno</div>
+        <h2 style="font-size:30px">Civilização Concluída</h2>
+      </div>
+      <div id="victory-stats"></div>
+      <div id="victory-timeline"></div>
+      <button class="btn btn-ghost" style="margin-top:22px" data-close="overlay-victory">Continuar a Explorar</button>
+    </div>
+  </div>
+
+  <!-- INSPETOR DE EDIFÍCIO -->
+  <div class="overlay" id="overlay-inspector">
+    <div class="panel" style="width:min(520px,92vw)">
+      <div class="panel-header">
+        <h2 id="inspector-name">Edifício</h2>
+        <button class="close-btn" data-close="overlay-inspector">✕</button>
+      </div>
+      <div id="inspector-level-badge" class="dex-rarity" style="margin-bottom:16px"></div>
+      <div style="display:flex; gap:18px; align-items:flex-start;">
+        <div class="dex-icon-wrap" style="width:120px; height:120px; flex-shrink:0;"><canvas id="inspector-canvas-current" width="180" height="180"></canvas></div>
+        <div style="flex:1;">
+          <p id="inspector-desc" style="font-size:13px; color:var(--sand); line-height:1.55; margin-bottom:10px;"></p>
+          <div id="inspector-production" style="font-size:12px; color:var(--moss); font-weight:600;"></div>
+        </div>
+      </div>
+      <div id="inspector-upgrade-section" style="margin-top:22px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.08);"></div>
+      <div id="inspector-actions" style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08); display:flex; gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- GUARDA-ROUPA -->
+  <div class="overlay" id="overlay-character">
+    <div class="panel" style="width:min(480px,92vw); text-align:center;">
+      <div class="panel-header" style="justify-content:center; flex-direction:column; gap:4px;">
+        <div class="brand-eyebrow" style="margin:0">O Teu Explorador</div>
+        <h2 id="character-name" style="font-size:26px">Santiago</h2>
+        <button class="close-btn" data-close="overlay-character" style="position:absolute; top:24px; right:24px;">✕</button>
+      </div>
+      <div class="dex-icon-wrap" style="width:130px; height:130px; margin:6px auto 18px;"><canvas id="wardrobe-preview" width="180" height="180"></canvas></div>
+      <div id="wardrobe-swatches" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- REVELAÇÃO DE DESCOBERTA -->
+  <div id="discovery-overlay">
+    <canvas id="discovery-canvas" width="600" height="600"></canvas>
+    <div id="discovery-eyebrow">Nova Espécie Descoberta</div>
+    <div id="discovery-name" class="display">—</div>
+    <div id="discovery-rarity">—</div>
+    <p id="discovery-desc">—</p>
+    <button class="btn btn-primary" id="discovery-continue">Continuar a Explorar</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =====================================================================
+   SISTEMA DE ÁUDIO (Sintetizador Procedural Web Audio API)
+===================================================================== */
+class SoundEngine {
+  constructor(){
+    this.ctx = null;
+    this.muted = false;
+  }
+  init(){
+    if(!this.ctx){
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if(AudioCtx) this.ctx = new AudioCtx();
+    }
+    if(this.ctx && this.ctx.state === 'suspended'){
+      this.ctx.resume();
+    }
+  }
+  toggle(){
+    this.muted = !this.muted;
+    return !this.muted;
+  }
+  play(type){
+    if(this.muted) return;
+    this.init();
+    if(!this.ctx) return;
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    if(type==='click'){
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, t);
+      osc.frequency.exponentialRampToValueAtTime(400, t+0.05);
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.linearRampToValueAtTime(0.01, t+0.05);
+      osc.start(t); osc.stop(t+0.05);
+    } else if(type==='gather'){
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, t);
+      osc.frequency.exponentialRampToValueAtTime(680, t+0.09);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t+0.09);
+      osc.start(t); osc.stop(t+0.09);
+    } else if(type==='build'){
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(140, t);
+      osc.frequency.exponentialRampToValueAtTime(70, t+0.14);
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t+0.14);
+      osc.start(t); osc.stop(t+0.14);
+    } else if(type==='levelup'){
+      const notes = [300, 400, 500, 600];
+      notes.forEach((freq, idx)=>{
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.connect(g); g.connect(this.ctx.destination);
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(freq, t + idx*0.06);
+        g.gain.setValueAtTime(0.18, t + idx*0.06);
+        g.gain.exponentialRampToValueAtTime(0.01, t + idx*0.06 + 0.12);
+        o.start(t + idx*0.06); o.stop(t + idx*0.06 + 0.12);
+      });
+    } else if(type==='ageup'){
+      const chords = [220, 277.18, 329.63, 440];
+      chords.forEach(freq=>{
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.connect(g); g.connect(this.ctx.destination);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+        o.start(t); o.stop(t + 0.8);
+      });
+    } else if(type==='care'){
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(450, t);
+      osc.frequency.exponentialRampToValueAtTime(750, t+0.12);
+      gain.gain.setValueAtTime(0.15, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t+0.12);
+      osc.start(t); osc.stop(t+0.12);
+    } else if(type==='dino'){
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160, t);
+      osc.frequency.linearRampToValueAtTime(110, t+0.25);
+      gain.gain.setValueAtTime(0.14, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t+0.25);
+      osc.start(t); osc.stop(t+0.25);
+    }
+  }
+}
+const sfx = new SoundEngine();
+
+document.getElementById('btn-audio').addEventListener('click', ()=>{
+  const active = sfx.toggle();
+  document.getElementById('audio-icon').style.opacity = active ? '1' : '0.4';
+  showToast(active ? 'Som ativado' : 'Som desativado', null);
+});
+
+/* =====================================================================
+   ÍCONES (SVG)
+===================================================================== */
+const ICONS = {
+  wood: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#C2653F" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#C2653F" stroke-width="1.6"/></svg>',
+  stone: '<svg viewBox="0 0 24 24" fill="#9C9186"><path d="M12 3 L20 8 L18 18 L6 18 L4 8 Z"/></svg>',
+  food: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 21c-4.5 0-7.5-3.2-7.5-7.6C4.5 9 7 5.5 9 4c-.4 2 .3 3 1.2 3.6C11 5.8 12.6 4.4 14 3c.6 2.4-.2 3.8-1 5 2.7.6 5 3 5 5.4C18 17.8 15.5 21 12 21Z" fill="#8FAE6B"/></svg>',
+  water: '<svg viewBox="0 0 24 24" fill="#6C9EAA"><path d="M12 2 C8 8 5 12 5 15.5 5 19 8.1 21.5 12 21.5 15.9 21.5 19 19 19 15.5 19 12 16 8 12 2Z"/></svg>',
+  xp: '<svg viewBox="0 0 24 24" fill="#E3A75B"><path d="M12 2 L14.7 9 L22 9.6 L16.4 14.4 L18.2 21.6 L12 17.7 L5.8 21.6 L7.6 14.4 L2 9.6 L9.3 9 Z"/></svg>',
+  hammer: '<svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-2.5 2.5-4-4L14 6Z"/><path d="M3 21l6.5-6.5"/><path d="M15.5 4.5l4 4"/></svg>',
+  target: '<svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>',
+  book: '<svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.5-1.2 5-1.2 7 0v13c-2-1.2-4.5-1.2-7 0v-13Z"/><path d="M18 5.5c-2.5-1.2-5-1.2-7 0"/><path d="M11 18.5v-13"/></svg>'
+};
+function icon(name){ return ICONS[name] || ''; }
+
+/* =====================================================================
+   RARIDADE
+===================================================================== */
+const RARITY = {
+  Comum:     { color:'#9C9186' },
+  Incomum:   { color:'#6B8F5C' },
+  Raro:      { color:'#6C9EAA' },
+  Épico:     { color:'#C2653F' },
+  Lendário:  { color:'#E3A75B' }
+};
+
+/* =====================================================================
+   DADOS DAS ESPÉCIES
+===================================================================== */
+const SPECIES = [
+  {
+    id:'triceratops', name:'Triceratops', rarity:'Incomum', diet:'Herbívoro',
+    speed:45, strength:85, intelligence:50, size:1.15, minAge:1,
+    traits:['Leal','Protetor','Territorial'],
+    desc:'Um herbívoro de três cornos que forma manadas unidas. Lento a confiar, mas quando o faz, colocar-se-á entre ti e qualquer perigo.',
+    color:'#8FAE6B', accent:'#5C7A54'
+  },
+  {
+    id:'stegosaurus', name:'Estegossauro', rarity:'Comum', diet:'Herbívoro',
+    speed:30, strength:60, intelligence:45, size:1.05, minAge:1,
+    traits:['Calmo','Pacífico','Cauteloso'],
+    desc:'Placas de armadura percorrem o seu dorso como uma fila de velas. Sereno e calmo, raramente se afasta dos fetos que aprecia.',
+    color:'#7FA0A0', accent:'#4E6C6C'
+  },
+  {
+    id:'velociraptor', name:'Velociraptor', rarity:'Raro', diet:'Carnívoro',
+    speed:95, strength:40, intelligence:90, size:0.8, minAge:1,
+    traits:['Curioso','Social','Astuto'],
+    desc:'Rápido, de olhar afiado e incrivelmente inteligente. Estuda-te tanto quanto tu o estudas a ele, rodeando em arranques curiosos.',
+    color:'#C2653F', accent:'#8C4A2E'
+  },
+  {
+    id:'brachiosaurus', name:'Braquiossauro', rarity:'Épico', diet:'Herbívoro',
+    speed:25, strength:70, intelligence:60, size:1.9, minAge:1,
+    traits:['Gentil','Sereno','Sábio'],
+    desc:'Um gigante gentil cuja cabeça desaparece na copa das árvores. Os seus movimentos lentos e deliberados parecem carregar a paciência de séculos.',
+    color:'#6C9EAA', accent:'#3F6C77'
+  },
+  {
+    id:'trex', name:'Tiranossauro Rex', rarity:'Lendário', diet:'Carnívoro',
+    speed:65, strength:100, intelligence:55, size:1.6, minAge:1,
+    traits:['Feroz','Dominante','Solitário'],
+    desc:'O vale fica silencioso quando ele se move. Poucos se aproximaram o suficiente para estudar um — ainda menos ganharam sequer um olhar.',
+    color:'#B4482F', accent:'#7A2E1C'
+  },
+  {
+    id:'parasaurolophus', name:'Parassaurolofo', rarity:'Comum', diet:'Herbívoro',
+    speed:55, strength:55, intelligence:50, size:1.1, minAge:3,
+    traits:['Social','Alerta','Migratório'],
+    desc:'A sua crista emite um chamamento grave por todo o vale — o resto da manada parece saber sempre onde ele se encontra.',
+    color:'#D9A464', accent:'#A9793E'
+  },
+  {
+    id:'ankylosaurus', name:'Anquilossauro', rarity:'Raro', diet:'Herbívoro',
+    speed:20, strength:90, intelligence:40, size:1.3, minAge:5,
+    traits:['Defensivo','Teimoso','Resistente'],
+    desc:'Uma fortaleza viva, desde as placas blindadas até à clava na cauda. Apenas avistado quando a tua civilização avançou para os confins do vale.',
+    color:'#6E7B6B', accent:'#454F44'
+  },
+  {
+    id:'pteranodon', name:'Pteranodonte', rarity:'Raro', diet:'Carnívoro',
+    speed:95, strength:40, intelligence:65, size:0.9, minAge:1, flying:true,
+    traits:['Alerta','Solitário','Aéreo'],
+    desc:'Roda nas alturas sobre o vale muito antes de aterrar — o primeiro sinal da sua presença é sempre uma sombra a cruzar o chão.',
+    color:'#C9B08A', accent:'#8C7452'
+  },
+  {
+    id:'spinosaurus', name:'Espinossauro', rarity:'Lendário', diet:'Carnívoro',
+    speed:60, strength:95, intelligence:65, size:1.7, minAge:4,
+    traits:['Feroz','Territorial','Aquático'],
+    desc:'A sua vela corta as águas rasas antes que o resto do corpo surja na superfície. Nada mais no vale caça como ele.',
+    color:'#4A6B5C', accent:'#2E4A3E'
+  }
+];
+function speciesById(id){ return SPECIES.find(s=>s.id===id); }
+
+/* =====================================================================
+   DADOS DAS ERAS (PROGRESSÃO)
+===================================================================== */
+const AGES = [
+  { id:1, name:'Primal', epithet:'Fogo, pedra e instinto.',
+    palette:{ ground:'#2A4A35', path:'#8a7a55', pathW:34, structure:'#6E4B34', accent:'#5C4530', roof:'#3E6B45' },
+    req:null, year:1 },
+  { id:2, name:'Tribal', epithet:'Os primeiros campos são semeados.',
+    palette:{ ground:'#33502F', path:'#A08A5C', pathW:36, structure:'#7A5A3C', accent:'#5E4830', roof:'#8C6440' },
+    req:{ level:2, buildings:1, species:1, resources:12 }, year:8, unlocks:['storage','farm'] },
+  { id:3, name:'Povoado', epithet:'Um acampamento torna-se uma aldeia.',
+    palette:{ ground:'#3A552F', path:'#B79E72', pathW:38, structure:'#8C6440', accent:'#6E4B34', roof:'#A9885A' },
+    req:{ level:2, buildings:3, species:2, resources:26, building:'farm' }, year:20, unlocks:['workshop','market'] },
+  { id:4, name:'Ancestral', epithet:'Ergue-se a arquitetura de pedra.',
+    palette:{ ground:'#41562E', path:'#9C9186', pathW:42, structure:'#8B8579', accent:'#5F5A50', roof:'#B0AA9C' },
+    req:{ level:3, buildings:5, species:3, resources:42, building:'workshop' }, year:45, unlocks:['monument'] },
+  { id:5, name:'Clássica', epithet:'Cidades, bibliotecas e comércio.',
+    palette:{ ground:'#47582D', path:'#ABA599', pathW:44, structure:'#9C9186', accent:'#6C6558', roof:'#C7C0AF' },
+    req:{ level:4, buildings:7, species:4, resources:60, building:'monument' }, year:80, unlocks:['library'] },
+  { id:6, name:'Industrial', epithet:'O fumo ergue-se. Os comboios ligam os teus acampamentos.',
+    palette:{ ground:'#3E4A34', path:'#5C5850', pathW:46, structure:'#5C5850', accent:'#3A3A38', roof:'#7A4A3A' },
+    req:{ level:5, buildings:9, species:5, resources:80, building:'library', camps:2, campsConnected:true }, year:120, unlocks:['factory'], rail:true },
+  { id:7, name:'Elétrica', epithet:'A iluminação espalha-se pelo acampamento.',
+    palette:{ ground:'#37453A', path:'#4A5058', pathW:46, structure:'#4A5058', accent:'#2E3238', roof:'#3F6C77' },
+    req:{ level:6, buildings:11, resources:100, building:'factory' }, year:160, unlocks:['powerplant'], lights:true },
+  { id:8, name:'Digital', epithet:'Os dados substituem a adivinhação.',
+    palette:{ ground:'#303C40', path:'#40484E', pathW:48, structure:'#40484E', accent:'#262E33', roof:'#6C9EAA' },
+    req:{ level:7, buildings:13, resources:120, building:'powerplant' }, year:200, unlocks:['datacenter'], drone:true },
+  { id:9, name:'Tecnologia Avançada', epithet:'A automatização molda a civilização.',
+    palette:{ ground:'#2C3838', path:'#3A4444', pathW:50, structure:'#3A4444', accent:'#202828', roof:'#B4482F' },
+    req:{ level:8, buildings:15, resources:140, building:'datacenter' }, year:240, unlocks:['researchlab'], autoVehicle:true },
+  { id:10, name:'Moderna', epithet:'Uma metrópole nascida de um único acampamento.',
+    palette:{ ground:'#24302E', path:'#2E3838', pathW:52, structure:'#2E3838', accent:'#1A2422', roof:'#E3A75B' },
+    req:{ level:9, buildings:18, resources:160, building:'researchlab' }, year:280, unlocks:['metropolistower'], skyline:true }
+];
+function ageById(n){ return AGES.find(a=>a.id===n); }
+
+/* =====================================================================
+   DADOS DOS EDIFÍCIOS
+===================================================================== */
+const BUILDINGS = [
+  { id:'campfire', name:'Fogueira', cost:{wood:3,stone:0,food:0}, minAge:1, desc:'O coração do teu acampamento.' },
+  { id:'shelter',  name:'Abrigo', cost:{wood:6,stone:3,food:0}, minAge:1, desc:'Um local para descansar entre expedições.' },
+  { id:'habitat',  name:'Hábitat de Dinossauro', cost:{wood:5,stone:2,food:0}, minAge:1, desc:'Um espaço cuidado para os dinossauros descansarem.' },
+  { id:'storage',  name:'Armazém', cost:{wood:5,stone:2,food:0}, minAge:2, desc:'Guarda os recursos recolhidos em segurança.' },
+  { id:'farm',     name:'Quinta', cost:{wood:6,stone:0,food:1}, minAge:2, desc:'Produz comida lentamente de forma autónoma.', produce:{key:'food',amount:1,interval:20} },
+  { id:'workshop', name:'Oficina', cost:{wood:8,stone:4,food:0}, minAge:3, desc:'Artesanato organizado para a povoação.' },
+  { id:'market',   name:'Mercado', cost:{wood:7,stone:3,food:2}, minAge:3, desc:'O comércio traz suprimentos constantes.', produce:{key:'wood',amount:1,interval:22} },
+  { id:'monument', name:'Monumento', cost:{wood:10,stone:12,food:0}, minAge:4, desc:'Um marco duradouro da civilização.' },
+  { id:'library',  name:'Biblioteca', cost:{wood:9,stone:8,food:0}, minAge:5, desc:'O conhecimento preservado acelera o progresso.' },
+  { id:'factory',  name:'Fábrica', cost:{wood:8,stone:14,food:0}, minAge:6, desc:'Produção mecânica à escala.', produce:{key:'stone',amount:2,interval:20} },
+  { id:'powerplant', name:'Central Elétrica', cost:{wood:6,stone:16,food:0}, minAge:7, desc:'A eletricidade espalha-se pelo acampamento.' },
+  { id:'datacenter', name:'Centro de Dados', cost:{wood:5,stone:18,food:0}, minAge:8, desc:'Computação para uma civilização digital.' },
+  { id:'researchlab', name:'Laboratório de Investigação', cost:{wood:6,stone:20,food:0}, minAge:9, desc:'Sistemas autónomos e investigação genética.' },
+  { id:'metropolistower', name:'Torre da Metrópole', cost:{wood:8,stone:26,food:0}, minAge:10, desc:'O marco final da civilização.' }
+];
+function buildingDef(id){ return BUILDINGS.find(b=>b.id===id); }
+
+const BUILDING_LEVELS = {
+  campfire: [
+    { level:1, name:'Fogueira', minAge:1, cost:null, desc:'O coração do teu acampamento.' },
+    { level:2, name:'Lareira de Pedra', minAge:3, cost:{wood:3,stone:6,food:0}, desc:'Uma lareira rodeada por pedras que mantém o calor durante a noite.' }
+  ],
+  shelter: [
+    { level:1, name:'Abrigo Primitivo', minAge:1, cost:null, desc:'Uma tenda simples — proteção contra o vento, nada mais.' },
+    { level:2, name:'Casa de Madeira', minAge:2, cost:{wood:6,stone:2,food:0}, desc:'Paredes a sério e um telhado adequado. Feita para durar.' },
+    { level:3, name:'Casa de Pedra', minAge:4, cost:{wood:4,stone:10,food:0}, desc:'Paredes de pedra e lareira. As noites frias são agora uma memória.' }
+  ],
+  habitat: [
+    { level:1, name:'Cercado Primitivo', minAge:1, cost:null, desc:'Um anel de estacas — suficiente para marcar o limite.' },
+    { level:2, name:'Curral de Madeira', minAge:2, cost:{wood:8,stone:2,food:0}, desc:'Um curral vedado com abrigo. Os dinossauros recuperam felicidade 30% mais rápido.' },
+    { level:3, name:'Santuário de Pedra', minAge:4, cost:{wood:5,stone:14,food:0}, desc:'Murado e vigiado. Os dinossauros recuperam felicidade 60% mais rápido.' }
+  ],
+  storage: [
+    { level:1, name:'Cabana de Armazenamento', minAge:2, cost:null, desc:'Guarda os recursos recolhidos em segurança.' },
+    { level:2, name:'Grande Armazém', minAge:5, cost:{wood:6,stone:8,food:0}, desc:'Espaço suficiente para o excedente de uma povoação em crescimento.' }
+  ],
+  farm: [
+    { level:1, name:'Pequena Horta', minAge:2, cost:null, desc:'Produz comida lentamente de forma autónoma.', produce:{key:'food',amount:1,interval:20} },
+    { level:2, name:'Quinta em Patamares', minAge:4, cost:{wood:5,stone:3,food:0}, desc:'Campos em degraus produzem mais no mesmo espaço.', produce:{key:'food',amount:2,interval:18} },
+    { level:3, name:'Quinta Mecanizada', minAge:6, cost:{wood:4,stone:10,food:0}, desc:'O maquinário faz o trabalho de uma dúzia de braços.', produce:{key:'food',amount:3,interval:15} }
+  ],
+  workshop: [
+    { level:1, name:'Oficina', minAge:3, cost:null, desc:'Artesanato organizado para a povoação.' },
+    { level:2, name:'Fundição', minAge:6, cost:{wood:6,stone:12,food:0}, desc:'O calor e o metal substituem as ferramentas manuais.' }
+  ],
+  market: [
+    { level:1, name:'Mercado', minAge:3, cost:null, desc:'O comércio traz suprimentos constantes.', produce:{key:'wood',amount:1,interval:22} },
+    { level:2, name:'Salão Comercial', minAge:5, cost:{wood:8,stone:6,food:0}, desc:'Comerciantes de fora do vale passam agora por aqui.', produce:{key:'wood',amount:2,interval:20} }
+  ],
+  monument: [
+    { level:1, name:'Monumento', minAge:4, cost:null, desc:'Um marco duradouro da civilização.' },
+    { level:2, name:'Grande Monumento', minAge:7, cost:{wood:6,stone:20,food:0}, desc:'Visível de todos os cantos da povoação.' }
+  ],
+  library: [
+    { level:1, name:'Biblioteca', minAge:5, cost:null, desc:'O conhecimento preservado acelera o progresso.' },
+    { level:2, name:'Grande Biblioteca', minAge:8, cost:{wood:6,stone:16,food:0}, desc:'Um registo de tudo o que a civilização aprendeu.' }
+  ],
+  factory: [
+    { level:1, name:'Fábrica', minAge:6, cost:null, desc:'Produção mecânica à escala.', produce:{key:'stone',amount:2,interval:20} },
+    { level:2, name:'Fábrica Automatizada', minAge:9, cost:{wood:6,stone:22,food:0}, desc:'Máquinas que antes precisavam de operários funcionam agora sozinhas.', produce:{key:'stone',amount:4,interval:18} }
+  ],
+  powerplant: [
+    { level:1, name:'Central Elétrica', minAge:7, cost:null, desc:'A eletricidade espalha-se pelo acampamento.' },
+    { level:2, name:'Central de Fusão', minAge:10, cost:{wood:5,stone:24,food:0}, desc:'Energia suficiente para uma metrópole.' }
+  ],
+  datacenter: [
+    { level:1, name:'Centro de Dados', minAge:8, cost:null, desc:'Computação para uma civilização digital.' },
+    { level:2, name:'Centro de Dados Quântico', minAge:10, cost:{wood:4,stone:22,food:0}, desc:'Poder de processamento além de tudo o que existiu antes.' }
+  ]
+};
+function levelDef(type, level){
+  const levels = BUILDING_LEVELS[type];
+  return levels ? levels.find(l=>l.level===level) : null;
+}
+function habitatBonus(){
+  const best = state.buildings.filter(b=>b.type==='habitat').reduce((m,b)=>Math.max(m,b.level||1), 0);
+  if(best>=3) return 1.6;
+  if(best>=2) return 1.3;
+  return 1;
+}
+function currentProduce(b){
+  const ld = levelDef(b.type, b.level||1);
+  if(ld && ld.produce) return ld.produce;
+  const def = buildingDef(b.type);
+  return def ? def.produce : null;
+}
+
+/* =====================================================================
+   CONSTANTES DO MUNDO
+===================================================================== */
+const WORLD_W = 4200, WORLD_H = 2900;
+const CAMP_W = 560, CAMP_H = 400, CAMP_CELL = 80;
+const XP_THRESHOLDS = [0,80,180,320,520,800,1150,1550,2000,2500];
+
+/* =====================================================================
+   ESTADO DO JOGO
+===================================================================== */
+const state = {
+  started:false,
+  paused:false,
+  res:{ wood:2, stone:0, food:1, water:0 },
+  xp:0, level:1,
+  discovered:new Set(),
+  buildings:[],
+  missionsCompleted:new Set(),
+  placingType:null,
+  keys:{},
+  age:1,
+  totalGathered:0,
+  ageHistory:[{age:1, year:1}],
+  transitioning:false,
+  victoryShown:false,
+  inspectingBuilding:null,
+  notifiedUpgrades:new Set(),
+  roadMode:false,
+  roads:[],
+  movingBuilding:null,
+  outfitId:'explorer',
+  camps:[ { id:'camp1', name:'Acampamento do Santiago', x:130, y:130, w:CAMP_W, h:CAMP_H, cell:CAMP_CELL } ],
+  foundingCamp:false
+};
+
+function currentLevel(xp){
+  let lvl = 1;
+  for(let i=0;i<XP_THRESHOLDS.length;i++){ if(xp>=XP_THRESHOLDS[i]) lvl = i+1; }
+  return Math.min(lvl, XP_THRESHOLDS.length);
+}
+function xpProgress(xp){
+  const lvl = currentLevel(xp);
+  const cur = XP_THRESHOLDS[lvl-1];
+  const next = XP_THRESHOLDS[lvl] !== undefined ? XP_THRESHOLDS[lvl] : cur;
+  if(next===cur) return 1;
+  return Math.max(0, Math.min(1, (xp-cur)/(next-cur)));
+}
+
+function currentObjectives(){
+  const na = nextAge();
+  return na ? ageRequirementList(na) : [];
+}
+
+/* =====================================================================
+   EXP / NÍVEL / ELOGIOS
+===================================================================== */
+const PRAISE_PHRASES = [
+  'Bom trabalho, Santiago!', 'O vale está a prosperar!', 'O Santiago está imparável!',
+  'Excelente escolha!', 'O teu acampamento cresce forte!', 'Muito bem jogado!',
+  'O vale aprova!', 'Progresso fantástico!', 'Continua assim, Santiago!',
+  'É esse o espírito!', 'Com um aspeto ótimo!', 'A reputação do Santiago aumenta!'
+];
+function praise(){ return choice(PRAISE_PHRASES); }
+function celebrate(wx, wy, text, color){
+  spawnFloatingText(wx, wy, text, color || '#E3A75B');
+}
+
+function grantXP(amount){
+  const before = state.level;
+  state.xp += amount;
+  state.level = currentLevel(state.xp);
+  updateLevelUI();
+  if(state.level > before){
+    sfx.play('levelup');
+    showToast('Subiste de Nível! És agora Nível '+state.level+' — '+praise(), 'level');
+    celebrate(player.x, player.y-56, '★ Subiu de Nível! ★', '#E3A75B');
+    renderBuildGrid();
+  }
+  checkAgeReady();
+}
+function updateLevelUI(){
+  document.getElementById('level-badge').textContent = state.level;
+  document.getElementById('xp-fill').style.width = (xpProgress(state.xp)*100)+'%';
+}
+
+/* =====================================================================
+   RECURSOS UI
+===================================================================== */
+const RESOURCE_META = [
+  {key:'wood', label:'Madeira', icon:'wood'},
+  {key:'stone', label:'Pedra', icon:'stone'},
+  {key:'food', label:'Comida', icon:'food'},
+  {key:'water', label:'Água', icon:'water'}
+];
+function renderResourceBar(){
+  const bar = document.getElementById('resource-bar');
+  bar.innerHTML = RESOURCE_META.map(r=>
+    `<div class="res-chip" id="chip-${r.key}">${icon(r.icon)}<span>${state.res[r.key]}</span></div>`
+  ).join('');
+}
+function updateResourceBar(){
+  RESOURCE_META.forEach(r=>{
+    const chip = document.getElementById('chip-'+r.key);
+    if(chip) chip.querySelector('span').textContent = state.res[r.key];
+  });
+}
+function addResource(key, amount){
+  state.res[key] += amount;
+  if(amount>0) state.totalGathered += amount;
+  updateResourceBar();
+  checkAgeReady();
+}
+function canAfford(cost){
+  return state.res.wood>=cost.wood && state.res.stone>=cost.stone && state.res.food>=(cost.food||0);
+}
+function payCost(cost){
+  state.res.wood -= cost.wood; state.res.stone -= cost.stone; state.res.food -= (cost.food||0);
+  updateResourceBar();
+}
+
+/* =====================================================================
+   NOTIFICAÇÕES (TOASTS)
+===================================================================== */
+function showToast(text, type){
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast'+(type?(' '+type):'');
+  el.innerHTML = '<span class="dot"></span><span>'+text+'</span>';
+  container.appendChild(el);
+  setTimeout(()=>{
+    el.classList.add('leaving');
+    setTimeout(()=>el.remove(), 350);
+  }, 3200);
+}
+
+/* =====================================================================
+   TEXTO FLUTUANTE
+===================================================================== */
+const floatingTexts = [];
+function spawnFloatingText(wx, wy, text, color){
+  floatingTexts.push({ wx, wy, text, color: color||'#F3EEE4', born: performance.now() });
+}
+function renderFloatingTexts(){
+  const layer = document.getElementById('floating-text-layer');
+  layer.innerHTML = '';
+  const now = performance.now();
+  for(let i=floatingTexts.length-1;i>=0;i--){
+    const f = floatingTexts[i];
+    const age = now - f.born;
+    if(age > 1100){ floatingTexts.splice(i,1); continue; }
+    const t = age/1100;
+    const sx = f.wx - camera.x;
+    const sy = f.wy - camera.y - t*36;
+    const el = document.createElement('div');
+    el.style.position='absolute';
+    el.style.left = sx+'px';
+    el.style.top = sy+'px';
+    el.style.transform = 'translate(-50%,-50%)';
+    el.style.fontSize='13px';
+    el.style.fontWeight='700';
+    el.style.color = f.color;
+    el.style.opacity = String(1-t);
+    el.style.textShadow = '0 2px 8px rgba(0,0,0,0.5)';
+    el.style.fontFamily = "'Space Grotesk',sans-serif";
+    el.textContent = f.text;
+    layer.appendChild(el);
+  }
+}
+
+/* =====================================================================
+   FUNÇÕES AUXILIARES
+===================================================================== */
+function rand(a,b){ return a + Math.random()*(b-a); }
+function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function dist(x1,y1,x2,y2){ return Math.hypot(x1-x2,y1-y2); }
+function insideBaseZone(x,y,margin){
+  margin = margin||0;
+  return state.camps.some(c => x > c.x-margin && x < c.x+c.w+margin && y > c.y-margin && y < c.y+c.h+margin);
+}
+function campContaining(x,y,margin){
+  margin = margin||0;
+  return state.camps.find(c => x > c.x-margin && x < c.x+c.w+margin && y > c.y-margin && y < c.y+c.h+margin) || null;
+}
+function primaryCamp(){ return state.camps[0]; }
+
+/* =====================================================================
+   NODOS DE RECURSOS
+===================================================================== */
+const resourceNodes = [];
+function generateResourceNodes(){
+  const specs = [
+    {type:'wood', count:24, r:20, max:5},
+    {type:'stone', count:15, r:18, max:4},
+    {type:'food', count:16, r:16, max:4},
+    {type:'water', count:5, r:34, max:99}
+  ];
+  specs.forEach(spec=>{
+    for(let i=0;i<spec.count;i++){
+      let x,y,tries=0, ok=false;
+      while(tries<60){
+        x = rand(80, WORLD_W-80); y = rand(80, WORLD_H-80);
+        if(!insideBaseZone(x,y,60) && resourceNodes.every(n=>dist(n.x,n.y,x,y)>95)){ ok=true; break; }
+        tries++;
+      }
+      if(ok){
+        resourceNodes.push({ type:spec.type, x, y, r:spec.r, amount:spec.max, max:spec.max, respawnAt:0, seed:Math.random()*1000 });
+      }
+    }
+  });
+}
+
+/* =====================================================================
+   RENDERIZAÇÃO DO TERRENO
+===================================================================== */
+function paintTerrain(ctx){
+  const age = ageById(state.age);
+  const pal = age.palette;
+  const developed = (state.age-1)/9;
+
+  const topColor = lerpColor('#2A4A35', pal.ground, developed);
+  const bottomColor = lerpColor('#1C3527', darkenColor(pal.ground,0.35), developed);
+  const grad = ctx.createLinearGradient(0,0,0,WORLD_H);
+  grad.addColorStop(0, topColor);
+  grad.addColorStop(1, bottomColor);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,WORLD_W,WORLD_H);
+
+  const textureCount = Math.round(2200 * (1 - developed*0.55));
+  for(let i=0;i<textureCount;i++){
+    const x = Math.random()*WORLD_W, y = Math.random()*WORLD_H;
+    const r = rand(8,34);
+    ctx.beginPath();
+    ctx.fillStyle = Math.random()>0.5 ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.05)';
+    ctx.ellipse(x,y,r,r*0.6,rand(0,Math.PI),0,Math.PI*2);
+    ctx.fill();
+  }
+
+  const wildCount = Math.round(300 * (1 - developed*0.7));
+  for(let i=0;i<wildCount;i++){
+    const x = rand(0,WORLD_W), y = rand(0,WORLD_H);
+    if(insideBaseZone(x,y,40)) continue;
+    if(Math.random()>0.5){
+      ctx.fillStyle = 'rgba(70,100,60,0.55)';
+      ctx.beginPath(); ctx.ellipse(x,y,rand(6,14),rand(5,10),0,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.fillStyle = 'rgba(120,115,105,0.35)';
+      ctx.beginPath(); ctx.ellipse(x,y,rand(4,9),rand(3,7),0,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  if(developed>0.25){
+    const patchCount = Math.round(115*developed);
+    for(let i=0;i<patchCount;i++){
+      const x = rand(0,WORLD_W), y = rand(0,WORLD_H);
+      if(insideBaseZone(x,y,50)) continue;
+      ctx.fillStyle = hexToRgba(pal.path, 0.16);
+      roundRectPath(ctx, x, y, rand(22,52), rand(16,34), 5);
+      ctx.fill();
+    }
+  }
+
+  state.camps.forEach(camp=>{
+    ctx.save();
+    ctx.fillStyle = hexToRgba(pal.structure, 0.14);
+    roundRectPath(ctx, camp.x, camp.y, camp.w, camp.h, 24);
+    ctx.fill();
+    ctx.setLineDash([10,8]);
+    ctx.strokeStyle = 'rgba(227,167,88,0.55)';
+    ctx.lineWidth = 2;
+    roundRectPath(ctx, camp.x, camp.y, camp.w, camp.h, 24);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+  ctx.lineWidth = 60;
+  ctx.strokeRect(30,30,WORLD_W-60,WORLD_H-60);
+}
+function roundRectPath(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+let terrainCanvas = null;
+function buildTerrain(){
+  terrainCanvas = document.createElement('canvas');
+  terrainCanvas.width = WORLD_W; terrainCanvas.height = WORLD_H;
+  paintTerrain(terrainCanvas.getContext('2d'));
+}
+
+const PATH_START = { x: primaryCamp().x+primaryCamp().w/2, y: primaryCamp().y+primaryCamp().h };
+const PATH_CTRL  = { x: primaryCamp().x+primaryCamp().w/2+120, y: primaryCamp().y+primaryCamp().h+220 };
+const PATH_END   = { x: WORLD_W*0.55, y: WORLD_H*0.55 };
+function pathPoint(t){
+  const x = (1-t)*(1-t)*PATH_START.x + 2*(1-t)*t*PATH_CTRL.x + t*t*PATH_END.x;
+  const y = (1-t)*(1-t)*PATH_START.y + 2*(1-t)*t*PATH_CTRL.y + t*t*PATH_END.y;
+  return {x,y};
+}
+
+let roadGraphDirty = true;
+let cachedTrainPath = null;
+function pointKey(x,y){ return x+','+y; }
+
+function isPointInOrNearCamp(px, py, camp, margin = 90){
+  return px >= camp.x - margin && px <= camp.x + camp.w + margin &&
+         py >= camp.y - margin && py <= camp.y + camp.h + margin;
+}
+
+function buildRoadGraph(){
+  const adj = new Map();
+  function addEdge(k1,k2){
+    if(!adj.has(k1)) adj.set(k1, new Set());
+    if(!adj.has(k2)) adj.set(k2, new Set());
+    adj.get(k1).add(k2);
+    adj.get(k2).add(k1);
+  }
+  state.roads.forEach(r=>{ addEdge(pointKey(r.x1,r.y1), pointKey(r.x2,r.y2)); });
+  const roadEndpointKeys = Array.from(adj.keys());
+  const campNodeKeys = {};
+  state.camps.forEach(camp=>{
+    const campKey = 'camp:'+camp.id;
+    campNodeKeys[camp.id] = campKey;
+    if(!adj.has(campKey)) adj.set(campKey, new Set());
+    roadEndpointKeys.forEach(key=>{
+      const [px,py] = key.split(',').map(Number);
+      if(isPointInOrNearCamp(px, py, camp, 90)){
+        addEdge(campKey, key);
+      }
+    });
+  });
+  return { adj, campNodeKeys };
+}
+
+function bfsPath(adj, startKey, endKey){
+  if(startKey===endKey) return [startKey];
+  const visited = new Set([startKey]);
+  const queue = [startKey];
+  const parent = new Map();
+  while(queue.length){
+    const cur = queue.shift();
+    const neighbors = adj.get(cur);
+    if(!neighbors) continue;
+    for(const n of neighbors){
+      if(visited.has(n)) continue;
+      visited.add(n);
+      parent.set(n, cur);
+      if(n===endKey){
+        const path = [endKey];
+        let p = endKey;
+        while(parent.has(p)){ p = parent.get(p); path.push(p); }
+        return path.reverse();
+      }
+      queue.push(n);
+    }
+  }
+  return null;
+}
+
+function allCampsConnected(){
+  if(state.camps.length<=1) return true;
+  const { adj, campNodeKeys } = buildRoadGraph();
+  const start = campNodeKeys[state.camps[0].id];
+  for(let i=1;i<state.camps.length;i++){
+    if(!bfsPath(adj, start, campNodeKeys[state.camps[i].id])) return false;
+  }
+  return true;
+}
+
+function computeTrainPath(){
+  if(state.camps.length<2) return null;
+  const { adj, campNodeKeys } = buildRoadGraph();
+  const pathKeys = bfsPath(adj, campNodeKeys[state.camps[0].id], campNodeKeys[state.camps[1].id]);
+  if(!pathKeys) return null;
+  return pathKeys.map(k=>{
+    if(k.indexOf('camp:')===0){
+      const camp = state.camps.find(c=>c.id===k.slice(5));
+      return { x: camp.x+camp.w/2, y: camp.y+camp.h/2 };
+    }
+    const [x,y] = k.split(',').map(Number);
+    return {x,y};
+  });
+}
+function getTrainPath(){
+  if(roadGraphDirty){ cachedTrainPath = computeTrainPath(); roadGraphDirty = false; }
+  return cachedTrainPath;
+}
+
+function drawWorldInfrastructure(ctx){
+  const age = ageById(state.age);
+  const pal = age.palette;
+
+  if(state.age>=6){
+    ctx.fillStyle = hexToRgba(pal.accent, Math.min(0.09, 0.02*(state.age-5)));
+    ctx.fillRect(0,0,WORLD_W,WORLD_H);
+  }
+  if(state.age>=8){
+    ctx.strokeStyle = hexToRgba(pal.roof, 0.05);
+    ctx.lineWidth = 1;
+    for(let gx=0; gx<WORLD_W; gx+=90){ ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,WORLD_H); ctx.stroke(); }
+    for(let gy=0; gy<WORLD_H; gy+=90){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(WORLD_W,gy); ctx.stroke(); }
+  }
+
+  ctx.strokeStyle = hexToRgba(pal.path, 0.55);
+  ctx.lineWidth = pal.pathW;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(PATH_START.x, PATH_START.y);
+  ctx.quadraticCurveTo(PATH_CTRL.x, PATH_CTRL.y, PATH_END.x, PATH_END.y);
+  ctx.stroke();
+  if(state.age>=4){
+    ctx.strokeStyle = hexToRgba(pal.accent,0.5); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(PATH_START.x, PATH_START.y); ctx.quadraticCurveTo(PATH_CTRL.x, PATH_CTRL.y, PATH_END.x, PATH_END.y); ctx.stroke();
+  }
+
+  if(age.rail){
+    const path = getTrainPath();
+    if(path && path.length>=2){
+      ctx.strokeStyle = 'rgba(150,140,120,0.35)'; ctx.lineWidth=1.2;
+      for(let i=0;i<path.length-1;i++){
+        const a=path[i], b=path[i+1];
+        const segLen = dist(a.x,a.y,b.x,b.y);
+        const steps = Math.max(1, Math.floor(segLen/26));
+        const angle = Math.atan2(b.y-a.y,b.x-a.x);
+        const perpX = Math.cos(angle+Math.PI/2)*8, perpY = Math.sin(angle+Math.PI/2)*8;
+        for(let s=0;s<=steps;s++){
+          const tt=s/steps;
+          const px=a.x+(b.x-a.x)*tt, py=a.y+(b.y-a.y)*tt;
+          ctx.beginPath(); ctx.moveTo(px-perpX,py-perpY); ctx.lineTo(px+perpX,py+perpY); ctx.stroke();
+        }
+      }
+      let totalLen = 0;
+      for(let i=1;i<path.length;i++) totalLen += dist(path[i-1].x,path[i-1].y,path[i].x,path[i].y);
+      const cycle = Math.max(6000, totalLen*22);
+      let target = ((performance.now()%cycle)/cycle) * totalLen;
+      let trainX=path[0].x, trainY=path[0].y, trainAngle=0;
+      for(let i=0;i<path.length-1;i++){
+        const a=path[i], b=path[i+1];
+        const segLen = dist(a.x,a.y,b.x,b.y);
+        if(target<=segLen || i===path.length-2){
+          const tt = segLen>0 ? Math.min(1,target/segLen) : 0;
+          trainX = a.x+(b.x-a.x)*tt;
+          trainY = a.y+(b.y-a.y)*tt;
+          trainAngle = Math.atan2(b.y-a.y, b.x-a.x);
+          break;
+        }
+        target -= segLen;
+      }
+      ctx.save();
+      ctx.translate(trainX,trainY);
+      ctx.rotate(trainAngle);
+      ctx.fillStyle = pal.accent;
+      roundRectPath(ctx, -44,-8, 18,16, 3); ctx.fill();
+      roundRectPath(ctx, -22,-8, 44,16, 3); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  if(age.lights){
+    for(let t=0.08;t<0.98;t+=0.14){
+      const p = pathPoint(t);
+      const glow = 0.4 + Math.sin(performance.now()/700 + t*10)*0.15;
+      const g = ctx.createRadialGradient(p.x,p.y-18,1,p.x,p.y-18,26);
+      g.addColorStop(0, `rgba(255,224,150,${glow})`); g.addColorStop(1,'rgba(255,224,150,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y-18,26,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(40,40,40,0.6)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x,p.y-20); ctx.stroke();
+    }
+  }
+
+  if(age.drone){
+    const t = performance.now()/1400;
+    const dx = primaryCamp().x+primaryCamp().w*0.5 + Math.cos(t)*180;
+    const dy = primaryCamp().y+primaryCamp().h*0.5 + Math.sin(t*1.3)*90 - 40;
+    ctx.fillStyle='rgba(108,158,170,0.9)';
+    ctx.beginPath(); ctx.arc(dx,dy,5,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(108,158,170,0.4)'; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(dx-10,dy); ctx.lineTo(dx+10,dy); ctx.stroke();
+  }
+
+  if(age.autoVehicle){
+    const t = (performance.now()/4200)%1;
+    const p = pathPoint(t);
+    ctx.fillStyle = 'rgba(180,72,47,0.85)';
+    roundRectPath(ctx, p.x-10, p.y-6, 20, 12, 4); ctx.fill();
+  }
+
+  if(age.skyline){
+    if(!skylineBuildings){
+      skylineBuildings = [];
+      let sx = WORLD_W*0.62;
+      for(let i=0;i<9;i++){
+        const bw = rand(30,55), bh = rand(60,180);
+        skylineBuildings.push({x:sx,w:bw,h:bh});
+        sx += bw+8;
+      }
+    }
+    ctx.save();
+    ctx.globalAlpha=0.35;
+    ctx.fillStyle = pal.structure;
+    skylineBuildings.forEach(b=> ctx.fillRect(b.x, WORLD_H*0.18-b.h, b.w, b.h));
+    ctx.restore();
+  }
+}
+let skylineBuildings = null;
+
+/* =====================================================================
+   ENTIDADES DINOSSAUROS
+===================================================================== */
+const dinos = [];
+
+const DINO_SPAWN_SCHEDULE = [
+  { minAge:1, sp:'triceratops', x:1600, y:835, range:300 },
+  { minAge:1, sp:'triceratops', x:1745, y:965, range:300 },
+  { minAge:1, sp:'stegosaurus', x:2400, y:1450, range:280 },
+  { minAge:1, sp:'velociraptor', x:2800, y:675, range:360 },
+  { minAge:1, sp:'velociraptor', x:2910, y:770, range:360 },
+  { minAge:1, sp:'brachiosaurus', x:3440, y:1930, range:250 },
+  { minAge:1, sp:'trex', x:3680, y:645, range:520 },
+  { minAge:1, sp:'pteranodon', x:2100, y:2400, range:420 },
+  { minAge:2, sp:'triceratops', x:1520, y:1205, range:280 },
+  { minAge:3, sp:'parasaurolophus', x:2080, y:2090, range:320 },
+  { minAge:3, sp:'parasaurolophus', x:2210, y:2185, range:320 },
+  { minAge:4, sp:'stegosaurus', x:3120, y:1610, range:300 },
+  { minAge:4, sp:'spinosaurus', x:3800, y:2500, range:340 },
+  { minAge:5, sp:'ankylosaurus', x:3600, y:2410, range:280 },
+  { minAge:6, sp:'velociraptor', x:2560, y:2490, range:360 },
+  { minAge:8, sp:'brachiosaurus', x:1440, y:2330, range:280 }
+];
+const spawnedScheduleIndices = new Set();
+
+function makeInitialNeeds(){
+  return { hunger: rand(65,90), thirst: rand(65,90), happiness: rand(55,80), lastPet:0 };
+}
+
+function spawnDinosForAgeUpTo(ageId){
+  const newSpecies = new Set();
+  DINO_SPAWN_SCHEDULE.forEach((d,i)=>{
+    if(d.minAge<=ageId && !spawnedScheduleIndices.has(i)){
+      spawnedScheduleIndices.add(i);
+      const sp = speciesById(d.sp);
+      dinos.push({
+        id:'d'+i, speciesId:d.sp,
+        x:d.x, y:d.y, homeX:d.x, homeY:d.y, range:d.range,
+        target:{x:d.x,y:d.y}, state:'idle', stateTimer:rand(0,2),
+        bobSeed: Math.random()*100, facing:1,
+        speed: 14 + (sp.speed/100)*46,
+        needs: makeInitialNeeds()
+      });
+      if(d.minAge>1) newSpecies.add(sp.name);
+    }
+  });
+  return Array.from(newSpecies);
+}
+function spawnDinos(){ spawnDinosForAgeUpTo(state.age); }
+
+let nextMigrationCheck = null;
+let migrationDinoCounter = 0;
+
+function startLeaving(d){
+  d.state = 'leaving';
+  const distLeft=d.x, distRight=WORLD_W-d.x, distTop=d.y, distBottom=WORLD_H-d.y;
+  const m = Math.min(distLeft,distRight,distTop,distBottom);
+  if(m===distLeft) d.target = {x:-160, y:d.y};
+  else if(m===distRight) d.target = {x:WORLD_W+160, y:d.y};
+  else if(m===distTop) d.target = {x:d.x, y:-160};
+  else d.target = {x:d.x, y:WORLD_H+160};
+}
+
+function pickEdgePoint(){
+  const side = Math.floor(rand(0,4));
+  if(side===0) return {x:-140, y:rand(150,WORLD_H-150)};
+  if(side===1) return {x:WORLD_W+140, y:rand(150,WORLD_H-150)};
+  if(side===2) return {x:rand(150,WORLD_W-150), y:-140};
+  return {x:rand(150,WORLD_W-150), y:WORLD_H+140};
+}
+
+function pickMigrationSpecies(){
+  const eligible = SPECIES.filter(s=>s.minAge<=state.age);
+  if(!eligible.length) return null;
+  const present = new Set(dinos.map(d=>d.speciesId));
+  const absent = eligible.filter(s=>!present.has(s.id));
+  if(absent.length && Math.random()<0.7) return choice(absent);
+  return choice(eligible);
+}
+
+function spawnArrival(){
+  const sp = pickMigrationSpecies();
+  if(!sp) return;
+  const edge = pickEdgePoint();
+  const homeTarget = {
+    x: clamp(edge.x + rand(-300,300), 200, WORLD_W-200),
+    y: clamp(edge.y + rand(-300,300), 200, WORLD_H-200)
+  };
+  migrationDinoCounter++;
+  dinos.push({
+    id:'m'+migrationDinoCounter, speciesId:sp.id,
+    x:edge.x, y:edge.y, homeX:homeTarget.x, homeY:homeTarget.y, range:260,
+    target:{x:homeTarget.x, y:homeTarget.y}, state:'arriving', stateTimer:0,
+    bobSeed: Math.random()*100, facing:1,
+    speed: 14 + (sp.speed/100)*46,
+    needs: makeInitialNeeds()
+  });
+}
+
+function tryMigrationEvent(){
+  const eligible = dinos.filter(d=>d.state!=='leaving' && d.state!=='arriving' && state.discovered.has(d.speciesId));
+  if(eligible.length){
+    startLeaving(choice(eligible));
+  }
+  spawnArrival();
+}
+
+function updateMigration(now){
+  if(nextMigrationCheck===null) nextMigrationCheck = now + rand(20000,35000);
+  if(now < nextMigrationCheck) return;
+  nextMigrationCheck = now + rand(30000,55000);
+  tryMigrationEvent();
+}
+
+function updateDino(d, dt){
+  const sp = speciesById(d.speciesId);
+
+  if(d.state==='leaving' || d.state==='arriving'){
+    const dx = d.target.x-d.x, dy = d.target.y-d.y;
+    const dd = Math.hypot(dx,dy);
+    if(dd>4){
+      const vx = dx/dd, vy = dy/dd;
+      d.x += vx * d.speed * 1.1 * dt;
+      d.y += vy * d.speed * 1.1 * dt;
+      d.facing = vx>=0 ? 1 : -1;
+    }
+    if(dd<=6){
+      if(d.state==='leaving'){ d.markedForRemoval = true; }
+      else { d.state='idle'; d.stateTimer=rand(1,3); d.homeX=d.x; d.homeY=d.y; }
+    }
+    return;
+  }
+
+  d.stateTimer -= dt;
+  tickNeeds(d, dt);
+
+  const pd = dist(player.x, player.y, d.x, d.y);
+  const fleeRadius = 90;
+  const alreadyKnown = state.discovered.has(d.speciesId);
+  const neglected = alreadyKnown && d.needs && d.needs.happiness < 20;
+
+  if(pd < fleeRadius && (!alreadyKnown || neglected) && sp.diet==='Herbívoro'){
+    d.state = 'flee';
+    const ang = Math.atan2(d.y-player.y, d.x-player.x);
+    d.target.x = clamp(d.x + Math.cos(ang)*140, d.homeX-d.range, d.homeX+d.range);
+    d.target.y = clamp(d.y + Math.sin(ang)*140, d.homeY-d.range, d.homeY+d.range);
+    d.stateTimer = 1.2;
+  } else if(d.stateTimer<=0){
+    d.state = Math.random()<0.65 ? 'wander' : 'idle';
+    d.target.x = clamp(d.homeX + rand(-d.range,d.range), 60, WORLD_W-60);
+    d.target.y = clamp(d.homeY + rand(-d.range,d.range), 60, WORLD_H-60);
+    d.stateTimer = rand(2.5,5);
+  }
+
+  const dx = d.target.x-d.x, dy = d.target.y-d.y;
+  const dd = Math.hypot(dx,dy);
+  const spdMul = d.state==='flee' ? 1.7 : (d.state==='idle' ? 0 : 1);
+  if(dd>4 && spdMul>0){
+    const vx = dx/dd, vy = dy/dd;
+    d.x += vx * d.speed * spdMul * dt;
+    d.y += vy * d.speed * spdMul * dt;
+    d.facing = vx>=0 ? 1 : -1;
+  }
+}
+
+function tickNeeds(d, dt){
+  if(!d.needs) d.needs = makeInitialNeeds();
+  const n = d.needs;
+  n.hunger = clamp(n.hunger - dt*(100/420), 0, 100);
+  n.thirst = clamp(n.thirst - dt*(100/300), 0, 100);
+  if(n.hunger>55 && n.thirst>55){
+    n.happiness = clamp(n.happiness + dt*(100/600)*habitatBonus(), 0, 100);
+  } else if(n.hunger<25 || n.thirst<25){
+    n.happiness = clamp(n.happiness - dt*(100/240), 0, 100);
+  }
+}
+
+function planCareAction(d){
+  const n = d.needs || (d.needs = makeInitialNeeds());
+  const needsFood = n.hunger < 60, needsWater = n.thirst < 60;
+  const lowerIsHunger = n.hunger <= n.thirst;
+  if(needsFood && state.res.food>0 && (lowerIsHunger || !(needsWater && state.res.water>0))) return 'feed';
+  if(needsWater && state.res.water>0) return 'water';
+  if(needsFood && state.res.food>0) return 'feed';
+  return 'pet';
+}
+function careActionLabel(d){
+  const sp = speciesById(d.speciesId);
+  const action = planCareAction(d);
+  if(action==='feed') return 'Alimentar '+sp.name+' (gasta 1 Comida)';
+  if(action==='water') return 'Dar Água a '+sp.name+' (gasta 1 Água)';
+  return 'Acariciar '+sp.name;
+}
+function performCareAction(d){
+  const sp = speciesById(d.speciesId);
+  const n = d.needs || (d.needs = makeInitialNeeds());
+  const action = planCareAction(d);
+  sfx.play('care');
+  if(action==='feed'){
+    addResource('food', -1);
+    n.hunger = clamp(n.hunger+35,0,100);
+    n.happiness = clamp(n.happiness+6,0,100);
+    spawnFloatingText(d.x, d.y-46, '+35 Fome', '#E3A75B');
+    showToast('O '+sp.name+' gostou da refeição', null);
+  } else if(action==='water'){
+    addResource('water', -1);
+    n.thirst = clamp(n.thirst+35,0,100);
+    n.happiness = clamp(n.happiness+6,0,100);
+    spawnFloatingText(d.x, d.y-46, '+35 Sede', '#6C9EAA');
+    showToast('O '+sp.name+' bebeu com vontade', null);
+  } else {
+    const now = performance.now();
+    if(now - (n.lastPet||0) > 12000){
+      n.lastPet = now;
+      n.happiness = clamp(n.happiness+8,0,100);
+      spawnFloatingText(d.x, d.y-46, '❤ Felicidade', '#C2653F');
+      showToast('O '+sp.name+' roça-se carinhosamente', null);
+    } else {
+      showToast('O '+sp.name+' está satisfeito por agora', null);
+    }
+  }
+}
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+/* =====================================================================
+   RENDERIZAÇÃO DOS DINOSSAUROS
+===================================================================== */
+function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(facing<0 ? -scale : scale, scale);
+
+  if(showGlow){
+    const g = ctx.createRadialGradient(0,-10,4,0,-10,120);
+    g.addColorStop(0, hexToRgba(RARITY[sp.rarity].color,0.35));
+    g.addColorStop(1, hexToRgba(RARITY[sp.rarity].color,0));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0,-10,120,0,Math.PI*2); ctx.fill();
+  }
+
+  if(sp.flying){ drawFlyingDino(ctx, sp, bob); ctx.restore(); return; }
+
+  const bodyColor = sp.color, shade = sp.accent;
+  const bobY = Math.sin(bob)*2.4;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  ctx.beginPath(); ctx.ellipse(0, 46, 44, 10, 0,0,Math.PI*2); ctx.fill();
+
+  ctx.translate(0, bobY);
+
+  ctx.fillStyle = shade;
+  ctx.beginPath(); roundRectPath(ctx,-30,10,13,32,5); ctx.fill();
+  ctx.beginPath(); roundRectPath(ctx,17,10,13,32,5); ctx.fill();
+
+  ctx.fillStyle = bodyColor;
+  ctx.beginPath();
+  ctx.moveTo(-32,-6);
+  ctx.quadraticCurveTo(-78,-2, -92, 10);
+  ctx.quadraticCurveTo(-70,6, -32, 10);
+  ctx.closePath(); ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(0,-8,46,30,0,0,Math.PI*2);
+  ctx.fill();
+
+  if(sp.id==='stegosaurus'){
+    ctx.fillStyle = shade;
+    for(let i=-1;i<=3;i++){
+      ctx.beginPath();
+      ctx.moveTo(i*15-6,-30); ctx.lineTo(i*15+2,-52); ctx.lineTo(i*15+10,-30);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+  if(sp.id==='triceratops'){
+    ctx.fillStyle = shade;
+    ctx.beginPath(); ctx.moveTo(38,-24); ctx.lineTo(66,-30); ctx.lineTo(56,-10); ctx.closePath(); ctx.fill();
+  }
+  if(sp.id==='ankylosaurus'){
+    ctx.fillStyle = shade;
+    for(let i=-2;i<=2;i++){
+      ctx.beginPath(); ctx.ellipse(i*16,-26,8,6,0,0,Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle = shade;
+    ctx.beginPath(); ctx.arc(-88,8,10,0,Math.PI*2); ctx.fill();
+  }
+  if(sp.id==='spinosaurus'){
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-24,-32);
+    for(let i=0;i<6;i++){
+      const px = -24 + i*13, peak = -60 - Math.sin(i*0.9)*6;
+      ctx.lineTo(px+6, peak);
+      ctx.lineTo(px+13, -32);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+
+  ctx.fillStyle = bodyColor;
+  const headX = 40, headY = sp.id==='brachiosaurus' ? -58 : -18;
+  if(sp.id==='brachiosaurus'){
+    ctx.beginPath();
+    ctx.moveTo(30,-20);
+    ctx.quadraticCurveTo(50,-60, headX, headY);
+    ctx.lineWidth = 20; ctx.strokeStyle = bodyColor; ctx.lineCap='round';
+    ctx.stroke();
+  }
+  ctx.beginPath(); ctx.ellipse(headX, headY, 15, 11, 0.15, 0, Math.PI*2); ctx.fill();
+
+  if(sp.id==='triceratops'){
+    ctx.strokeStyle = '#EDE7D8'; ctx.lineWidth = 3; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(headX+6,headY-6); ctx.lineTo(headX+18,headY-20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(headX+2,headY-8); ctx.lineTo(headX+2,headY-22); ctx.stroke();
+  }
+  if(sp.id==='parasaurolophus'){
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(headX-2,headY-6);
+    ctx.quadraticCurveTo(headX-26,headY-24, headX-30,headY-2);
+    ctx.quadraticCurveTo(headX-16,headY-10, headX-2,headY+2);
+    ctx.closePath(); ctx.fill();
+  }
+  if(sp.diet==='Carnívoro'){
+    ctx.fillStyle = shade;
+    ctx.beginPath(); ctx.moveTo(headX+8,headY+6); ctx.lineTo(headX+22,headY+9); ctx.lineTo(headX+7,headY+12); ctx.closePath(); ctx.fill();
+  }
+
+  ctx.fillStyle = '#12100C';
+  ctx.beginPath(); ctx.arc(headX+3, headY-2, 2.1, 0, Math.PI*2); ctx.fill();
+
+  ctx.restore();
+}
+function drawFlyingDino(ctx, sp, bob){
+  const bodyColor = sp.color, shade = sp.accent;
+  const flap = Math.sin(bob*1.6);
+  const altitudeBob = Math.sin(bob*0.7)*5;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath(); ctx.ellipse(4, 50, 26, 7, 0,0,Math.PI*2); ctx.fill();
+
+  ctx.save();
+  ctx.translate(0, altitudeBob - 14);
+
+  ctx.fillStyle = shade;
+  ctx.save(); ctx.rotate(flap*0.25 - 0.1);
+  ctx.beginPath();
+  ctx.moveTo(-4,-6); ctx.quadraticCurveTo(-46,-30-flap*10, -78,-10-flap*6);
+  ctx.quadraticCurveTo(-40,-6, -4,4);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(-flap*0.25 + 0.1);
+  ctx.beginPath();
+  ctx.moveTo(4,-6); ctx.quadraticCurveTo(46,-30+flap*10, 78,-10+flap*6);
+  ctx.quadraticCurveTo(40,-6, 4,4);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = bodyColor;
+  ctx.beginPath(); ctx.ellipse(0,0,20,11,0,0,Math.PI*2); ctx.fill();
+
+  const headX = 22, headY = -6;
+  ctx.beginPath(); ctx.ellipse(headX, headY, 9, 6, -0.1, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = shade;
+  ctx.beginPath();
+  ctx.moveTo(headX-4, headY-4);
+  ctx.quadraticCurveTo(headX-20, headY-22, headX-26, headY-6);
+  ctx.quadraticCurveTo(headX-14, headY-8, headX-4, headY+2);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = shade;
+  ctx.beginPath(); ctx.moveTo(headX+8, headY-2); ctx.lineTo(headX+22, headY+1); ctx.lineTo(headX+8, headY+5); ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = '#12100C';
+  ctx.beginPath(); ctx.arc(headX+2, headY-2, 1.8, 0, Math.PI*2); ctx.fill();
+
+  ctx.restore();
+}
+function hexToRgba(hex, a){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function lerpColor(c1,c2,k){
+  const h=(hex)=>({r:parseInt(hex.slice(1,3),16),g:parseInt(hex.slice(3,5),16),b:parseInt(hex.slice(5,7),16)});
+  const a=h(c1), b=h(c2);
+  const L=(x,y)=>Math.round(x+(y-x)*k);
+  return `rgb(${L(a.r,b.r)},${L(a.g,b.g)},${L(a.b,b.b)})`;
+}
+function darkenColor(hex, amt){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  const toHex = v => Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0');
+  return '#'+toHex(r*(1-amt))+toHex(g*(1-amt))+toHex(b*(1-amt));
+}
+
+/* =====================================================================
+   RENDERIZAÇÃO DOS EDIFÍCIOS
+===================================================================== */
+function drawBuilding(ctx, cx, cy, type, scale, paletteOverride, level){
+  level = level || 1;
+  const pal = paletteOverride || ageById(state.age).palette;
+  const def = buildingDef(type);
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.scale(scale,scale);
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(0,28,34,9,0,0,Math.PI*2); ctx.fill();
+
+  if(type==='campfire'){
+    if(level>=2){
+      ctx.fillStyle = pal.structure;
+      for(let i=0;i<8;i++){
+        const a = (i/8)*Math.PI*2;
+        ctx.beginPath(); ctx.ellipse(Math.cos(a)*16, Math.sin(a)*8, 4.5, 3.5, a, 0, Math.PI*2); ctx.fill();
+      }
+    } else {
+      ctx.fillStyle = pal.accent;
+      for(let i=0;i<5;i++){
+        const a = (i/5)*Math.PI*2;
+        ctx.save(); ctx.translate(Math.cos(a)*14, Math.sin(a)*7); ctx.rotate(a);
+        ctx.fillRect(-10,-2.5,20,5);
+        ctx.restore();
+      }
+    }
+    const t = performance.now()/180;
+    const flick = 1+Math.sin(t)*0.08;
+    ctx.save(); ctx.scale(flick,flick);
+    const g = ctx.createRadialGradient(0,-6,2,0,-6,26);
+    g.addColorStop(0,'#FFE1A6'); g.addColorStop(0.5,'#E3A75B'); g.addColorStop(1,'rgba(194,101,63,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.moveTo(0,6); ctx.quadraticCurveTo(14,-6,4,-24); ctx.quadraticCurveTo(8,-8,0,-2);
+    ctx.quadraticCurveTo(-8,-8,-4,-24); ctx.quadraticCurveTo(-14,-6,0,6);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  } else if(type==='storage'){
+    if(level>=2){
+      ctx.fillStyle = pal.structure;
+      roundRectPath(ctx,-38,-10,76,40,6); ctx.fill();
+      ctx.fillStyle = pal.roof;
+      ctx.beginPath(); ctx.moveTo(-44,-10); ctx.lineTo(-14,-34); ctx.lineTo(16,-10); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-14,-10); ctx.lineTo(16,-34); ctx.lineTo(44,-10); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      roundRectPath(ctx,-10,4,14,20,3); ctx.fill();
+      roundRectPath(ctx,10,4,14,20,3); ctx.fill();
+    } else {
+      ctx.fillStyle = pal.structure;
+      roundRectPath(ctx,-26,-6,52,32,6); ctx.fill();
+      ctx.fillStyle = pal.roof;
+      ctx.beginPath(); ctx.moveTo(-32,-6); ctx.lineTo(0,-30); ctx.lineTo(32,-6); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      roundRectPath(ctx,-6,4,12,18,3); ctx.fill();
+    }
+  } else if(type==='shelter'){
+    drawShelterLevel(ctx, pal, level);
+  } else if(type==='habitat'){
+    drawHabitatLevel(ctx, pal, level);
+  } else {
+    drawGenericStructure(ctx, type, pal, def ? def.minAge : 2, level);
+  }
+  ctx.restore();
+}
+
+function drawShelterLevel(ctx, pal, level){
+  if(level>=3){
+    ctx.fillStyle = pal.structure;
+    roundRectPath(ctx,-28,-4,56,30,5); ctx.fill();
+    ctx.fillStyle = pal.roof;
+    ctx.beginPath(); ctx.moveTo(-34,-4); ctx.lineTo(0,-32); ctx.lineTo(34,-4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(255,225,170,0.6)';
+    ctx.fillRect(-20,4,10,10); ctx.fillRect(8,4,10,10);
+    ctx.fillStyle = pal.accent; ctx.fillRect(16,-30,7,14);
+    const t = performance.now()/500;
+    ctx.save(); ctx.globalAlpha=0.4; ctx.fillStyle='rgba(200,200,200,0.5)';
+    ctx.beginPath(); ctx.arc(19, -34-((t*10)%14), 4, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  } else if(level>=2){
+    ctx.fillStyle = pal.accent;
+    roundRectPath(ctx,-24,-2,48,26,4); ctx.fill();
+    ctx.fillStyle = pal.roof;
+    ctx.beginPath(); ctx.moveTo(-30,-2); ctx.lineTo(0,-26); ctx.lineTo(30,-2); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(255,225,170,0.5)';
+    ctx.fillRect(-6,4,12,10);
+  } else {
+    ctx.fillStyle = pal.roof;
+    ctx.beginPath(); ctx.moveTo(-34,10); ctx.lineTo(0,-32); ctx.lineTo(34,10); ctx.lineTo(24,10); ctx.lineTo(0,-16); ctx.lineTo(-24,10); ctx.closePath(); ctx.fill();
+    ctx.fillStyle= pal.accent;
+    ctx.beginPath(); ctx.moveTo(-6,10); ctx.lineTo(6,10); ctx.lineTo(6,-2); ctx.lineTo(-6,-2); ctx.closePath(); ctx.fill();
+  }
+}
+
+function drawHabitatLevel(ctx, pal, level){
+  if(level>=3){
+    ctx.strokeStyle = pal.structure; ctx.lineWidth=8; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(0,4,30,Math.PI*0.15,Math.PI*0.85); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0,4,30,Math.PI*1.15,Math.PI*1.85); ctx.stroke();
+    ctx.fillStyle = pal.accent; roundRectPath(ctx,-8,-30,16,26,3); ctx.fill();
+    ctx.fillStyle = pal.roof;
+    ctx.beginPath(); ctx.moveTo(-10,-30); ctx.lineTo(0,-42); ctx.lineTo(10,-30); ctx.closePath(); ctx.fill();
+  } else if(level>=2){
+    ctx.strokeStyle = pal.accent; ctx.lineWidth=5; ctx.lineCap='round';
+    for(let i=0;i<8;i++){
+      const a = (i/8)*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(Math.cos(a)*26, 4+Math.sin(a)*14); ctx.lineTo(Math.cos(a)*26, -8+Math.sin(a)*14); ctx.stroke();
+    }
+    ctx.fillStyle = pal.roof;
+    ctx.beginPath(); ctx.moveTo(-14,-8); ctx.lineTo(0,-22); ctx.lineTo(14,-8); ctx.closePath(); ctx.fill();
+  } else {
+    ctx.strokeStyle = pal.accent; ctx.lineWidth=4; ctx.lineCap='round';
+    for(let i=0;i<10;i++){
+      const a = (i/10)*Math.PI*2;
+      const x = Math.cos(a)*24, y = 4+Math.sin(a)*12;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y-14); ctx.stroke();
+    }
+  }
+}
+
+function drawGenericStructure(ctx, type, pal, minAge, level){
+  level = level || 1;
+  const effectiveAge = minAge + (level-1)*2;
+  const h = 24 + (effectiveAge-1)*5;
+  ctx.fillStyle = pal.structure;
+  roundRectPath(ctx,-24,-h,48,h+14,6); ctx.fill();
+  ctx.fillStyle = pal.roof;
+  ctx.beginPath(); ctx.moveTo(-30,-h); ctx.lineTo(0,-h-16); ctx.lineTo(30,-h); ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle='rgba(255,225,170,0.55)';
+  const rows = Math.max(1, Math.min(3, Math.round(effectiveAge/3)));
+  for(let r=0;r<rows;r++){
+    for(let c=-1;c<=1;c++){ ctx.fillRect(c*14-3, -h+10+r*13, 6,6); }
+  }
+
+  switch(type){
+    case 'farm':
+      ctx.strokeStyle = pal.accent; ctx.lineWidth=2;
+      for(let i=-2;i<=2;i++){ ctx.beginPath(); ctx.moveTo(i*8,14); ctx.lineTo(i*8,22); ctx.stroke(); }
+      if(level>=2){
+        for(let i=-3;i<=3;i++){ ctx.beginPath(); ctx.moveTo(i*7,26); ctx.lineTo(i*7,32); ctx.stroke(); }
+      }
+      if(level>=3){
+        ctx.fillStyle = pal.structure;
+        roundRectPath(ctx,26,-h-2,10,h+4,5); ctx.fill();
+        ctx.fillStyle = pal.roof;
+        ctx.beginPath(); ctx.arc(31,-h-2,5,Math.PI,0); ctx.fill();
+      }
+      break;
+    case 'workshop':
+      ctx.fillStyle = pal.accent;
+      ctx.beginPath(); ctx.arc(20,-h-2,6,0,Math.PI*2); ctx.fill();
+      if(level>=2){
+        ctx.beginPath(); ctx.arc(-18,-h-4,5,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = pal.accent; ctx.fillRect(6,-h-24,7,20);
+        const t = performance.now()/700;
+        ctx.save(); ctx.globalAlpha=0.35; ctx.fillStyle='rgba(220,120,70,0.6)';
+        ctx.beginPath(); ctx.arc(9.5,-h-26-((t*8)%12),3,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      break;
+    case 'market':
+      ctx.fillStyle = pal.accent;
+      for(let i=-2;i<2;i++){ ctx.fillRect(i*12-24,-h-2,11,8); }
+      if(level>=2){
+        for(let i=-2;i<2;i++){ ctx.fillRect(i*12-24,-h+8,11,6); }
+        ctx.fillStyle = pal.roof;
+        ctx.beginPath(); ctx.moveTo(-4,-h-16); ctx.lineTo(8,-h-16); ctx.lineTo(2,-h-8); ctx.closePath(); ctx.fill();
+      }
+      break;
+    case 'monument':
+      ctx.fillStyle = pal.roof;
+      ctx.beginPath(); ctx.moveTo(-6,-h-16); ctx.lineTo(6,-h-16); ctx.lineTo(3,-h-42); ctx.lineTo(-3,-h-42); ctx.closePath(); ctx.fill();
+      if(level>=2){
+        ctx.fillStyle = pal.structure;
+        roundRectPath(ctx,-20,-h-2,40,10,3); ctx.fill();
+        ctx.fillStyle = pal.roof;
+        ctx.beginPath(); ctx.moveTo(-5,-h-16); ctx.lineTo(5,-h-16); ctx.lineTo(2.5,-h-58); ctx.lineTo(-2.5,-h-58); ctx.closePath(); ctx.fill();
+      }
+      break;
+    case 'library':
+      ctx.strokeStyle = pal.accent; ctx.lineWidth=3;
+      for(let i=-18;i<=18;i+=12){ ctx.beginPath(); ctx.moveTo(i,-h); ctx.lineTo(i,12); ctx.stroke(); }
+      if(level>=2){
+        ctx.fillStyle = pal.roof;
+        ctx.beginPath(); ctx.arc(0,-h-16,16,Math.PI,0); ctx.fill();
+        ctx.fillStyle = pal.accent;
+        ctx.beginPath(); ctx.arc(0,-h-16,3,0,Math.PI*2); ctx.fill();
+      }
+      break;
+    case 'factory': {
+      ctx.fillStyle = pal.accent; ctx.fillRect(14,-h-28,8,24);
+      const t = performance.now()/1000;
+      for(let i=0;i<3;i++){
+        const phase = (t*22+i*13)%42;
+        ctx.globalAlpha = Math.max(0,1-phase/42);
+        ctx.fillStyle = 'rgba(190,190,190,0.55)';
+        ctx.beginPath(); ctx.arc(18, -h-28-phase, 4+i*1.4, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      if(level>=2){
+        ctx.fillStyle = pal.accent; ctx.fillRect(-22,-h-34,8,30);
+        for(let i=0;i<3;i++){
+          const phase = (t*26+i*11+7)%48;
+          ctx.globalAlpha = Math.max(0,1-phase/48);
+          ctx.fillStyle = 'rgba(190,190,190,0.55)';
+          ctx.beginPath(); ctx.arc(-18, -h-34-phase, 4+i*1.4, 0, Math.PI*2); ctx.fill();
+        }
+        ctx.globalAlpha=1;
+      }
+      break;
+    }
+    case 'powerplant': {
+      ctx.strokeStyle = '#E3A75B'; ctx.lineWidth=2.4; ctx.lineJoin='round';
+      ctx.beginPath(); ctx.moveTo(2,-h-4); ctx.lineTo(-4,-h-16); ctx.lineTo(2,-h-16); ctx.lineTo(-4,-h-28); ctx.stroke();
+      if(level>=2){
+        ctx.fillStyle = pal.accent;
+        ctx.beginPath();
+        ctx.moveTo(-26,-h); ctx.quadraticCurveTo(-30,-h-20,-24,-h-34); ctx.quadraticCurveTo(-18,-h-20,-22,-h);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = 'rgba(230,230,230,0.4)';
+        ctx.beginPath(); ctx.ellipse(-24,-h-34,4,2,0,0,Math.PI*2); ctx.fill();
+      }
+      break;
+    }
+    case 'datacenter':
+    case 'researchlab': {
+      ctx.strokeStyle = pal.accent; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(0,-h-16); ctx.lineTo(0,-h-30); ctx.stroke();
+      const blink = Math.sin(performance.now()/320) > 0;
+      ctx.fillStyle = blink ? '#8FE3A7' : '#3A5A44';
+      ctx.beginPath(); ctx.arc(0,-h-32,3,0,Math.PI*2); ctx.fill();
+      if(level>=2){
+        ctx.strokeStyle = pal.accent;
+        ctx.beginPath(); ctx.moveTo(14,-h-10); ctx.lineTo(14,-h-22); ctx.stroke();
+        const blink2 = Math.sin(performance.now()/280+1) > 0;
+        ctx.fillStyle = blink2 ? '#8FE3A7' : '#3A5A44';
+        ctx.beginPath(); ctx.arc(14,-h-24,2.5,0,Math.PI*2); ctx.fill();
+        for(let i=0;i<3;i++){
+          const on = Math.sin(performance.now()/260 + i*2) > 0;
+          ctx.fillStyle = on ? '#6C9EAA' : '#2E3238';
+          ctx.fillRect(-20+i*4, -8, 2.5, 6);
+        }
+      }
+      break;
+    }
+    case 'metropolistower': {
+      ctx.fillStyle = pal.structure;
+      roundRectPath(ctx,-9,-h-38,18,38,3); ctx.fill();
+      ctx.fillStyle='rgba(255,225,170,0.5)';
+      for(let r=0;r<4;r++) ctx.fillRect(-5,-h-34+r*8,10,4);
+      const blink = Math.sin(performance.now()/420) > 0;
+      ctx.fillStyle = blink ? '#E3A75B' : '#7A5A2A';
+      ctx.beginPath(); ctx.arc(0,-h-40,3.4,0,Math.PI*2); ctx.fill();
+      break;
+    }
+  }
+}
+
+/* =====================================================================
+   RENDERIZAÇÃO DE RECURSOS E BARRAS
+===================================================================== */
+function drawNeedBars(ctx, d){
+  const n = d.needs;
+  if(!n) return;
+  const w = 34, h = 4, gap = 6;
+  const x = d.x - w/2, yBase = d.y - 82;
+  const bars = [
+    { v:n.hunger, color:'#E3A75B' },
+    { v:n.thirst, color:'#6C9EAA' },
+    { v:n.happiness, color:'#C2653F' }
+  ];
+  ctx.save();
+  bars.forEach((b,i)=>{
+    const y = yBase + i*gap;
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    roundRectPath(ctx, x, y, w, h, 2); ctx.fill();
+    ctx.fillStyle = b.v<25 ? '#B4482F' : b.color;
+    roundRectPath(ctx, x, y, w*(b.v/100), h, 2); ctx.fill();
+  });
+  ctx.restore();
+}
+
+function drawResourceNode(ctx, node){
+  const empty = node.amount<=0;
+  ctx.save();
+  ctx.globalAlpha = empty ? 0.35 : 1;
+  ctx.translate(node.x, node.y);
+  ctx.fillStyle='rgba(0,0,0,0.22)';
+  ctx.beginPath(); ctx.ellipse(0, node.r*0.7, node.r*0.9, node.r*0.28, 0,0,Math.PI*2); ctx.fill();
+
+  if(node.type==='wood'){
+    ctx.fillStyle='#5C4530';
+    roundRectPath(ctx,-5,-4,10,26,3); ctx.fill();
+    ctx.fillStyle='#3E6B45';
+    for(let i=0;i<3;i++){
+      ctx.beginPath();
+      ctx.moveTo(0,-6-i*13);
+      ctx.lineTo(-20+i*1, 6-i*13);
+      ctx.lineTo(20-i*1, 6-i*13);
+      ctx.closePath(); ctx.fill();
+    }
+  } else if(node.type==='stone'){
+    ctx.fillStyle='#8B8579';
+    ctx.beginPath();
+    ctx.moveTo(-node.r,4); ctx.lineTo(-node.r*0.5,-node.r*0.7); ctx.lineTo(node.r*0.3,-node.r);
+    ctx.lineTo(node.r,-2); ctx.lineTo(node.r*0.6, node.r*0.6); ctx.lineTo(-node.r*0.5, node.r*0.7);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.12)';
+    ctx.beginPath(); ctx.moveTo(-node.r*0.5,-node.r*0.7); ctx.lineTo(node.r*0.3,-node.r); ctx.lineTo(0,-node.r*0.3); ctx.closePath(); ctx.fill();
+  } else if(node.type==='food'){
+    ctx.fillStyle='#3E6B45';
+    ctx.beginPath(); ctx.ellipse(0,-2,node.r,node.r*0.8,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#C2453F';
+    for(let i=0;i<5;i++){
+      const a = (i/5)*Math.PI*2;
+      ctx.beginPath(); ctx.arc(Math.cos(a)*node.r*0.55, -2+Math.sin(a)*node.r*0.45, 3.4, 0, Math.PI*2); ctx.fill();
+    }
+  } else if(node.type==='water'){
+    const g = ctx.createRadialGradient(0,0,4,0,0,node.r);
+    g.addColorStop(0,'#8FC4D2'); g.addColorStop(1,'#4C7C8A');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.ellipse(0,0,node.r,node.r*0.62,0,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.ellipse(0,-2,node.r*0.55,node.r*0.28,0,0,Math.PI*2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* =====================================================================
+   JOGADOR (SANTIAGO)
+===================================================================== */
+const PLAYER_NAME = 'Santiago';
+const OUTFITS = [
+  { id:'explorer', name:'Explorador', jacket:'#C2653F', pack:'#8C4A2E', hair:'#3E2C1E' },
+  { id:'ranger',   name:'Guarda-Florestal', jacket:'#5C7A54', pack:'#3F5636', hair:'#2A1F16' },
+  { id:'scholar',  name:'Erudito', jacket:'#6C9EAA', pack:'#3F6C77', hair:'#1F1712' },
+  { id:'amber',    name:'Crepúsculo Âmbar', jacket:'#E3A75B', pack:'#A9793E', hair:'#3E2C1E' },
+  { id:'charcoal', name:'Carvão', jacket:'#4A4A4A', pack:'#2E2E2E', hair:'#1A1A1A' }
+];
+function currentOutfit(){ return OUTFITS.find(o=>o.id===state.outfitId) || OUTFITS[0]; }
+
+const player = { x: primaryCamp().x+primaryCamp().w/2, y: primaryCamp().y+primaryCamp().h+70, speed:190, facing:1, walkT:0 };
+
+function drawPlayerBody(ctx, outfit){
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(0,20,15,5,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#3E3A34';
+  ctx.fillRect(-7,6,5,14);
+  ctx.fillRect(2,6,5,14);
+  ctx.fillStyle=outfit.jacket;
+  roundRectPath(ctx,-9,-10,18,20,6); ctx.fill();
+  ctx.fillStyle=outfit.pack;
+  roundRectPath(ctx,-13,-6,6,12,3); ctx.fill();
+  ctx.fillStyle='#E7C9A1';
+  ctx.beginPath(); ctx.arc(0,-16,8,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=outfit.hair;
+  ctx.beginPath(); ctx.arc(0,-19,8,Math.PI,Math.PI*2); ctx.fill();
+}
+
+function drawPlayer(ctx){
+  ctx.save();
+  ctx.translate(player.x, player.y);
+  const bob = Math.sin(player.walkT*8)*2;
+  ctx.translate(0, bob);
+  ctx.scale(player.facing<0?-1:1,1);
+  drawPlayerBody(ctx, currentOutfit());
+  ctx.restore();
+}
+
+/* =====================================================================
+   CÂMARA
+===================================================================== */
+/* =====================================================================
+   CÂMARA E SISTEMA DE GESTOS APPLE (ZOOM, PANNING E HÁPTICA)
+===================================================================== */
+const camera = { x:0, y:0, w:0, h:0, zoom:1.0, targetZoom:1.0, vx:0, vy:0, isPanning:false };
+let hudRecessTimer = null;
+
+function triggerHaptic(type = 'light'){
+  if(typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function'){
+    try {
+      if(type==='light') navigator.vibrate(10);
+      else if(type==='medium') navigator.vibrate(22);
+      else if(type==='heavy') navigator.vibrate([30, 20, 30]);
+    } catch(e){}
+  }
+}
+
+function triggerHudRecess(){
+  document.body.classList.add('hud-recessed');
+  clearTimeout(hudRecessTimer);
+  hudRecessTimer = setTimeout(()=>{
+    document.body.classList.remove('hud-recessed');
+  }, 1400);
+}
+
+function updateCamera(){
+  camera.zoom += (camera.targetZoom - camera.zoom) * 0.12;
+
+  if(!camera.isPanning && Math.abs(camera.vx) < 0.2 && Math.abs(camera.vy) < 0.2){
+    const targetX = clamp(player.x - camera.w/(2*camera.zoom), 0, Math.max(0, WORLD_W - camera.w/camera.zoom));
+    const targetY = clamp(player.y - camera.h/(2*camera.zoom), 0, Math.max(0, WORLD_H - camera.h/camera.zoom));
+    camera.x += (targetX - camera.x) * 0.14;
+    camera.y += (targetY - camera.y) * 0.14;
+  } else {
+    camera.x = clamp(camera.x, 0, Math.max(0, WORLD_W - camera.w/camera.zoom));
+    camera.y = clamp(camera.y, 0, Math.max(0, WORLD_H - camera.h/camera.zoom));
+  }
+}
+
+/* =====================================================================
+   MINIMAPA
+===================================================================== */
+const minimapCanvas = document.getElementById('minimap-canvas');
+const mctx = minimapCanvas ? minimapCanvas.getContext('2d') : null;
+function renderMinimap(){
+  if(!minimapCanvas || !mctx) return;
+  const w = 160, h = 110;
+  minimapCanvas.width = w; minimapCanvas.height = h;
+  mctx.clearRect(0,0,w,h);
+
+  mctx.fillStyle = '#182C20';
+  mctx.fillRect(0,0,w,h);
+
+  const sx = w / WORLD_W, sy = h / WORLD_H;
+
+  mctx.strokeStyle = '#E3A75B';
+  mctx.lineWidth = 1;
+  state.camps.forEach(c=>{
+    mctx.strokeRect(c.x*sx, c.y*sy, c.w*sx, c.h*sy);
+  });
+
+  mctx.strokeStyle = 'rgba(217,196,160,0.5)';
+  mctx.lineWidth = 1.5;
+  state.roads.forEach(r=>{
+    mctx.beginPath(); mctx.moveTo(r.x1*sx, r.y1*sy); mctx.lineTo(r.x2*sx, r.y2*sy); mctx.stroke();
+  });
+
+  dinos.forEach(d=>{
+    const known = state.discovered.has(d.speciesId);
+    mctx.fillStyle = known ? '#8FE3A7' : 'rgba(255,255,255,0.2)';
+    mctx.beginPath(); mctx.arc(d.x*sx, d.y*sy, known?2:1, 0, Math.PI*2); mctx.fill();
+  });
+
+  mctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  mctx.lineWidth = 1;
+  mctx.strokeRect(camera.x*sx, camera.y*sy, (camera.w/camera.zoom)*sx, (camera.h/camera.zoom)*sy);
+
+  mctx.fillStyle = '#E3A75B';
+  mctx.beginPath(); mctx.arc(player.x*sx, player.y*sy, 3, 0, Math.PI*2); mctx.fill();
+}
+if(minimapCanvas){
+  minimapCanvas.addEventListener('click', (e)=>{
+    const rect = minimapCanvas.getBoundingClientRect();
+    const clickX = (e.clientX - rect.left) / rect.width;
+    const clickY = (e.clientY - rect.top) / rect.height;
+    player.x = clamp(clickX * WORLD_W, 40, WORLD_W-40);
+    player.y = clamp(clickY * WORLD_H, 40, WORLD_H-40);
+  });
+}
+
+/* =====================================================================
+   AJUSTE DE ECRÃ
+===================================================================== */
+const gameCanvas = document.getElementById('game-canvas');
+const gctx = gameCanvas ? gameCanvas.getContext('2d') : null;
+let dpr = Math.min(window.devicePixelRatio||1, 2);
+
+function resizeCanvas(){
+  dpr = Math.min(window.devicePixelRatio||1, 2);
+  const w = window.innerWidth, h = window.innerHeight;
+  if(gameCanvas){
+    gameCanvas.width = w*dpr; gameCanvas.height = h*dpr;
+    gameCanvas.style.width = w+'px'; gameCanvas.style.height = h+'px';
+  }
+  camera.w = w; camera.h = h;
+
+  const tCanvas = document.getElementById('title-canvas');
+  if(tCanvas){
+    tCanvas.width = w*dpr; tCanvas.height = h*dpr; tCanvas.style.width=w+'px'; tCanvas.style.height=h+'px';
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+
+/* =====================================================================
+   ECRÃ DO TÍTULO
+===================================================================== */
+const tCanvasEl = document.getElementById('title-canvas');
+const tctx = tCanvasEl ? tCanvasEl.getContext('2d') : null;
+let titleRunning = true;
+const mistBlobs = Array.from({length:6}, ()=>({ x:Math.random(), y:0.55+Math.random()*0.3, s:rand(0.4,1.1), speed:rand(0.004,0.012) }));
+function drawTitleBG(t){
+  if(!titleRunning || !tctx) return;
+  const w = window.innerWidth, h = window.innerHeight;
+  tctx.setTransform(dpr,0,0,dpr,0,0);
+  tctx.clearRect(0,0,w,h);
+
+  const sky = tctx.createLinearGradient(0,0,0,h);
+  sky.addColorStop(0,'#3C5A45'); sky.addColorStop(0.55,'#1E3A2B'); sky.addColorStop(1,'#0E1E15');
+  tctx.fillStyle = sky; tctx.fillRect(0,0,w,h);
+
+  const sunX = w*0.72, sunY = h*0.32;
+  const g = tctx.createRadialGradient(sunX,sunY,10,sunX,sunY,320);
+  g.addColorStop(0,'rgba(227,167,88,0.55)'); g.addColorStop(1,'rgba(227,167,88,0)');
+  tctx.fillStyle=g; tctx.beginPath(); tctx.arc(sunX,sunY,320,0,Math.PI*2); tctx.fill();
+
+  const layers = [
+    {y:h*0.62, amp:26, col:'#16301F', speed:0.010},
+    {y:h*0.72, amp:34, col:'#122A1B', speed:0.006},
+    {y:h*0.84, amp:44, col:'#0D2015', speed:0.003}
+  ];
+  layers.forEach((L,li)=>{
+    tctx.beginPath();
+    tctx.moveTo(0,h);
+    const off = t*L.speed*40;
+    for(let x=0;x<=w;x+=40){
+      const y = L.y + Math.sin((x+off)*0.006 + li)*L.amp;
+      tctx.lineTo(x,y);
+    }
+    tctx.lineTo(w,h); tctx.closePath();
+    tctx.fillStyle = L.col; tctx.fill();
+  });
+
+  tctx.save();
+  tctx.globalAlpha = 0.5;
+  const bx = w*0.22 + Math.sin(t*0.0002)*10, by = h*0.68;
+  tctx.translate(bx,by); tctx.scale(1.3,1.3);
+  tctx.fillStyle = '#0D2015';
+  tctx.beginPath(); tctx.ellipse(0,0,40,22,0,0,Math.PI*2); tctx.fill();
+  tctx.beginPath(); tctx.moveTo(24,-10); tctx.quadraticCurveTo(48,-60,60,-78); tctx.lineWidth=16; tctx.strokeStyle='#0D2015'; tctx.lineCap='round'; tctx.stroke();
+  tctx.beginPath(); tctx.ellipse(60,-78,9,7,0,0,Math.PI*2); tctx.fill();
+  tctx.restore();
+
+  mistBlobs.forEach(m=>{
+    m.x += m.speed*0.016;
+    if(m.x>1.3) m.x=-0.3;
+    const mx = m.x*w, my = m.y*h;
+    const mg = tctx.createRadialGradient(mx,my,0,mx,my,180*m.s);
+    mg.addColorStop(0,'rgba(243,238,228,0.10)'); mg.addColorStop(1,'rgba(243,238,228,0)');
+    tctx.fillStyle=mg; tctx.beginPath(); tctx.ellipse(mx,my,180*m.s,50*m.s,0,0,Math.PI*2); tctx.fill();
+  });
+
+  for(let i=0;i<3;i++){
+    const bx2 = ((t*0.02 + i*160) % (w+200)) - 100;
+    const by2 = h*0.22 + i*26 + Math.sin(t*0.002+i)*8;
+    tctx.strokeStyle='rgba(243,238,228,0.5)'; tctx.lineWidth=1.6;
+    tctx.beginPath();
+    tctx.moveTo(bx2-6,by2); tctx.quadraticCurveTo(bx2,by2-5,bx2+6,by2);
+    tctx.stroke();
+  }
+
+  requestAnimationFrame(drawTitleBG);
+}
+
+window.addEventListener('wheel', (e)=>{
+  if(anyOverlayOpen()) return;
+  const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+  camera.targetZoom = clamp(camera.targetZoom * zoomFactor, 0.65, 1.45);
+}, {passive:true});
+
+/* =====================================================================
+   ENTRADAS DE TECLADO / RATO / TOQUE MULTI-GESTOS
+===================================================================== */
+window.addEventListener('keydown', (e)=>{
+  state.keys[e.key.toLowerCase()] = true;
+  if(!state.started) return;
+  if(e.key.toLowerCase()==='e') tryInteract();
+  if(e.key.toLowerCase()==='b') toggleOverlay('overlay-build');
+  if(e.key.toLowerCase()==='m') toggleOverlay('overlay-missions');
+  if(e.key.toLowerCase()==='c') toggleOverlay('overlay-collection');
+  if(e.key.toLowerCase()==='r') toggleRoadMode();
+  if(e.key.toLowerCase()==='p') toggleOverlay('overlay-character');
+  if(e.key==='Escape'){ closeAllOverlays(); cancelPlacement(); exitRoadMode(); }
+});
+window.addEventListener('keyup', (e)=>{ state.keys[e.key.toLowerCase()] = false; });
+
+let mouseWorld = {x:0,y:0};
+gameCanvas.addEventListener('mousemove', (e)=>{
+  mouseWorld.x = (e.clientX / camera.zoom) + camera.x;
+  mouseWorld.y = (e.clientY / camera.zoom) + camera.y;
+  if(roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
+});
+
+let lastTapTime = 0, lastTapPos = null;
+gameCanvas.addEventListener('click', (e)=>{
+  sfx.play('click');
+  triggerHaptic('light');
+
+  const now = performance.now();
+  const isDoubleTap = (now - lastTapTime < 320) && lastTapPos && (Math.hypot(e.clientX - lastTapPos.x, e.clientY - lastTapPos.y) < 28);
+  lastTapTime = now;
+  lastTapPos = { x: e.clientX, y: e.clientY };
+
+  if(isDoubleTap && state.started && !state.paused && !anyOverlayOpen()){
+    const dinoHit = dinos.find(d => dist(mouseWorld.x, mouseWorld.y, d.x, d.y) < 54);
+    if(dinoHit && state.discovered.has(dinoHit.speciesId)){
+      toggleOverlay('overlay-collection');
+      return;
+    }
+    const bHit = findBuildingAt(mouseWorld.x, mouseWorld.y);
+    if(bHit){
+      openBuildingInspector(bHit);
+      return;
+    }
+    if(dist(mouseWorld.x, mouseWorld.y, player.x, player.y) < 40){
+      toggleOverlay('overlay-character');
+      return;
+    }
+  }
+
+  if(state.roadMode) return;
+  if(state.foundingCamp){ attemptFoundCampAt(mouseWorld.x, mouseWorld.y); return; }
+  if(state.placingType){ attemptPlaceAt(mouseWorld.x, mouseWorld.y); return; }
+  if(state.movingBuilding){ attemptMoveAt(mouseWorld.x, mouseWorld.y); return; }
+  if(!state.started || state.paused || anyOverlayOpen()) return;
+
+  const hit = findBuildingAt(mouseWorld.x, mouseWorld.y);
+  if(hit){
+    openBuildingInspector(hit);
+  } else {
+    // Tap to path player
+    player.targetX = mouseWorld.x;
+    player.targetY = mouseWorld.y;
+    spawnTapRipple(mouseWorld.x, mouseWorld.y);
+  }
+});
+
+function findBuildingAt(wx, wy){
+  let best = null, bestDist = 46;
+  state.buildings.forEach(b=>{
+    const dd = dist(wx,wy,b.cx,b.cy);
+    if(dd<bestDist){ bestDist=dd; best=b; }
+  });
+  return best;
+}
+
+const tapRipples = [];
+function spawnTapRipple(wx, wy){
+  tapRipples.push({ wx, wy, born: performance.now() });
+}
+
+const hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
+if(hasTouch) document.body.classList.add('has-touch');
+
+let touchStartPos = null, touchMoved = false, touchPanLast = null, initialPinchDist = 0;
+gameCanvas.addEventListener('touchstart', (e)=>{
+  if(e.touches.length===1){
+    const t = e.touches[0];
+    mouseWorld.x = (t.clientX / camera.zoom) + camera.x;
+    mouseWorld.y = (t.clientY / camera.zoom) + camera.y;
+    touchStartPos = {x:t.clientX, y:t.clientY};
+    touchPanLast = {x:t.clientX, y:t.clientY};
+    touchMoved = false;
+    if(state.roadMode && !anyOverlayOpen()){
+      roadDragStart = { x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y) };
+      roadDragEnd = { x: roadDragStart.x, y: roadDragStart.y };
+    }
+  } else if(e.touches.length===2){
+    initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  }
+  e.preventDefault();
+}, {passive:false});
+
+gameCanvas.addEventListener('touchmove', (e)=>{
+  if(e.touches.length===1 && touchPanLast){
+    const t = e.touches[0];
+    const dx = t.clientX - touchPanLast.x;
+    const dy = t.clientY - touchPanLast.y;
+    touchPanLast = {x:t.clientX, y:t.clientY};
+    mouseWorld.x = (t.clientX / camera.zoom) + camera.x;
+    mouseWorld.y = (t.clientY / camera.zoom) + camera.y;
+
+    if(touchStartPos && Math.hypot(t.clientX-touchStartPos.x, t.clientY-touchStartPos.y) > 10){
+      touchMoved = true;
+    }
+
+    if(state.roadMode){
+      if(roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
+    } else if(!state.placingType && !state.movingBuilding && !state.foundingCamp && !anyOverlayOpen() && Math.abs(touchMoveVector.x)<0.1){
+      // Touch Drag Terrain Panning with Momentum
+      camera.isPanning = true;
+      camera.x -= dx / camera.zoom;
+      camera.y -= dy / camera.zoom;
+      camera.vx = -dx * 0.4 / camera.zoom;
+      camera.vy = -dy * 0.4 / camera.zoom;
+      triggerHudRecess();
+    }
+  } else if(e.touches.length===2 && initialPinchDist > 0){
+    const distNow = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    const factor = distNow / initialPinchDist;
+    initialPinchDist = distNow;
+    camera.targetZoom = clamp(camera.targetZoom * factor, 0.65, 1.45);
+    triggerHudRecess();
+  }
+  e.preventDefault();
+}, {passive:false});
+
+gameCanvas.addEventListener('touchend', (e)=>{
+  camera.isPanning = false;
+  if(state.roadMode){
+    commitRoadDrag();
+  } else if(!touchMoved && e.touches.length===0 && touchStartPos){
+    const clickEvt = new MouseEvent('click', { clientX: touchStartPos.x, clientY: touchStartPos.y });
+    gameCanvas.dispatchEvent(clickEvt);
+  }
+  touchStartPos = null; touchPanLast = null; initialPinchDist = 0;
+  e.preventDefault();
+}, {passive:false});
+
+let touchMoveVector = {x:0, y:0};
+(function setupJoystick(){
+  const base = document.getElementById('joystick-base');
+  const knob = document.getElementById('joystick-knob');
+  if(!base || !knob) return;
+  let dragging = false, originX=0, originY=0;
+  const radius = 40;
+
+  function start(clientX, clientY){
+    dragging = true;
+    const rect = base.getBoundingClientRect();
+    originX = rect.left + rect.width/2;
+    originY = rect.top + rect.height/2;
+    knob.classList.add('active');
+    triggerHaptic('light');
+    update(clientX, clientY);
+  }
+  function update(clientX, clientY){
+    let dx = clientX-originX, dy = clientY-originY;
+    const d = Math.hypot(dx,dy);
+    if(d>radius){ dx = dx/d*radius; dy = dy/d*radius; }
+    knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    touchMoveVector = { x: dx/radius, y: dy/radius };
+    triggerHudRecess();
+  }
+  function end(){
+    dragging = false;
+    knob.classList.remove('active');
+    knob.style.transform = 'translate(-50%,-50%)';
+    touchMoveVector = {x:0,y:0};
+  }
+  base.addEventListener('touchstart', (e)=>{ start(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, {passive:false});
+  window.addEventListener('touchmove', (e)=>{
+    if(!dragging || e.touches.length!==1) return;
+    update(e.touches[0].clientX, e.touches[0].clientY);
+    e.preventDefault();
+  }, {passive:false});
+  window.addEventListener('touchend', ()=>{ if(dragging) end(); });
+})();
+
+// Sheet Drag-to-Dismiss on Mobile
+(function setupSheetHandles(){
+  document.querySelectorAll('.panel').forEach(panel=>{
+    const handle = panel.querySelector('.sheet-handle');
+    if(!handle) return;
+    let startY = 0, currentY = 0, dragging = false;
+    panel.addEventListener('touchstart', (e)=>{
+      if(e.touches[0].target === handle || panel.scrollTop === 0){
+        startY = e.touches[0].clientY;
+        dragging = true;
+      }
+    }, {passive:true});
+    panel.addEventListener('touchmove', (e)=>{
+      if(!dragging) return;
+      currentY = e.touches[0].clientY - startY;
+      if(currentY > 0){
+        panel.style.transform = `translateY(${currentY}px)`;
+      }
+    }, {passive:true});
+    panel.addEventListener('touchend', ()=>{
+      if(!dragging) return;
+      dragging = false;
+      if(currentY > 90){
+        triggerHaptic('medium');
+        const overlay = panel.closest('.overlay');
+        if(overlay) overlay.classList.remove('open');
+      }
+      panel.style.transform = '';
+      currentY = 0;
+    });
+  });
+})();
+
+document.getElementById('touch-interact-btn').addEventListener('click', ()=>{
+  triggerHaptic('light');
+  tryInteract();
+});
+
+/* =====================================================================
+   SISTEMA DE ESTRADAS
+===================================================================== */
+const ROAD_GRID = 50;
+function snapRoad(v){ return Math.round(v/ROAD_GRID)*ROAD_GRID; }
+let roadDragStart = null, roadDragEnd = null;
+
+function toggleRoadMode(){
+  if(state.roadMode){ exitRoadMode(); return; }
+  if(anyOverlayOpen() || state.placingType || state.movingBuilding || state.foundingCamp) return;
+  state.roadMode = true;
+  document.getElementById('road-banner').classList.add('show');
+  document.getElementById('btn-roads').style.background = 'var(--glass-strong)';
+}
+function exitRoadMode(){
+  state.roadMode = false;
+  roadDragStart = null; roadDragEnd = null;
+  document.getElementById('road-banner').classList.remove('show');
+  document.getElementById('btn-roads').style.background = '';
+}
+document.getElementById('btn-roads').addEventListener('click', toggleRoadMode);
+document.getElementById('road-mode-exit').addEventListener('click', exitRoadMode);
+
+function roadCost(len){ return Math.max(1, Math.round(len/ROAD_GRID)); }
+
+gameCanvas.addEventListener('mousedown', (e)=>{
+  if(!state.roadMode || anyOverlayOpen()) return;
+  roadDragStart = { x: snapRoad(e.clientX+camera.x), y: snapRoad(e.clientY+camera.y) };
+  roadDragEnd = { x: roadDragStart.x, y: roadDragStart.y };
+});
+function commitRoadDrag(){
+  if(!state.roadMode || !roadDragStart) return;
+  const a = roadDragStart, b = roadDragEnd || roadDragStart;
+  const len = dist(a.x,a.y,b.x,b.y);
+  roadDragStart = null; roadDragEnd = null;
+  if(len < ROAD_GRID*0.6) return;
+  const cost = { wood: roadCost(len), stone:0, food:0 };
+  if(!canAfford(cost)){ showToast('Madeira insuficiente para esta estrada', null); return; }
+  payCost(cost);
+  sfx.play('build');
+  state.roads.push({ x1:a.x, y1:a.y, x2:b.x, y2:b.y });
+  roadGraphDirty = true;
+  grantXP(5);
+  checkAgeReady();
+}
+window.addEventListener('mouseup', commitRoadDrag);
+
+function drawRoadSegments(ctx){
+  const age = ageById(state.age);
+  const pal = age.palette;
+  ctx.save();
+  ctx.strokeStyle = hexToRgba(pal.path, 0.6);
+  ctx.lineWidth = pal.pathW * 0.55;
+  ctx.lineCap = 'round';
+  state.roads.forEach(r=>{
+    ctx.beginPath(); ctx.moveTo(r.x1,r.y1); ctx.lineTo(r.x2,r.y2); ctx.stroke();
+  });
+  if(state.age>=4){
+    ctx.strokeStyle = hexToRgba(pal.accent,0.45); ctx.lineWidth = 1.6;
+    state.roads.forEach(r=>{
+      ctx.beginPath(); ctx.moveTo(r.x1,r.y1); ctx.lineTo(r.x2,r.y2); ctx.stroke();
+    });
+  }
+  ctx.restore();
+
+  if(state.roadMode){
+    ctx.save();
+    ctx.strokeStyle = 'rgba(243,238,228,0.06)';
+    ctx.lineWidth = 1;
+    const gx0 = Math.floor((camera.x-100)/ROAD_GRID)*ROAD_GRID, gx1 = camera.x+camera.w+100;
+    const gy0 = Math.floor((camera.y-100)/ROAD_GRID)*ROAD_GRID, gy1 = camera.y+camera.h+100;
+    for(let x=gx0; x<gx1; x+=ROAD_GRID){ ctx.beginPath(); ctx.moveTo(x,gy0); ctx.lineTo(x,gy1); ctx.stroke(); }
+    for(let y=gy0; y<gy1; y+=ROAD_GRID){ ctx.beginPath(); ctx.moveTo(gx0,y); ctx.lineTo(gx1,y); ctx.stroke(); }
+    if(roadDragStart && roadDragEnd){
+      const len = dist(roadDragStart.x,roadDragStart.y,roadDragEnd.x,roadDragEnd.y);
+      const afford = canAfford({wood:roadCost(len),stone:0,food:0});
+      ctx.strokeStyle = afford ? 'rgba(107,143,92,0.8)' : 'rgba(180,72,47,0.8)';
+      ctx.lineWidth = pal.pathW*0.55;
+      ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(roadDragStart.x,roadDragStart.y); ctx.lineTo(roadDragEnd.x,roadDragEnd.y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/* =====================================================================
+   INSPETOR DE EDIFÍCIO
+===================================================================== */
+function openBuildingInspector(b){
+  state.inspectingBuilding = b;
+  demolishConfirming = false;
+  closeAllOverlays();
+  document.getElementById('overlay-inspector').classList.add('open');
+  renderInspector();
+}
+
+function renderInspector(){
+  const b = state.inspectingBuilding;
+  if(!b) return;
+  const def = buildingDef(b.type);
+  const lv = levelDef(b.type, b.level||1);
+  document.getElementById('inspector-name').textContent = lv ? lv.name : def.name;
+  document.getElementById('inspector-desc').textContent = lv ? lv.desc : def.desc;
+
+  const badge = document.getElementById('inspector-level-badge');
+  if(BUILDING_LEVELS[b.type]){
+    badge.style.display = 'inline-block';
+    badge.textContent = 'Nível '+(b.level||1)+' de '+BUILDING_LEVELS[b.type].length;
+    badge.style.color = 'var(--amber)';
+    badge.style.background = hexToRgba('#E3A75B',0.16);
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const prodEl = document.getElementById('inspector-production');
+  const prod = currentProduce(b);
+  if(prod){
+    prodEl.textContent = 'Produz +'+prod.amount+' '+prod.key+' a cada '+prod.interval+'s';
+  } else if(b.type==='habitat'){
+    const mult = habitatBonus();
+    prodEl.textContent = mult>1 ? ('Aumenta a recuperação de felicidade dos dinossauros em '+Math.round((mult-1)*100)+'%') : 'Melhora-o para aumentar a recuperação de felicidade dos dinossauros.';
+  } else {
+    prodEl.textContent = '';
+  }
+
+  const curCanvas = document.getElementById('inspector-canvas-current');
+  const curCtx = curCanvas.getContext('2d');
+  curCtx.clearRect(0,0,180,180);
+  drawBuilding(curCtx, 90, 130, b.type, 1.0, ageById(state.age).palette, b.level||1);
+
+  const section = document.getElementById('inspector-upgrade-section');
+  const levels = BUILDING_LEVELS[b.type];
+  if(!levels){
+    section.innerHTML = '<div style="font-size:12.5px;color:var(--sand)">Este edifício ainda não tem caminho de melhoria.</div>';
+  } else {
+    const nextLevel = levelDef(b.type, (b.level||1)+1);
+    if(!nextLevel){
+      section.innerHTML = '<div style="font-size:12.5px;color:var(--sand)">Nível máximo atingido — este edifício está totalmente desenvolvido.</div>';
+    } else {
+      const ageOk = state.age >= nextLevel.minAge;
+      const afford = nextLevel.cost ? canAfford(nextLevel.cost) : true;
+      const ready = ageOk && afford;
+      section.innerHTML = `
+        <div style="display:flex; gap:14px; align-items:center;">
+          <div class="dex-icon-wrap" style="width:70px;height:70px;flex-shrink:0;"><canvas id="inspector-canvas-next" width="180" height="180"></canvas></div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:2px;">Seguinte: ${nextLevel.name}</div>
+            <div style="font-size:12px;color:var(--sand);margin-bottom:6px;">${nextLevel.desc}</div>
+            ${nextLevel.produce ? `<div style="font-size:11.5px;color:var(--moss);font-weight:600;margin-bottom:6px;">+${nextLevel.produce.amount} ${nextLevel.produce.key} a cada ${nextLevel.produce.interval}s</div>` : ''}
+            ${!ageOk ? `<div style="font-size:11.5px;color:var(--stone-gray);font-weight:600;">Requer a Era ${ageById(nextLevel.minAge).name}</div>` : `
+            <div class="build-cost">
+              ${nextLevel.cost.wood?`<span>${icon('wood')} ${nextLevel.cost.wood}</span>`:''}
+              ${nextLevel.cost.stone?`<span>${icon('stone')} ${nextLevel.cost.stone}</span>`:''}
+              ${nextLevel.cost.food?`<span>${icon('food')} ${nextLevel.cost.food}</span>`:''}
+            </div>`}
+          </div>
+        </div>
+        <button id="inspector-upgrade-btn" class="build-place-btn ${ready?'':'disabled'}" style="margin-top:14px; width:100%;">Melhorar</button>
+      `;
+      const nextCanvas = document.getElementById('inspector-canvas-next');
+      drawBuilding(nextCanvas.getContext('2d'), 90, 130, b.type, 1.0, ageById(Math.max(state.age,nextLevel.minAge)).palette, nextLevel.level);
+      if(ready){
+        document.getElementById('inspector-upgrade-btn').addEventListener('click', ()=>upgradeBuilding(b));
+      }
+    }
+  }
+
+  renderInspectorActions(b);
+}
+
+let demolishConfirming = false;
+function refundableCost(b){
+  const def = buildingDef(b.type);
+  const total = { wood:def.cost.wood||0, stone:def.cost.stone||0, food:def.cost.food||0 };
+  const levels = BUILDING_LEVELS[b.type];
+  if(levels){
+    for(let lv=2; lv<=(b.level||1); lv++){
+      const ld = levelDef(b.type, lv);
+      if(ld && ld.cost){ total.wood+=ld.cost.wood||0; total.stone+=ld.cost.stone||0; total.food+=ld.cost.food||0; }
+    }
+  }
+  return { wood:Math.floor(total.wood*0.5), stone:Math.floor(total.stone*0.5), food:Math.floor(total.food*0.5) };
+}
+function renderInspectorActions(b){
+  const wrap = document.getElementById('inspector-actions');
+  wrap.innerHTML = `
+    <button id="inspector-move-btn" class="action-btn">Mover</button>
+    <button id="inspector-demolish-btn" class="action-btn danger${demolishConfirming?' confirming':''}">${demolishConfirming ? 'Confirmar Demolição?' : 'Demolir'}</button>
+  `;
+  document.getElementById('inspector-move-btn').addEventListener('click', ()=>startMoveBuilding(b));
+  document.getElementById('inspector-demolish-btn').addEventListener('click', ()=>{
+    if(demolishConfirming){
+      demolishBuilding(b);
+    } else {
+      demolishConfirming = true;
+      renderInspectorActions(b);
+    }
+  });
+}
+function startMoveBuilding(b){
+  state.movingBuilding = b;
+  demolishConfirming = false;
+  closeAllOverlays();
+  document.getElementById('placement-text').textContent = 'Clica num piso para mover '+(levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' — Esc para cancelar';
+  document.getElementById('placement-banner').classList.add('show');
+}
+function demolishBuilding(b){
+  const refund = refundableCost(b);
+  if(refund.wood) addResource('wood', refund.wood);
+  if(refund.stone) addResource('stone', refund.stone);
+  if(refund.food) addResource('food', refund.food);
+  const idx = state.buildings.indexOf(b);
+  if(idx>=0) state.buildings.splice(idx,1);
+  state.notifiedUpgrades.delete(b.gx+'_'+b.gy);
+  if(state.inspectingBuilding===b) state.inspectingBuilding = null;
+  demolishConfirming = false;
+  showToast(buildingDef(b.type).name+' demolido — '+refund.wood+' madeira, '+refund.stone+' pedra reembolsados', null);
+  closeAllOverlays();
+  checkAgeReady();
+}
+
+function upgradeBuilding(b){
+  const nextLevel = levelDef(b.type, (b.level||1)+1);
+  if(!nextLevel) return;
+  if(nextLevel.cost && !canAfford(nextLevel.cost)) return;
+  if(state.age < nextLevel.minAge) return;
+  if(nextLevel.cost) payCost(nextLevel.cost);
+  b.level = nextLevel.level;
+  b.bornAt = performance.now();
+  state.notifiedUpgrades.delete(b.gx+'_'+b.gy);
+  sfx.play('build');
+  showToast('Melhorado para '+nextLevel.name+(Math.random()<0.5 ? ' — '+praise() : ''), 'level');
+  spawnFloatingText(b.cx, b.cy-50, '★ Melhorado! ★', '#E3A75B');
+  renderInspector();
+  grantXP(20);
+  checkAgeReady();
+}
+
+function isBuildingUpgradeReady(b){
+  const next = levelDef(b.type, (b.level||1)+1);
+  if(!next) return false;
+  const ageOk = state.age >= next.minAge;
+  const afford = next.cost ? canAfford(next.cost) : true;
+  return ageOk && afford;
+}
+function checkBuildingUpgradeNotifications(){
+  state.buildings.forEach(b=>{
+    const key = b.gx+'_'+b.gy;
+    const ready = isBuildingUpgradeReady(b);
+    if(ready && !state.notifiedUpgrades.has(key)){
+      state.notifiedUpgrades.add(key);
+      const lv = levelDef(b.type, (b.level||1)+1);
+      showToast((levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' pode ser melhorado para '+lv.name, 'mission');
+    } else if(!ready && state.notifiedUpgrades.has(key)){
+      state.notifiedUpgrades.delete(key);
+    }
+  });
+}
+function drawUpgradeReadyBadge(ctx, cx, cy){
+  const t = performance.now()/450;
+  const y = cy - 64 + Math.sin(t)*3;
+  const pulse = 0.5 + Math.sin(t*2)*0.25;
+  ctx.save();
+  const g = ctx.createRadialGradient(cx,y,2,cx,y,20);
+  g.addColorStop(0, `rgba(227,167,88,${pulse})`);
+  g.addColorStop(1, 'rgba(227,167,88,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(cx,y,20,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#E3A75B';
+  ctx.beginPath(); ctx.arc(cx,y,9,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#241407';
+  ctx.beginPath(); ctx.moveTo(cx,y-5); ctx.lineTo(cx+4,y+2); ctx.lineTo(cx-4,y+2); ctx.closePath(); ctx.fill();
+  ctx.fillRect(cx-1.5,y+1,3,3.5);
+  ctx.restore();
+}
+
+/* =====================================================================
+   PAINÉIS E SOBREPOSIÇÕES
+===================================================================== */
+const OVERLAY_IDS = ['overlay-collection','overlay-missions','overlay-build','overlay-howto','overlay-age','overlay-victory','overlay-inspector','overlay-character'];
+function anyOverlayOpen(){
+  return OVERLAY_IDS.some(id=>document.getElementById(id).classList.contains('open'));
+}
+function toggleOverlay(id){
+  sfx.play('click');
+  exitRoadMode();
+  if(state.movingBuilding || state.foundingCamp){ cancelPlacement(); }
+  const el = document.getElementById(id);
+  if(el.classList.contains('open')){ el.classList.remove('open'); return; }
+  closeAllOverlays();
+  el.classList.add('open');
+  if(id==='overlay-collection') renderDexGrid();
+  if(id==='overlay-missions') renderMissionList();
+  if(id==='overlay-build') renderBuildGrid();
+  if(id==='overlay-age') renderAgePanel();
+  if(id==='overlay-character') renderWardrobe();
+}
+function closeAllOverlays(){
+  OVERLAY_IDS.forEach(id=>document.getElementById(id).classList.remove('open'));
+}
+document.querySelectorAll('[data-close]').forEach(btn=>{
+  btn.addEventListener('click', ()=>document.getElementById(btn.dataset.close).classList.remove('open'));
+});
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click', (e)=>{ if(e.target===ov) ov.classList.remove('open'); });
+});
+
+document.getElementById('btn-collection').addEventListener('click', ()=>toggleOverlay('overlay-collection'));
+document.getElementById('btn-missions').addEventListener('click', ()=>toggleOverlay('overlay-missions'));
+document.getElementById('btn-build').addEventListener('click', ()=>toggleOverlay('overlay-build'));
+document.getElementById('btn-character').addEventListener('click', ()=>toggleOverlay('overlay-character'));
+document.getElementById('btn-title-collection').addEventListener('click', ()=>{ renderDexGrid(); document.getElementById('overlay-collection').classList.add('open'); });
+document.getElementById('btn-title-howto').addEventListener('click', ()=>{ document.getElementById('overlay-howto').classList.add('open'); });
+document.getElementById('age-chip').addEventListener('click', ()=>toggleOverlay('overlay-age'));
+
+/* =====================================================================
+   GUARDA-ROUPA
+===================================================================== */
+function renderWardrobe(){
+  const canvas = document.getElementById('wardrobe-preview');
+  const pctx = canvas.getContext('2d');
+  pctx.clearRect(0,0,180,180);
+  pctx.save();
+  pctx.translate(90,120);
+  pctx.scale(2.3,2.3);
+  drawPlayerBody(pctx, currentOutfit());
+  pctx.restore();
+
+  const wrap = document.getElementById('wardrobe-swatches');
+  wrap.innerHTML = OUTFITS.map(o=>`
+    <div class="outfit-swatch ${o.id===state.outfitId?'selected':''}" data-outfit="${o.id}">
+      <div class="swatch-dot" style="background:${o.jacket}"></div>
+      <div class="swatch-label">${o.name}</div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.outfit-swatch').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      sfx.play('click');
+      state.outfitId = el.dataset.outfit;
+      renderWardrobe();
+      scheduleSave();
+    });
+  });
+}
+
+/* =====================================================================
+   GRELHA DA COLEÇÃO
+===================================================================== */
+function renderDexGrid(){
+  const grid = document.getElementById('dex-grid');
+  grid.innerHTML='';
+  document.getElementById('dex-progress').textContent = state.discovered.size+' de '+SPECIES.length+' espécies descobertas';
+  updateDexBadge();
+
+  SPECIES.forEach(sp=>{
+    const known = state.discovered.has(sp.id);
+    const individuals = dinos.filter(d=>d.speciesId===sp.id);
+    const avgHappy = individuals.length ? Math.round(individuals.reduce((s,d)=>s+((d.needs&&d.needs.happiness)||0),0)/individuals.length) : 0;
+    const card = document.createElement('div');
+    card.className = 'dex-card'+(known?'':' locked');
+    card.innerHTML = `
+      <div class="dex-icon-wrap"><canvas width="180" height="180"></canvas></div>
+      <div class="dex-name">${known? sp.name : '???'}</div>
+      <div class="dex-rarity" style="color:${RARITY[sp.rarity].color}; background:${hexToRgba(RARITY[sp.rarity].color,0.16)}">${known? sp.rarity : 'Por Descobrir'}</div>
+      ${known ? `<div class="dex-detail">
+        <div>${sp.desc}</div>
+        <div class="stat-row"><span class="stat-label">Velocidade</span><div class="stat-track"><div class="stat-fill" style="width:${sp.speed}%; background:${sp.color}"></div></div></div>
+        <div class="stat-row"><span class="stat-label">Força</span><div class="stat-track"><div class="stat-fill" style="width:${sp.strength}%; background:${sp.color}"></div></div></div>
+        <div class="stat-row"><span class="stat-label">Intelecto</span><div class="stat-track"><div class="stat-fill" style="width:${sp.intelligence}%; background:${sp.color}"></div></div></div>
+        <div style="margin-top:8px">${sp.traits.map(t=>`<span class="trait-chip">${t}</span>`).join('')}</div>
+        <div class="stat-row" style="margin-top:10px"><span class="stat-label">No vale</span><div style="font-size:11px;color:var(--ivory)">${individuals.length} — bem-estar médio ${avgHappy}%</div></div>
+      </div>` : ''}
+    `;
+    if(known){
+      card.addEventListener('click', ()=>card.classList.toggle('expanded'));
+    }
+    grid.appendChild(card);
+    const c = card.querySelector('canvas');
+    const cctx = c.getContext('2d');
+    if(known){
+      drawDino(cctx, 90, 100, sp, 0.85, 1, 0, false);
+    } else {
+      cctx.save();
+      cctx.globalAlpha = 0.25;
+      drawDino(cctx, 90, 100, sp, 0.85, 1, 0, false);
+      cctx.restore();
+      cctx.fillStyle='rgba(15,20,15,0.35)';
+      cctx.fillRect(0,0,180,180);
+    }
+  });
+}
+function updateDexBadge(){
+  const b = document.getElementById('dex-badge');
+  if(state.discovered.size>0){ b.style.display='flex'; b.textContent=state.discovered.size; } else b.style.display='none';
+}
+
+/* =====================================================================
+   PAINEL DE OBJETIVOS
+===================================================================== */
+function renderMissionList(){
+  const list = document.getElementById('mission-list');
+  const na = nextAge();
+  const header = document.getElementById('mission-panel-title');
+  const sub = document.getElementById('mission-panel-sub');
+  if(header) header.textContent = na ? 'Objetivos — Era '+na.name : 'Objetivos';
+  if(sub) sub.textContent = na
+    ? 'Conclui estes objetivos e a tua civilização avança para a Era '+na.name+' automaticamente.'
+    : 'A tua civilização atingiu a Era Moderna. Não existem mais objetivos.';
+
+  const objectives = currentObjectives();
+  list.innerHTML='';
+  if(objectives.length===0){
+    list.innerHTML = '<div class="mission-desc" style="padding:8px 0">Nada mais a cumprir por aqui — continua a explorar o vale livremente.</div>';
+  } else {
+    objectives.forEach(o=>{
+      const row = document.createElement('div');
+      row.className = 'mission-row'+(o.met?' done':'');
+      row.innerHTML = `<div class="mission-check">${o.met?'✓':''}</div><div style="flex:1"><div class="mission-title">${o.label}</div>${!o.met?`<div class="mission-desc">${o.hint}</div>`:''}</div>${o.progress?`<div class="mission-reward">${o.progress}</div>`:''}`;
+      list.appendChild(row);
+    });
+  }
+  updateMissionBadge();
+}
+function updateMissionBadge(){
+  const objectives = currentObjectives();
+  const remaining = objectives.filter(o=>!o.met).length;
+  const b = document.getElementById('mission-badge');
+  if(remaining>0){ b.style.display='flex'; b.textContent=remaining; } else b.style.display='none';
+}
+function updateObjectiveTracker(){
+  const na = nextAge();
+  const objectives = currentObjectives();
+  const next = objectives.find(o=>!o.met);
+  const titleEl = document.getElementById('ot-title'), descEl = document.getElementById('ot-desc'), labelEl = document.querySelector('#objective-tracker .ot-label');
+  if(!na){
+    if(labelEl) labelEl.textContent = 'Civilização Concluída';
+    titleEl.textContent = 'A Era Moderna foi atingida';
+    descEl.textContent = 'Continua a explorar o vale livremente.';
+    return;
+  }
+  if(labelEl) labelEl.textContent = 'Rumo à Era '+na.name;
+  if(!next){
+    titleEl.textContent = 'Pronto para avançar';
+    descEl.textContent = 'A tua civilização está a transformar-se...';
+    return;
+  }
+  titleEl.textContent = next.label + (next.progress ? ' ('+next.progress+')' : '');
+  descEl.textContent = next.hint;
+}
+
+/* =====================================================================
+   PAINEL DE CONSTRUÇÃO
+===================================================================== */
+function renderBuildGrid(){
+  const grid = document.getElementById('build-grid');
+  grid.innerHTML='';
+
+  const campCost = { wood:20, stone:12, food:0 };
+  const campAfford = canAfford(campCost);
+  const campCard = document.createElement('div');
+  campCard.className = 'build-card';
+  campCard.innerHTML = `
+    <div class="build-icon-wrap"><canvas width="140" height="140"></canvas></div>
+    <div class="build-name">Fundar Novo Acampamento</div>
+    <div class="build-cost">
+      <span>${icon('wood')} ${campCost.wood}</span>
+      <span>${icon('stone')} ${campCost.stone}</span>
+    </div>
+    <div class="build-place-btn ${campAfford?'':'disabled'}">Fundar</div>
+  `;
+  drawFoundCampIcon(campCard.querySelector('canvas').getContext('2d'));
+  campCard.querySelector('.build-place-btn').addEventListener('click', ()=>{
+    if(!canAfford(campCost)) return;
+    document.getElementById('overlay-build').classList.remove('open');
+    startFoundingCamp();
+  });
+  grid.appendChild(campCard);
+
+  BUILDINGS.forEach(b=>{
+    const unlocked = state.age >= b.minAge;
+    const affordable = unlocked && canAfford(b.cost);
+    const card = document.createElement('div');
+    card.className = 'build-card';
+    card.innerHTML = `
+      <div class="build-icon-wrap"><canvas width="140" height="140"></canvas></div>
+      <div class="build-name">${b.name}</div>
+      <div class="build-cost">
+        ${b.cost.wood?`<span>${icon('wood')} ${b.cost.wood}</span>`:''}
+        ${b.cost.stone?`<span>${icon('stone')} ${b.cost.stone}</span>`:''}
+        ${b.cost.food?`<span>${icon('food')} ${b.cost.food}</span>`:''}
+        ${b.produce?`<span style="color:var(--moss)">+${b.produce.amount} ${b.produce.key}/${b.produce.interval}s</span>`:''}
+      </div>
+      ${unlocked
+        ? `<div class="build-place-btn ${affordable?'':'disabled'}">Colocar</div>`
+        : `<div class="build-locked-tag">Desbloqueia na Era ${ageById(b.minAge).name}</div>`}
+    `;
+    const c = card.querySelector('canvas'); const cctx = c.getContext('2d');
+    drawBuilding(cctx, 70, 90, b.id, 1.1, unlocked ? null : ageById(b.minAge).palette);
+    if(unlocked){
+      const placeBtn = card.querySelector('.build-place-btn');
+      function startBuildingDrag(){
+        if(!canAfford(b.cost)) return;
+        triggerHaptic('medium');
+        state.placingType = b.id;
+        document.getElementById('overlay-build').classList.remove('open');
+        document.getElementById('placement-text').textContent = 'Clica num piso dentro do teu acampamento para colocar a/o '+b.name;
+        document.getElementById('placement-banner').classList.add('show');
+      }
+      placeBtn.addEventListener('click', startBuildingDrag);
+
+      let cardDragStart = null;
+      card.addEventListener('pointerdown', (pe)=>{
+        if(!affordable) return;
+        cardDragStart = { x: pe.clientX, y: pe.clientY };
+      });
+      card.addEventListener('pointermove', (pe)=>{
+        if(!cardDragStart || !affordable) return;
+        if(Math.hypot(pe.clientX - cardDragStart.x, pe.clientY - cardDragStart.y) > 22){
+          cardDragStart = null;
+          startBuildingDrag();
+        }
+      });
+      card.addEventListener('pointerup', ()=>{ cardDragStart = null; });
+    }
+    grid.appendChild(card);
+  });
+}
+
+function drawFoundCampIcon(ctx){
+  ctx.save();
+  ctx.translate(70,90);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(0,28,30,8,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#E3A75B'; ctx.lineWidth = 2; ctx.setLineDash([4,4]);
+  roundRectPath(ctx,-30,-16,60,42,10); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle = '#C2653F'; ctx.lineWidth = 3; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(0,16); ctx.lineTo(0,-24); ctx.stroke();
+  ctx.fillStyle = '#E3A75B';
+  ctx.beginPath(); ctx.moveTo(0,-24); ctx.lineTo(18,-16); ctx.lineTo(0,-8); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function startFoundingCamp(){
+  exitRoadMode();
+  cancelPlacement();
+  state.foundingCamp = true;
+  document.getElementById('placement-text').textContent = 'Clica num local no vale para fundar um novo acampamento — Esc para cancelar';
+  document.getElementById('placement-banner').classList.add('show');
+}
+function cancelFoundingCamp(){
+  state.foundingCamp = false;
+}
+function campFoundValid(wx, wy){
+  const pad = 260;
+  const clearOfCamps = state.camps.every(c => wx < c.x-pad || wx > c.x+c.w+pad || wy < c.y-pad || wy > c.y+c.h+pad);
+  const withinWorld = wx>CAMP_W/2+80 && wx<WORLD_W-CAMP_W/2-80 && wy>CAMP_H/2+80 && wy<WORLD_H-CAMP_H/2-80;
+  return clearOfCamps && withinWorld;
+}
+function attemptFoundCampAt(wx, wy){
+  if(!campFoundValid(wx,wy)){ showToast('Demasiado perto de outro acampamento ou do limite do vale', null); return; }
+  const cost = { wood:20, stone:12, food:0 };
+  if(!canAfford(cost)){ showToast('Recursos insuficientes para fundar um acampamento', null); return; }
+  payCost(cost);
+  sfx.play('build');
+  const camp = {
+    id: 'camp'+(state.camps.length+1),
+    name: 'Acampamento '+(state.camps.length+1),
+    x: wx-CAMP_W/2, y: wy-CAMP_H/2, w:CAMP_W, h:CAMP_H, cell:CAMP_CELL
+  };
+  state.camps.push(camp);
+  buildTerrain();
+  roadGraphDirty = true;
+  state.foundingCamp = false;
+  document.getElementById('placement-banner').classList.remove('show');
+  showToast('Fundado o '+camp.name+' — '+praise(), 'level');
+  celebrate(wx, wy-40, '★ Novo Acampamento! ★', '#E3A75B');
+  grantXP(50);
+  checkAgeReady();
+  scheduleSave();
+}
+
+document.getElementById('placement-cancel').addEventListener('click', cancelPlacement);
+function cancelPlacement(){
+  state.placingType = null;
+  cancelMove();
+  cancelFoundingCamp();
+  document.getElementById('placement-banner').classList.remove('show');
+}
+function cancelMove(){
+  state.movingBuilding = null;
+}
+function attemptMoveAt(wx, wy){
+  const b = state.movingBuilding;
+  if(!b) return;
+  const camp = campContaining(wx,wy);
+  if(!camp){ showToast("Fora dos limites de qualquer acampamento", null); return; }
+  const gx = Math.floor((wx-camp.x)/camp.cell);
+  const gy = Math.floor((wy-camp.y)/camp.cell);
+  const occupied = state.buildings.some(bd=>bd!==b && bd.campId===camp.id && bd.gx===gx && bd.gy===gy);
+  if(occupied){ showToast('Já existe algo nesse local', null); return; }
+  b.campId = camp.id;
+  b.gx = gx; b.gy = gy;
+  b.cx = camp.x + gx*camp.cell + camp.cell/2;
+  b.cy = camp.y + gy*camp.cell + camp.cell/2;
+  b.bornAt = performance.now();
+  sfx.play('build');
+  showToast('Movido', null);
+  cancelPlacement();
+  scheduleSave();
+}
+function attemptPlaceAt(wx, wy){
+  const b = BUILDINGS.find(bb=>bb.id===state.placingType);
+  if(!b) return;
+  const camp = campContaining(wx,wy);
+  if(!camp){ showToast("Fora dos limites de qualquer acampamento", null); return; }
+  const gx = Math.floor((wx-camp.x)/camp.cell);
+  const gy = Math.floor((wy-camp.y)/camp.cell);
+  const occupied = state.buildings.some(bd=>bd.campId===camp.id && bd.gx===gx && bd.gy===gy);
+  if(occupied){ showToast('Já existe algo nesse local', null); return; }
+  if(!canAfford(b.cost)){ showToast('Recursos insuficientes', null); return; }
+  payCost(b.cost);
+  sfx.play('build');
+  const bcx = camp.x + gx*camp.cell + camp.cell/2, bcy = camp.y + gy*camp.cell + camp.cell/2;
+  state.buildings.push({
+    type:b.id, campId:camp.id, gx, gy,
+    cx: bcx, cy: bcy,
+    bornAt: performance.now(),
+    lastProduced: performance.now(),
+    level: 1
+  });
+  showToast(b.name+' construído'+(Math.random()<0.5 ? ' — '+praise() : ''), null);
+  celebrate(bcx, bcy-46, '+'+b.name, '#8FE3A7');
+  cancelPlacement();
+  grantXP(15);
+  checkAgeReady();
+}
+
+function tickProduction(now){
+  state.buildings.forEach(bd=>{
+    const prod = currentProduce(bd);
+    if(!prod) return;
+    if(now - bd.lastProduced >= prod.interval*1000){
+      bd.lastProduced = now;
+      addResource(prod.key, prod.amount);
+      spawnFloatingText(bd.cx, bd.cy-24, '+'+prod.amount+' '+prod.key, '#8FE3A7');
+    }
+  });
+}
+
+/* =====================================================================
+   GESTOR DE ERAS
+===================================================================== */
+function nextAge(){ return ageById(state.age+1); }
+
+function ageRequirementList(age){
+  if(!age || !age.req) return [];
+  const r = age.req; const list = [];
+  if(r.level!=null) list.push({
+    label:'Atinge o Nível '+r.level,
+    hint:'Descobre dinossauros e conclui objetivos para ganhar EXP.',
+    met: state.level>=r.level,
+    progress: Math.min(state.level,r.level)+'/'+r.level
+  });
+  if(r.buildings!=null) list.push({
+    label:'Constrói '+r.buildings+' estruturas no teu acampamento',
+    hint:'Prime B para abrir o menu de Construção e coloca estruturas dentro do limite do acampamento.',
+    met: state.buildings.length>=r.buildings,
+    progress: Math.min(state.buildings.length,r.buildings)+'/'+r.buildings
+  });
+  if(r.species!=null) list.push({
+    label:'Descobre '+r.species+' espécies de dinossauro',
+    hint:'Explora o vale e prime E junto a um dinossauro para o estudar.',
+    met: state.discovered.size>=r.species,
+    progress: Math.min(state.discovered.size,r.species)+'/'+r.species
+  });
+  if(r.resources!=null) list.push({
+    label:'Recolhe '+r.resources+' recursos no total',
+    hint:'Prime E perto de árvores, rochas, arbustos ou água para recolher recursos.',
+    met: state.totalGathered>=r.resources,
+    progress: Math.min(state.totalGathered,r.resources)+'/'+r.resources
+  });
+  if(r.building) list.push({
+    label:'Constrói uma/um '+buildingDef(r.building).name,
+    hint:'Prime B, seleciona '+buildingDef(r.building).name+' e coloca-o no teu acampamento.',
+    met: state.buildings.some(b=>b.type===r.building),
+    progress: null
+  });
+  if(r.camps!=null) list.push({
+    label:'Funda '+r.camps+' acampamentos',
+    hint:'Prime B, escolhe "Fundar Novo Acampamento" e clica num local no vale.',
+    met: state.camps.length>=r.camps,
+    progress: Math.min(state.camps.length,r.camps)+'/'+r.camps
+  });
+  if(r.campsConnected) list.push({
+    label:'Liga os teus acampamentos por estrada',
+    hint:'Prime R para entrar no Modo Estrada e traça caminhos entre os teus acampamentos.',
+    met: allCampsConnected(),
+    progress: null
+  });
+  return list;
+}
+function ageIsReady(age){
+  const list = ageRequirementList(age);
+  return list.length>0 && list.every(r=>r.met);
+}
+function checkAgeReady(){
+  const na = nextAge();
+  const ready = !!(na && ageIsReady(na));
+  updateAgeChipPulse(ready);
+  updateMissionBadge();
+  updateObjectiveTracker();
+  checkBuildingUpgradeNotifications();
+  scheduleSave();
+  if(document.getElementById('overlay-missions').classList.contains('open')) renderMissionList();
+  if(document.getElementById('overlay-age').classList.contains('open')) renderAgePanel();
+
+  if(ready && state.started && !state.transitioning && !document.getElementById('discovery-overlay').classList.contains('open')){
+    state.transitioning = true;
+    showToast('Todos os objetivos concluídos — a avançar para a Era '+na.name, 'mission');
+    setTimeout(()=>{ advanceAge(); }, 900);
+  }
+}
+function updateAgeChipPulse(ready){
+  const chip = document.getElementById('age-chip');
+  if(!chip) return;
+  chip.style.boxShadow = ready ? '0 0 0 2px rgba(227,167,88,0.6)' : '';
+}
+
+function updateAgeHUD(){
+  const age = ageById(state.age);
+  document.getElementById('age-dot').textContent = age.id;
+  document.getElementById('age-dot').style.background = 'linear-gradient(135deg,'+age.palette.roof+',var(--amber))';
+  document.getElementById('age-label-num').textContent = 'Era '+age.id;
+  document.getElementById('age-label-name').textContent = age.name;
+}
+
+function renderAgePanel(){
+  const age = ageById(state.age);
+  const na = nextAge();
+  document.getElementById('age-panel-title').textContent = na ? 'Avançar para a Era '+na.name : 'Era '+age.name;
+  document.getElementById('age-panel-tagline').textContent = na ? na.epithet : 'A tua civilização atingiu o seu pico tecnológico.';
+
+  const reqWrap = document.getElementById('age-requirements');
+  const unlockWrap = document.getElementById('age-unlock-preview');
+  const btn = document.getElementById('age-advance-btn');
+
+  if(!na){
+    reqWrap.innerHTML = '';
+    unlockWrap.innerHTML = '';
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = 'block';
+    const reqs = ageRequirementList(na);
+    reqWrap.innerHTML = reqs.map(r=>`
+      <div class="req-row ${r.met?'met':''}">
+        <div class="req-check">${r.met?'✓':''}</div>
+        <div style="flex:1">
+          <div class="req-text">${r.label}</div>
+          ${!r.met?`<div class="req-hint">${r.hint}</div>`:''}
+        </div>
+        ${r.progress?`<div class="req-progress">${r.progress}</div>`:''}
+      </div>
+    `).join('');
+    unlockWrap.innerHTML = (na.unlocks||[]).map(id=>{
+      const d = buildingDef(id);
+      return `<div class="unlock-chip">${icon('hammer')} ${d?d.name:id}</div>`;
+    }).join('');
+    const ready = ageIsReady(na);
+    btn.textContent = ready ? 'Todos os objetivos concluídos — a avançar automaticamente…' : 'Avança automaticamente assim que estiverem concluídos';
+    btn.className = ready ? 'ready' : '';
+  }
+
+  const tl = document.getElementById('age-timeline');
+  tl.innerHTML = '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--sand);margin-bottom:8px">Linha do Tempo da Civilização</div>' +
+    state.ageHistory.map(h=>`<div class="timeline-row"><b>Ano ${ageById(h.age).year}</b>Era ${ageById(h.age).name} atingida</div>`).join('');
+}
+
+function advanceAge(){
+  const na = nextAge();
+  if(!na) return;
+  closeAllOverlays();
+  state.paused = true;
+  state.transitioning = true;
+  sfx.play('ageup');
+
+  const overlay = document.getElementById('age-transition');
+  const canvas = document.getElementById('transition-canvas');
+  const tctx2 = canvas.getContext('2d');
+  document.getElementById('transition-years').textContent = 'Ano '+na.year;
+  document.getElementById('transition-title').textContent = 'Era '+na.name;
+  document.getElementById('transition-tagline').textContent = na.epithet;
+  overlay.classList.add('open');
+
+  const fromPal = ageById(state.age).palette, toPal = na.palette;
+  const start = performance.now();
+  const duration = 2400;
+
+  let finished = false;
+  function finishOnce(){
+    if(finished) return;
+    finished = true;
+    finishAgeAdvance(na);
+  }
+  const safetyNet = setTimeout(finishOnce, 5500);
+
+  const sparks = Array.from({length:14}, ()=>({ x:rand(0,900), delay:rand(0,0.5), speed:rand(60,140), size:rand(1.5,3.5) }));
+
+  function frame(now){
+    if(finished) return;
+    try{
+      const t = Math.min(1, (now-start)/duration);
+      tctx2.clearRect(0,0,canvas.width,canvas.height);
+      const lerp = (a,b,k)=>Math.round(a+(b-a)*k);
+      function lerpColor(c1,c2,k){
+        const h=(h)=>({r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)});
+        const a=h(c1), b=h(c2);
+        return `rgb(${lerp(a.r,b.r,k)},${lerp(a.g,b.g,k)},${lerp(a.b,b.b,k)})`;
+      }
+      const colorK = Math.min(1, t*1.8);
+      const growK = Math.max(0, Math.min(1, easeOutBack((t-0.15)/0.85)));
+
+      const groundY = 300;
+      tctx2.fillStyle = lerpColor(fromPal.ground, toPal.ground, colorK);
+      tctx2.fillRect(0,groundY,canvas.width,80);
+      for(let i=0;i<7;i++){
+        const bw = 60, bx = 60+i*115;
+        const bh = (40 + i*10 + 30+i*14) * growK;
+        tctx2.fillStyle = lerpColor(fromPal.structure, toPal.structure, colorK);
+        tctx2.fillRect(bx, groundY-bh, bw, bh);
+        tctx2.fillStyle = lerpColor(fromPal.roof, toPal.roof, colorK);
+        tctx2.fillRect(bx-4, groundY-bh-10, bw+8, 12);
+      }
+
+      tctx2.fillStyle = 'rgba(227,167,88,0.8)';
+      sparks.forEach(s=>{
+        const st = Math.max(0, t - s.delay);
+        if(st<=0 || st>=1) return;
+        const y = groundY - st*s.speed*3;
+        tctx2.globalAlpha = 1-st;
+        tctx2.beginPath(); tctx2.arc(s.x, y, s.size, 0, Math.PI*2); tctx2.fill();
+      });
+      tctx2.globalAlpha = 1;
+
+      const flashT = 0.35;
+      const flashWindow = 0.18;
+      const distFromFlash = Math.abs(t-flashT);
+      if(distFromFlash < flashWindow){
+        const flashAlpha = (1 - distFromFlash/flashWindow) * 0.35;
+        tctx2.fillStyle = `rgba(255,255,255,${flashAlpha})`;
+        tctx2.fillRect(0,0,canvas.width,canvas.height);
+      }
+
+      if(t<1){
+        requestAnimationFrame(frame);
+      } else {
+        overlay.classList.add('reveal');
+        clearTimeout(safetyNet);
+        setTimeout(finishOnce, 700);
+      }
+    } catch(err){
+      console.error('Erro na transição de era:', err);
+      clearTimeout(safetyNet);
+      finishOnce();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function finishAgeAdvance(na){
+  state.age = na.id;
+  state.ageHistory.push({ age:na.id, year:na.year });
+  state.buildings.forEach(b=>{ b.bornAt = performance.now(); });
+  buildTerrain();
+  skylineBuildings = null;
+  const arrivedSpecies = spawnDinosForAgeUpTo(na.id);
+  updateAgeHUD();
+  renderBuildGrid();
+
+  const overlay = document.getElementById('age-transition');
+  overlay.classList.remove('reveal');
+  overlay.classList.remove('open');
+  state.transitioning = false;
+  state.paused = false;
+
+  showToast('Bem-vindo à Era '+na.name+' — '+praise(), 'level');
+  celebrate(player.x, player.y-70, '★ Era '+na.name+'! ★', '#E3A75B');
+  grantXP(40*na.id);
+  if(na.unlocks && na.unlocks.length){
+    const names = na.unlocks.map(id=>buildingDef(id).name).join(', ');
+    showToast('Novo: '+names, null);
+  }
+  if(arrivedSpecies.length){
+    showToast('Novas chegadas ao vale: '+arrivedSpecies.join(', '), 'mission');
+  }
+  checkAgeReady();
+
+  if(na.id === AGES[AGES.length-1].id && !state.victoryShown){
+    state.victoryShown = true;
+    setTimeout(showVictory, 600);
+  }
+}
+
+function showVictory(){
+  document.getElementById('victory-stats').innerHTML = `
+    <div class="victory-stat"><div class="v-num">${state.discovered.size}/${SPECIES.length}</div><div class="v-label">Espécies Descobertas</div></div>
+    <div class="victory-stat"><div class="v-num">${state.buildings.length}</div><div class="v-label">Estruturas Construídas</div></div>
+    <div class="victory-stat"><div class="v-num">${state.totalGathered}</div><div class="v-label">Recursos Recolhidos</div></div>
+    <div class="victory-stat"><div class="v-num">${state.level}</div><div class="v-label">Nível Atingido</div></div>
+  `;
+  document.getElementById('victory-timeline').innerHTML = state.ageHistory.map(h=>
+    `<div class="timeline-row"><b>Ano ${ageById(h.age).year}</b>Era ${ageById(h.age).name} — ${ageById(h.age).epithet}</div>`
+  ).join('');
+  closeAllOverlays();
+  document.getElementById('overlay-victory').classList.add('open');
+}
+
+/* =====================================================================
+   REVELAÇÃO DE DESCOBERTA
+===================================================================== */
+function triggerDiscovery(speciesId){
+  const sp = speciesById(speciesId);
+  state.discovered.add(speciesId);
+  state.paused = true;
+  updateDexBadge();
+  sfx.play('dino');
+
+  const dc = document.getElementById('discovery-canvas');
+  const dctx = dc.getContext('2d');
+  dctx.clearRect(0,0,dc.width,dc.height);
+  drawDino(dctx, dc.width/2, dc.height/2+30, sp, 2.6, 1, 0, true);
+
+  document.getElementById('discovery-name').textContent = sp.name;
+  const rarityEl = document.getElementById('discovery-rarity');
+  rarityEl.textContent = sp.rarity;
+  rarityEl.style.color = RARITY[sp.rarity].color;
+  rarityEl.style.background = hexToRgba(RARITY[sp.rarity].color,0.16);
+  document.getElementById('discovery-desc').textContent = sp.desc;
+
+  document.getElementById('discovery-overlay').classList.add('open');
+  grantXP(25);
+  checkAgeReady();
+}
+document.getElementById('discovery-continue').addEventListener('click', ()=>{
+  sfx.play('click');
+  document.getElementById('discovery-overlay').classList.remove('open');
+  state.paused = false;
+  checkAgeReady();
+});
+
+/* =====================================================================
+   INTERAÇÃO
+===================================================================== */
+let currentInteractable = null;
+
+function findInteractable(){
+  let best = null, bestDist = 68;
+  dinos.forEach(d=>{
+    const dd = dist(player.x,player.y,d.x,d.y);
+    if(dd<bestDist){ bestDist=dd; best={kind:'dino', ref:d}; }
+  });
+  resourceNodes.forEach(n=>{
+    if(n.amount<=0) return;
+    const dd = dist(player.x,player.y,n.x,n.y);
+    const range = n.r+40;
+    if(dd<range && dd<bestDist+40){ bestDist=dd; best={kind:'resource', ref:n}; }
+  });
+  return best;
+}
+
+function tryInteract(){
+  if(!currentInteractable || state.paused) return;
+  if(currentInteractable.kind==='dino'){
+    const d = currentInteractable.ref;
+    if(!state.discovered.has(d.speciesId)){
+      triggerDiscovery(d.speciesId);
+    } else {
+      performCareAction(d);
+    }
+  } else if(currentInteractable.kind==='resource'){
+    const n = currentInteractable.ref;
+    if(n.amount<=0) return;
+    n.amount -= 1;
+    addResource(n.type, 1);
+    sfx.play('gather');
+    const meta = RESOURCE_META.find(r=>r.key===n.type);
+    spawnFloatingText(n.x, n.y-20, '+1 '+meta.label, '#F3EEE4');
+    if(n.amount<=0){ n.respawnAt = performance.now() + 16000; }
+  }
+}
+
+function updateInteractHint(){
+  const hint = document.getElementById('interact-hint');
+  const touchBtn = document.getElementById('touch-interact-btn');
+  currentInteractable = state.paused ? null : findInteractable();
+  if(!currentInteractable || anyOverlayOpen() || state.placingType){
+    hint.classList.remove('show');
+    if(touchBtn) touchBtn.classList.remove('show');
+    return;
+  }
+  let label = 'Interagir';
+  if(currentInteractable.kind==='dino'){
+    const d = currentInteractable.ref;
+    label = state.discovered.has(d.speciesId) ? careActionLabel(d) : 'Estudar este dinossauro';
+  } else {
+    const meta = RESOURCE_META.find(r=>r.key===currentInteractable.ref.type);
+    label = 'Recolher '+meta.label;
+  }
+  document.getElementById('interact-label').textContent = label;
+  hint.classList.add('show');
+  if(touchBtn){ touchBtn.textContent = currentInteractable.kind==='dino' ? 'Interagir' : 'Recolher'; touchBtn.classList.add('show'); }
+}
+
+/* =====================================================================
+   CICLO PRINCIPAL DO JOGO
+===================================================================== */
+let lastTime = performance.now();
+function gameLoop(now){
+  const dt = Math.min(0.05,(now-lastTime)/1000);
+  lastTime = now;
+
+  try{
+    if(state.started){
+      if(!state.paused && !anyOverlayOpen()){
+        updatePlayer(dt);
+        dinos.forEach(d=>updateDino(d,dt));
+        if(dinos.some(d=>d.markedForRemoval)){
+          for(let i=dinos.length-1;i>=0;i--){ if(dinos[i].markedForRemoval) dinos.splice(i,1); }
+        }
+        updateMigration(now);
+      }
+      updateCamera();
+      updateInteractHint();
+      render();
+      renderMinimap();
+      renderFloatingTexts();
+      respawnCheck(now);
+      if(!state.transitioning) tickProduction(now);
+    }
+  } catch(err){
+    console.error('Erro no ciclo de jogo:', err);
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+function updatePlayer(dt){
+  let dx=0, dy=0;
+  if(state.keys['w']||state.keys['arrowup']) dy-=1;
+  if(state.keys['s']||state.keys['arrowdown']) dy+=1;
+  if(state.keys['a']||state.keys['arrowleft']) dx-=1;
+  if(state.keys['d']||state.keys['arrowright']) dx+=1;
+  if(Math.abs(touchMoveVector.x)>0.15 || Math.abs(touchMoveVector.y)>0.15){
+    dx += touchMoveVector.x; dy += touchMoveVector.y;
+  }
+  const keyboardOrJoystickMoving = dx!==0||dy!==0;
+
+  if(keyboardOrJoystickMoving){
+    player.targetX = null; player.targetY = null;
+    triggerHudRecess();
+  } else if(player.targetX !== null && player.targetY !== null){
+    const tdx = player.targetX - player.x, tdy = player.targetY - player.y;
+    const tdist = Math.hypot(tdx, tdy);
+    if(tdist > 12){
+      dx = tdx / tdist;
+      dy = tdy / tdist;
+      triggerHudRecess();
+    } else {
+      player.targetX = null; player.targetY = null;
+    }
+  }
+
+  const moving = dx!==0||dy!==0;
+  if(moving){
+    const len = Math.hypot(dx,dy);
+    dx/=len; dy/=len;
+    player.x = clamp(player.x + dx*player.speed*dt, 40, WORLD_W-40);
+    player.y = clamp(player.y + dy*player.speed*dt, 40, WORLD_H-40);
+    if(dx!==0) player.facing = dx>0?1:-1;
+    player.walkT += dt;
+  }
+}
+
+function respawnCheck(now){
+  resourceNodes.forEach(n=>{
+    if(n.amount<=0 && n.respawnAt && now>n.respawnAt){
+      n.amount = n.max; n.respawnAt = 0;
+    }
+  });
+}
+
+function render(){
+  gctx.setTransform(dpr,0,0,dpr,0,0);
+  gctx.clearRect(0,0,camera.w,camera.h);
+  gctx.save();
+
+  // Apply camera zoom around screen center (Apple Camera Zoom System)
+  const centerX = camera.w / 2, centerY = camera.h / 2;
+  gctx.translate(centerX, centerY);
+  gctx.scale(camera.zoom, camera.zoom);
+  gctx.translate(-centerX, -centerY);
+  gctx.translate(-camera.x,-camera.y);
+
+  gctx.drawImage(terrainCanvas,0,0);
+  drawWorldInfrastructure(gctx);
+  drawRoadSegments(gctx);
+
+  // Render Tap Ripples
+  const now = performance.now();
+  for(let i=tapRipples.length-1; i>=0; i--){
+    const r = tapRipples[i];
+    const age = now - r.born;
+    if(age > 450){ tapRipples.splice(i,1); continue; }
+    const k = age / 450;
+    gctx.save();
+    gctx.strokeStyle = `rgba(227,167,88, ${0.8*(1-k)})`;
+    gctx.lineWidth = 2.5;
+    gctx.beginPath(); gctx.arc(r.wx, r.wy, 6 + k*24, 0, Math.PI*2); gctx.stroke();
+    gctx.restore();
+  }
+
+  gctx.font = "700 13px 'Space Grotesk', sans-serif";
+  gctx.fillStyle = 'rgba(227,167,88,0.85)';
+  state.camps.forEach(camp=>{
+    gctx.fillText(camp.name.toUpperCase(), camp.x+14, camp.y+22);
+  });
+
+  const drawables = [];
+  resourceNodes.forEach(n=>drawables.push({y:n.y, fn:()=>drawResourceNode(gctx,n)}));
+  state.buildings.forEach(b=>{
+    const age = performance.now()-b.bornAt;
+    const scale = 0.9*Math.min(1, easeOutBack(Math.min(1,age/450)));
+    drawables.push({y:b.cy, fn:()=>{
+      drawBuilding(gctx,b.cx,b.cy,b.type,Math.max(0.05,scale), null, b.level);
+      if(isBuildingUpgradeReady(b)) drawUpgradeReadyBadge(gctx, b.cx, b.cy);
+    }});
+  });
+  dinos.forEach(d=>{
+    const known = state.discovered.has(d.speciesId);
+    drawables.push({y:d.y, fn:()=>{
+      const sp = speciesById(d.speciesId);
+      drawDino(gctx, d.x, d.y, sp, sp.size*0.62, d.facing, d.bobSeed + performance.now()/300, false);
+      if(!known){
+        gctx.save();
+        gctx.globalAlpha=0.85;
+        gctx.fillStyle='rgba(15,15,15,0.4)';
+        gctx.beginPath(); gctx.arc(d.x, d.y-70, 3, 0, Math.PI*2); gctx.fill();
+        gctx.restore();
+      } else if(dist(player.x,player.y,d.x,d.y) < 180){
+        drawNeedBars(gctx, d);
+      }
+    }});
+  });
+  drawables.push({y:player.y, fn:()=>drawPlayer(gctx)});
+  drawables.sort((a,b)=>a.y-b.y);
+  drawables.forEach(o=>o.fn());
+
+  if(currentInteractable && !state.paused){
+    const ref = currentInteractable.ref;
+    gctx.save();
+    gctx.strokeStyle = 'rgba(227,167,88,0.8)';
+    gctx.lineWidth = 2;
+    gctx.setLineDash([4,4]);
+    gctx.beginPath(); gctx.arc(ref.x, ref.y, (currentInteractable.kind==='dino'?46:ref.r+14), 0, Math.PI*2); gctx.stroke();
+    gctx.restore();
+  }
+
+  if(state.placingType || state.movingBuilding){
+    const camp = campContaining(mouseWorld.x, mouseWorld.y);
+    if(camp){
+      const gx = Math.floor((mouseWorld.x-camp.x)/camp.cell);
+      const gy = Math.floor((mouseWorld.y-camp.y)/camp.cell);
+      const px = camp.x+gx*camp.cell, py = camp.y+gy*camp.cell;
+      const moving = state.movingBuilding;
+      const occupied = state.buildings.some(bd=>bd!==moving && bd.campId===camp.id && bd.gx===gx&&bd.gy===gy);
+      gctx.save();
+      gctx.fillStyle = occupied ? 'rgba(180,72,47,0.35)' : 'rgba(107,143,92,0.35)';
+      gctx.strokeStyle = occupied ? 'rgba(180,72,47,0.8)' : 'rgba(107,143,92,0.9)';
+      gctx.lineWidth=2;
+      roundRectPath(gctx, px, py, camp.cell, camp.cell, 10);
+      gctx.fill(); gctx.stroke();
+      gctx.restore();
+    }
+  }
+
+  if(state.foundingCamp){
+    const valid = campFoundValid(mouseWorld.x, mouseWorld.y);
+    gctx.save();
+    gctx.strokeStyle = valid ? 'rgba(107,143,92,0.9)' : 'rgba(180,72,47,0.85)';
+    gctx.fillStyle = valid ? 'rgba(107,143,92,0.18)' : 'rgba(180,72,47,0.18)';
+    gctx.lineWidth = 2;
+    gctx.setLineDash([6,6]);
+    roundRectPath(gctx, mouseWorld.x-CAMP_W/2, mouseWorld.y-CAMP_H/2, CAMP_W, CAMP_H, 24);
+    gctx.fill(); gctx.stroke();
+    gctx.restore();
+  }
+
+  gctx.restore();
+}
+function easeOutBack(x){ const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }
+
+/* =====================================================================
+   SISTEMA DE GUARDA / CARREGAMENTO
+===================================================================== */
+const SAVE_KEY = 'valeborn_save_v1';
+
+function serializeState(){
+  return {
+    v: 2,
+    age: state.age,
+    xp: state.xp,
+    level: state.level,
+    res: state.res,
+    totalGathered: state.totalGathered,
+    discovered: Array.from(state.discovered),
+    ageHistory: state.ageHistory,
+    camps: state.camps,
+    buildings: state.buildings.map(b=>({ type:b.type, campId:b.campId||'camp1', gx:b.gx, gy:b.gy, cx:b.cx, cy:b.cy, level:b.level||1 })),
+    roads: state.roads,
+    victoryShown: state.victoryShown,
+    outfitId: state.outfitId,
+    player: { x: player.x, y: player.y },
+    savedAt: Date.now()
+  };
+}
+
+function applyLoadedState(data){
+  state.age = data.age || 1;
+  state.xp = data.xp || 0;
+  state.level = data.level || 1;
+  state.res = Object.assign({wood:2,stone:0,food:1,water:0}, data.res||{});
+  state.totalGathered = data.totalGathered || 0;
+  state.discovered = new Set(data.discovered||[]);
+  state.ageHistory = (data.ageHistory && data.ageHistory.length) ? data.ageHistory : [{age:1,year:1}];
+  state.camps = (data.camps && data.camps.length) ? data.camps : [{ id:'camp1', name:'Acampamento do Santiago', x:130, y:130, w:CAMP_W, h:CAMP_H, cell:CAMP_CELL }];
+  state.buildings = (data.buildings||[]).map(b=>({
+    type:b.type, campId:b.campId||'camp1', gx:b.gx, gy:b.gy, cx:b.cx, cy:b.cy, level:b.level||1,
+    bornAt: performance.now(), lastProduced: performance.now()
+  }));
+  state.roads = data.roads || [];
+  state.victoryShown = !!data.victoryShown;
+  state.outfitId = (data.outfitId && OUTFITS.some(o=>o.id===data.outfitId)) ? data.outfitId : 'explorer';
+  if(data.player){ player.x = data.player.x; player.y = data.player.y; }
+  roadGraphDirty = true;
+}
+
+async function saveGame(){
+  const dataStr = JSON.stringify(serializeState());
+  if(typeof window !== 'undefined' && window.storage && typeof window.storage.set === 'function'){
+    try{ await window.storage.set(SAVE_KEY, dataStr, false); }catch(e){}
+  }
+  try{ localStorage.setItem(SAVE_KEY, dataStr); }catch(e){}
+}
+
+async function loadGame(){
+  if(typeof window !== 'undefined' && window.storage && typeof window.storage.get === 'function'){
+    try{
+      const res = await window.storage.get(SAVE_KEY, false);
+      if(res && res.value) return JSON.parse(res.value);
+    }catch(e){}
+  }
+  try{
+    const val = localStorage.getItem(SAVE_KEY);
+    if(val) return JSON.parse(val);
+  }catch(e){}
+  return null;
+}
+
+let saveTimer = null;
+function scheduleSave(){
+  if(!state.started) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveGame, 2000);
+}
+window.addEventListener('beforeunload', ()=>{ if(state.started) saveGame(); });
+
+async function continueGame(){
+  const data = await loadGame();
+  if(!data){
+    showToast("Nenhuma civilização guardada encontrada — a começar do zero", null);
+    beginPlay();
+    return;
+  }
+  dinos.length = 0;
+  spawnedScheduleIndices.clear();
+  resourceNodes.length = 0;
+  skylineBuildings = null;
+  applyLoadedState(data);
+  beginPlay();
+  showToast('Bem-vindo de volta à tua civilização', 'level');
+}
+function beginPlay(){
+  titleRunning = false;
+  document.getElementById('title-screen').classList.add('hidden');
+  document.getElementById('hud').classList.add('visible');
+  state.started = true;
+  sfx.init();
+  initGame();
+}
+
+function initGame(){
+  const steps = [
+    ['terreno', buildTerrain],
+    ['nodos de recursos', generateResourceNodes],
+    ['dinossauros', spawnDinos],
+    ['barra de recursos', renderResourceBar],
+    ['UI de nível', updateLevelUI],
+    ['lista de objetivos', renderMissionList],
+    ['rastreador de objetivos', updateObjectiveTracker],
+    ['HUD de era', updateAgeHUD],
+    ['prontidão de era', checkAgeReady]
+  ];
+  steps.forEach(([name, fn])=>{
+    try{ fn(); }catch(err){ console.error('Falha no passo de inicialização: '+name, err); }
+  });
+}
+
+document.getElementById('btn-play').addEventListener('click', beginPlay);
+document.getElementById('btn-continue').addEventListener('click', continueGame);
+
+(async function checkForSave(){
+  const data = await loadGame();
+  if(data){
+    document.getElementById('btn-continue').style.display = 'block';
+    document.getElementById('btn-play').textContent = 'Nova Civilização';
+  }
+})();
+
+resizeCanvas();
+requestAnimationFrame(drawTitleBG);
+requestAnimationFrame(gameLoop);
+
+})();
+</script>
+</body>
+</html>
