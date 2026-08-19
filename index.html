@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Valeborn - Um Vale Pré-Histórico</title>
+<title>Valeborn</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
@@ -40,7 +40,7 @@
   button{ font-family:'Inter',sans-serif; cursor:pointer; border:none; outline:none; background:none; color:inherit; touch-action:manipulation; }
   button:focus-visible, .clickable:focus-visible{ outline:2px solid var(--amber); outline-offset:2px; }
 
-  /* ---------- Base Painel de Vidro ---------- */
+  /* ---------- Glass panel base ---------- */
   .glass{
     background:var(--glass);
     backdrop-filter:blur(24px) saturate(140%);
@@ -49,7 +49,7 @@
     box-shadow:0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
   }
 
-  /* ---------- Ecrã do Título ---------- */
+  /* ---------- Title screen ---------- */
   #title-screen{
     position:absolute; inset:0; z-index:50;
     display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
@@ -108,11 +108,10 @@
 
   #top-right-controls{
     position:absolute; top:20px; right:20px; display:flex; gap:8px;
-    align-items:center;
   }
   .icon-btn{
     width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center;
-    transition:background .15s ease, transform .15s ease; position:relative;
+    transition:background .15s ease, transform .15s ease;
   }
   .icon-btn:hover{ background:var(--glass-strong); transform:translateY(-1px); }
   .icon-btn svg{ width:21px; height:21px; }
@@ -121,12 +120,7 @@
     font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:8px;
     display:flex; align-items:center; justify-content:center; padding:0 4px;
   }
-  /* Ocultar alguns botões em mobile serão movidos para o menu */
-  .hide-on-mobile{ display:flex; }
-  @media (max-width:640px){
-    .hide-on-mobile{ display:none; }
-    #top-right-controls .icon-btn{ width:40px; height:40px; }
-  }
+  .icon-btn{ position:relative; }
 
   #level-bar{
     position:absolute; top:20px; left:50%; transform:translateX(-50%);
@@ -160,16 +154,7 @@
   #objective-tracker .ot-title{ font-size:14px; font-weight:600; margin-bottom:3px; }
   #objective-tracker .ot-desc{ font-size:12px; color:var(--sand); line-height:1.4; }
 
-  /* Minimapa HUD Widget */
-  #minimap-card{
-    position:absolute; bottom:30px; right:20px; width:160px; height:110px;
-    border-radius:16px; overflow:hidden; display:flex; flex-direction:column;
-    cursor:pointer; transition:transform .18s ease;
-  }
-  #minimap-card:hover{ transform:scale(1.03); }
-  #minimap-canvas{ width:100%; height:100%; display:block; }
-
-  /* Notificações (Toasts) */
+  /* ---------- Toasts ---------- */
   #toast-container{
     position:absolute; top:80px; left:50%; transform:translateX(-50%); z-index:60;
     display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;
@@ -186,144 +171,32 @@
   @keyframes toast-in{ from{ opacity:0; transform:translateY(-10px) scale(0.95);} to{ opacity:1; transform:translateY(0) scale(1);} }
   @keyframes toast-out{ from{ opacity:1; transform:translateY(0) scale(1);} to{ opacity:0; transform:translateY(-8px) scale(0.96);} }
 
-  /* ---------- Menu Hambúrguer ---------- */
-  #menu-overlay{
-    position:fixed; inset:0; z-index:65;
-    display:flex; justify-content:flex-end;
-    background:rgba(0,0,0,0.4);
-    opacity:0; pointer-events:none;
-    transition:opacity .3s ease;
-  }
-  #menu-overlay.open{ opacity:1; pointer-events:auto; }
-  #menu-panel{
-    width:min(300px, 80vw);
-    height:100vh;
-    background:linear-gradient(165deg, rgba(28,52,38,0.98), rgba(12,24,17,0.99));
-    border-left:1px solid rgba(243,238,228,0.18);
-    box-shadow:-8px 0 40px rgba(0,0,0,0.5);
-    transform:translateX(100%);
-    transition:transform .35s cubic-bezier(0.32, 0.72, 0, 1);
-    padding:20px 16px 30px;
-    display:flex;
-    flex-direction:column;
-  }
-  #menu-overlay.open #menu-panel{
-    transform:translateX(0);
-  }
-  .menu-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding-bottom:16px;
-    border-bottom:1px solid rgba(255,255,255,0.08);
-    margin-bottom:20px;
-  }
-  .menu-header span{
-    font-size:20px;
-    font-weight:700;
-    font-family:'Space Grotesk',sans-serif;
-  }
-  .menu-items{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    flex:1;
-  }
-  .menu-item{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:14px 16px;
-    border-radius:14px;
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(255,255,255,0.06);
-    font-size:15px;
-    font-weight:600;
-    transition:background .15s ease, transform .15s ease;
-    text-align:left;
-  }
-  .menu-item:hover{ background:rgba(255,255,255,0.1); transform:translateX(4px); }
-  .menu-item .mi-icon{ width:24px; height:24px; flex-shrink:0; }
-  .menu-item .mi-badge{
-    margin-left:auto;
-    background:var(--terracotta);
-    color:var(--ivory);
-    font-size:11px;
-    font-weight:700;
-    padding:2px 10px;
-    border-radius:100px;
-  }
-
-  @media (min-width:641px){
-    #menu-overlay{ display:none; }
-  }
-
-  /* ---------- Painéis Modais ---------- */
+  /* ---------- Overlay panels (Collection / Missions / Build / Instructions) ---------- */
   .overlay{
     position:absolute; inset:0; z-index:55; display:flex; align-items:center; justify-content:center;
-    background:rgba(6,12,8,0.58); backdrop-filter:blur(20px) saturate(180%);
-    -webkit-backdrop-filter:blur(20px) saturate(180%);
-    opacity:0; pointer-events:none; transition:opacity .35s cubic-bezier(0.32, 0.72, 0, 1);
+    background:rgba(9,16,11,0.55); backdrop-filter:blur(6px);
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
   }
   .overlay.open{ opacity:1; pointer-events:auto; }
   .panel{
-    position:relative;
     width:min(880px, 92vw); max-height:84vh; overflow-y:auto;
-    border-radius:28px; padding:28px 32px 32px;
-    background:linear-gradient(165deg, rgba(28,52,38,0.95), rgba(12,24,17,0.98));
-    border:1px solid rgba(243,238,228,0.18);
-    box-shadow:0 30px 90px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.12);
-    transform:scale(0.94) translateY(24px);
-    transition:transform .38s cubic-bezier(0.32, 0.72, 0, 1), opacity .35s ease;
+    border-radius:26px; padding:32px;
+    background:linear-gradient(165deg, rgba(30,58,43,0.92), rgba(14,30,21,0.96));
+    border:1px solid rgba(243,238,228,0.14);
+    box-shadow:0 30px 80px rgba(0,0,0,0.5);
   }
-  .overlay.open .panel{
-    transform:scale(1) translateY(0);
-  }
-  .sheet-handle{
-    width:36px; height:5px; border-radius:3px; background:rgba(255,255,255,0.22);
-    margin:0 auto 18px; display:none; cursor:grab; transition:background .15s ease;
-  }
-  .sheet-handle:active{ background:rgba(227,167,88,0.6); }
-
-  @media (max-width:768px){
-    .overlay{ align-items:flex-end; }
-    .panel{
-      width:100vw; max-height:84vh; border-radius:28px 28px 0 0;
-      padding:16px 20px calc(24px + env(safe-area-inset-bottom, 0px));
-      transform:translateY(100%);
-      border-bottom:none;
-    }
-    .overlay.open .panel{
-      transform:translateY(0);
-    }
-    .sheet-handle{ display:block; }
-  }
-
-  /* Auto-recessed HUD em foco de movimento */
-  #resource-bar, #objective-tracker, #level-bar, #minimap-card, #age-chip {
-    transition: opacity 0.45s cubic-bezier(0.32, 0.72, 0, 1), transform 0.45s cubic-bezier(0.32, 0.72, 0, 1);
-  }
-  .hud-recessed #resource-bar,
-  .hud-recessed #objective-tracker,
-  .hud-recessed #level-bar,
-  .hud-recessed #minimap-card,
-  .hud-recessed #age-chip {
-    opacity: 0.35 !important;
-  }
-
-  .panel::-webkit-scrollbar{ width:6px; }
-  .panel::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.18); border-radius:4px; }
+  .panel::-webkit-scrollbar{ width:8px; }
+  .panel::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.15); border-radius:4px; }
   .panel-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
   .panel-header h2{ font-size:24px; font-weight:700; }
   .panel-sub{ font-size:13px; color:var(--sand); margin-bottom:24px; }
   .close-btn{
     width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    background:var(--glass-strong); transition:background .15s ease, transform .15s ease;
+    background:var(--glass-strong); transition:background .15s ease;
   }
-  .close-btn:hover{ background:rgba(243,238,228,0.22); transform:scale(1.05); }
-  .close-btn:active{ transform:scale(0.95); }
+  .close-btn:hover{ background:rgba(243,238,228,0.22); }
 
-  /* Grelha da Coleção */
+  /* Collection grid */
   #dex-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:14px; align-items:start; }
   .dex-card{
     border-radius:18px; padding:16px; cursor:pointer; transition:transform .15s ease, background .15s ease;
@@ -348,7 +221,7 @@
   .stat-fill{ height:100%; border-radius:3px; background:var(--moss); }
   .trait-chip{ display:inline-block; font-size:10.5px; background:rgba(255,255,255,0.08); padding:3px 9px; border-radius:100px; margin:3px 4px 0 0; }
 
-  /* Objetivos */
+  /* Missions */
   .mission-row{
     display:flex; gap:14px; align-items:flex-start; padding:16px; border-radius:16px; margin-bottom:10px;
     background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07);
@@ -363,7 +236,7 @@
   .mission-desc{ font-size:12.5px; color:var(--sand); line-height:1.5; }
   .mission-reward{ font-size:11px; color:var(--amber); font-weight:700; margin-top:6px; }
 
-  /* Painel de Construção */
+  /* Build panel */
   #build-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
   .build-card{
     border-radius:18px; padding:18px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
@@ -393,15 +266,22 @@
   .action-btn.danger:hover{ background:rgba(180,72,47,0.3); }
   .action-btn.danger.confirming{ background:var(--danger); border-color:var(--danger); color:var(--ivory); }
 
-  #placement-banner, #road-banner{
+  #placement-banner{
+    position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
+    padding:12px 22px; border-radius:100px; display:none; align-items:center; gap:14px; z-index:25;
+  }
+  #placement-banner.show{ display:flex; }
+  #placement-banner button{ background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600; }
+
+  #road-banner{
     position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
     padding:12px 22px; border-radius:100px; display:none; align-items:center; gap:14px; z-index:25;
     font-size:13px; font-weight:600;
   }
-  #placement-banner.show, #road-banner.show{ display:flex; }
-  #placement-banner button, #road-banner button{ background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600; }
+  #road-banner.show{ display:flex; }
+  #road-banner button{ background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600; }
 
-  /* Controlo Tátil */
+  /* ---------- Touch controls ---------- */
   .touch-only{ display:none; }
   body.has-touch .touch-only{ display:block; }
 
@@ -422,7 +302,9 @@
   }
   #joystick-knob.active{ background:rgba(227,167,88,0.55); }
 
-  body.has-touch #touch-interact-btn{ display:flex; }
+  body.has-touch #touch-interact-btn{
+    display:flex;
+  }
   #touch-interact-btn{
     position:absolute; right:24px; bottom:calc(24px + env(safe-area-inset-bottom,0px));
     width:84px; height:84px; border-radius:50%; z-index:22; touch-action:none;
@@ -435,18 +317,17 @@
   @media (max-width:640px){
     body.has-touch #resource-bar{ transform:scale(0.88); transform-origin:top left; }
     body.has-touch #level-bar{ transform:scale(0.88); }
-    #top-right-controls .icon-btn{ width:40px; height:40px; }
+    body.has-touch #top-right-controls .icon-btn{ width:40px; height:40px; }
     body.has-touch #interact-hint{ bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
-    #minimap-card{ display:none; }
   }
 
-  /* Instruções */
+  /* Instructions */
   .howto-row{ display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
   .howto-row:last-child{ border-bottom:none; }
   .howto-key{ min-width:64px; text-align:center; font-size:12px; font-weight:700; background:rgba(255,255,255,0.1); border-radius:8px; padding:6px 8px; }
   .howto-desc{ font-size:13px; color:var(--sand); }
 
-  /* Revelação de Descoberta */
+  /* Discovery reveal */
   #discovery-overlay{
     position:absolute; inset:0; z-index:70; display:flex; flex-direction:column; align-items:center; justify-content:center;
     background:radial-gradient(ellipse at 50% 40%, rgba(30,58,43,0.5), rgba(6,12,8,0.94));
@@ -468,7 +349,9 @@
 
   #floating-text-layer{ position:absolute; inset:0; z-index:15; pointer-events:none; overflow:hidden; }
 
-  /* Indicador de Era */
+  .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+
+  /* ---------- Age chip ---------- */
   #age-chip{
     position:absolute; top:76px; left:50%; transform:translateX(-50%);
     display:flex; align-items:center; gap:9px; padding:7px 16px 7px 8px; border-radius:100px;
@@ -479,7 +362,7 @@
   #age-chip .age-label{ font-size:11.5px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; }
   #age-chip .age-name{ font-size:11.5px; color:var(--sand); }
 
-  /* Painel de Era */
+  /* ---------- Age panel ---------- */
   .req-row{ display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
   .req-row:last-child{ border-bottom:none; }
   .req-check{ width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,0.25); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; margin-top:1px; }
@@ -492,7 +375,7 @@
   #age-unlock-preview{ display:flex; flex-wrap:wrap; gap:10px; margin:18px 0; }
   .unlock-chip{ display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:100px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); font-size:12.5px; font-weight:600; }
 
-  /* Guarda-Roupa */
+  /* Wardrobe */
   .outfit-swatch{ padding:10px 6px; border-radius:14px; cursor:pointer; background:rgba(255,255,255,0.04); border:2px solid transparent; transition:all .15s ease; display:flex; flex-direction:column; align-items:center; gap:6px; }
   .outfit-swatch:hover{ background:rgba(255,255,255,0.08); transform:translateY(-2px); }
   .outfit-swatch.selected{ border-color:var(--amber); background:rgba(227,167,88,0.12); }
@@ -505,7 +388,7 @@
   .timeline-row{ display:flex; gap:12px; font-size:12px; color:var(--sand); padding:4px 0; }
   .timeline-row b{ color:var(--amber); min-width:52px; display:inline-block; }
 
-  /* Transição de Era */
+  /* ---------- Age transition cinematic ---------- */
   #age-transition{
     position:absolute; inset:0; z-index:80; display:flex; flex-direction:column; align-items:center; justify-content:center;
     background:#08110B; opacity:0; pointer-events:none; transition:opacity .5s ease;
@@ -519,7 +402,7 @@
   #transition-tagline{ font-size:13.5px; color:var(--sand); margin-top:10px; opacity:0; transition:opacity .35s ease .16s; max-width:420px; text-align:center; }
   #age-transition.reveal #transition-tagline{ opacity:1; }
 
-  /* Vitória */
+  /* ---------- Victory ---------- */
   #overlay-victory .panel{ text-align:center; }
   #victory-stats{ display:flex; justify-content:center; gap:28px; margin:22px 0; flex-wrap:wrap; }
   .victory-stat{ display:flex; flex-direction:column; align-items:center; }
@@ -537,15 +420,16 @@
 <body>
 <div id="app">
   <canvas id="game-canvas"></canvas>
+
   <div id="floating-text-layer"></div>
 
-  <!-- ECRÃ DO TÍTULO -->
+  <!-- TITLE SCREEN -->
   <div id="title-screen">
     <canvas id="title-canvas"></canvas>
     <div class="title-vignette"></div>
     <div class="brand-eyebrow">Um Vale Pré-Histórico</div>
     <h1 class="brand-title display">VALEBORN</h1>
-    <p class="brand-tagline">Num vale escondido onde os dinossauros nunca se extinguiram, Santiago irá ganhar a confiança de criaturas ancestrais e expandir um povoado ao redor dos laços que formar.</p>
+    <p class="brand-tagline">Num vale escondido onde os dinossauros nunca se extinguiram, Santiago vai conquistar a confiança de criaturas ancestrais e construir uma povoação assente nos laços que criar.</p>
     <div class="title-buttons">
       <button class="btn btn-primary" id="btn-continue" style="display:none">Continuar a Tua Civilização</button>
       <button class="btn btn-primary" id="btn-play">Entrar no Vale</button>
@@ -563,63 +447,17 @@
       <div id="xp-track"><div id="xp-fill"></div></div>
     </div>
 
-    <div id="age-chip" class="glass" title="Ver o progresso da Era da tua civilização">
+    <div id="age-chip" class="glass" title="Vê o progresso da Idade da tua civilização">
       <div class="age-dot" id="age-dot">1</div>
-      <div><div class="age-label" id="age-label-num">Era 1</div><div class="age-name" id="age-label-name">Primal</div></div>
+      <div><div class="age-label" id="age-label-num">Idade 1</div><div class="age-name" id="age-label-name">Primitiva</div></div>
     </div>
 
     <div id="top-right-controls">
-      <!-- Botões principais sempre visíveis -->
-      <button class="icon-btn glass hide-on-mobile" id="btn-collection" title="Coleção (C)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.5-1.2 5-1.2 7 0v13c-2-1.2-4.5-1.2-7 0v-13Z"/><path d="M18 5.5c-2.5-1.2-5-1.2-7 0"/><path d="M11 18.5v-13"/></svg><span class="badge" id="dex-badge" style="display:none">0</span></button>
-      <button class="icon-btn glass hide-on-mobile" id="btn-missions" title="Objetivos (M)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span class="badge" id="mission-badge" style="display:none">0</span></button>
-      <button class="icon-btn glass hide-on-mobile" id="btn-build" title="Construir (B)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-2.5 2.5-4-4L14 6Z"/><path d="M3 21l6.5-6.5"/><path d="M15.5 4.5l4 4"/></svg></button>
-
-      <!-- Botão do menu hambúrguer (visível sempre, mas em desktop pode ser escondido ou mantido) -->
-      <button class="icon-btn glass" id="btn-menu-toggle" title="Menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- Menu Hambúrguer Overlay -->
-    <div id="menu-overlay">
-      <div id="menu-panel" class="glass">
-        <div class="menu-header">
-          <span>Menu</span>
-          <button class="close-btn" id="menu-close">✕</button>
-        </div>
-        <div class="menu-items">
-          <button class="menu-item" data-action="collection">
-            <span class="mi-icon">📚</span> Coleção
-            <span class="mi-badge" id="menu-dex-badge" style="display:none">0</span>
-          </button>
-          <button class="menu-item" data-action="missions">
-            <span class="mi-icon">🎯</span> Objetivos
-            <span class="mi-badge" id="menu-mission-badge" style="display:none">0</span>
-          </button>
-          <button class="menu-item" data-action="build">
-            <span class="mi-icon">🔨</span> Construir
-          </button>
-          <button class="menu-item" data-action="roads">
-            <span class="mi-icon">🛤️</span> Estradas (R)
-          </button>
-          <button class="menu-item" data-action="character">
-            <span class="mi-icon">🧑</span> Santiago (P)
-          </button>
-          <button class="menu-item" data-action="age">
-            <span class="mi-icon">⏳</span> Era
-          </button>
-          <button class="menu-item" data-action="howto">
-            <span class="mi-icon">❓</span> Como Jogar
-          </button>
-          <button class="menu-item" data-action="audio">
-            <span class="mi-icon">🔊</span> Áudio
-          </button>
-        </div>
-      </div>
+      <button class="icon-btn glass" id="btn-character" title="Santiago (P)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.2"/><path d="M5.5 20c0-4 3-6.5 6.5-6.5s6.5 2.5 6.5 6.5"/></svg></button>
+      <button class="icon-btn glass" id="btn-roads" title="Estradas (R)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 L11 4"/><path d="M15 20 L13 4"/><path d="M12 6.5v2"/><path d="M12 11v2"/><path d="M12 15.5v2"/></svg></button>
+      <button class="icon-btn glass" id="btn-build" title="Construir (B)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-2.5 2.5-4-4L14 6Z"/><path d="M3 21l6.5-6.5"/><path d="M15.5 4.5l4 4"/></svg></button>
+      <button class="icon-btn glass" id="btn-missions" title="Missões (M)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span class="badge" id="mission-badge" style="display:none">0</span></button>
+      <button class="icon-btn glass" id="btn-collection" title="Coleção (C)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.5-1.2 5-1.2 7 0v13c-2-1.2-4.5-1.2-7 0v-13Z"/><path d="M18 5.5c-2.5-1.2-5-1.2-7 0"/><path d="M11 18.5v-13"/></svg><span class="badge" id="dex-badge" style="display:none">0</span></button>
     </div>
 
     <div id="objective-tracker" class="glass">
@@ -628,17 +466,13 @@
       <div class="ot-desc" id="ot-desc">—</div>
     </div>
 
-    <div id="minimap-card" class="glass" title="Clica no minimapa para saltar a câmara">
-      <canvas id="minimap-canvas"></canvas>
-    </div>
-
     <div id="interact-hint" class="glass"><span class="key-chip">E</span><span id="interact-label">Interagir</span></div>
     <div id="placement-banner" class="glass">
-      <span id="placement-text">Escolhe um piso no teu acampamento para construir</span>
+      <span id="placement-text">Escolhe uma célula no teu acampamento para construir</span>
       <button id="placement-cancel">Cancelar</button>
     </div>
     <div id="road-banner" class="glass">
-      <span>Clica e arrasta para traçar uma estrada — <span class="key-chip">Esc</span> para sair</span>
+      <span>Clica e arrasta para construir uma estrada — <span class="key-chip">Esc</span> para parar</span>
       <button id="road-mode-exit">Concluído</button>
     </div>
 
@@ -650,10 +484,9 @@
 
   <div id="toast-container"></div>
 
-  <!-- COLEÇÃO OVERLAY -->
+  <!-- COLLECTION OVERLAY -->
   <div class="overlay" id="overlay-collection">
     <div class="panel">
-      <div class="sheet-handle"></div>
       <div class="panel-header">
         <h2>Coleção de Dinossauros</h2>
         <button class="close-btn" data-close="overlay-collection">✕</button>
@@ -663,10 +496,9 @@
     </div>
   </div>
 
-  <!-- OBJETIVOS OVERLAY -->
+  <!-- MISSIONS OVERLAY -->
   <div class="overlay" id="overlay-missions">
     <div class="panel" style="width:min(560px,92vw)">
-      <div class="sheet-handle"></div>
       <div class="panel-header">
         <h2 id="mission-panel-title">Objetivos</h2>
         <button class="close-btn" data-close="overlay-missions">✕</button>
@@ -676,68 +508,71 @@
     </div>
   </div>
 
-  <!-- CONSTRUÇÃO OVERLAY -->
+  <!-- BUILD OVERLAY -->
   <div class="overlay" id="overlay-build">
     <div class="panel">
-      <div class="sheet-handle"></div>
       <div class="panel-header">
-        <h2>Construir no Acampamento</h2>
+        <h2>Construir Acampamento</h2>
         <button class="close-btn" data-close="overlay-build">✕</button>
       </div>
-      <p class="panel-sub">Seleciona uma estrutura e coloca-a dentro do limite do teu acampamento (linha tracejada).</p>
+      <p class="panel-sub">Seleciona uma estrutura e depois coloca-a dentro do limite do teu acampamento (a linha tracejada).</p>
       <div id="build-grid"></div>
     </div>
   </div>
 
-  <!-- COMO JOGAR OVERLAY -->
+  <!-- HOW TO PLAY OVERLAY -->
   <div class="overlay" id="overlay-howto">
     <div class="panel" style="width:min(520px,92vw)">
-      <div class="sheet-handle"></div>
       <div class="panel-header">
         <h2>Como Jogar</h2>
         <button class="close-btn" data-close="overlay-howto">✕</button>
       </div>
-      <div class="howto-row"><div class="howto-key">WASD / Toque</div><div class="howto-desc">Mover pelo vale ou arrastar para deslocar a câmara</div></div>
-      <div class="howto-row"><div class="howto-key">Zoom</div><div class="howto-desc">Roda do rato ou gesto de pinça no ecrã para aproximar/afastar</div></div>
-      <div class="howto-row"><div class="howto-key">Duplo Clique</div><div class="howto-desc">Duplo toque em Dinossauros, Edifícios ou no Santiago para ações rápidas</div></div>
-      <div class="howto-row"><div class="howto-key">E</div><div class="howto-desc">Recolher recursos ou estudar um dinossauro quando o aviso surgir</div></div>
-      <div class="howto-row"><div class="howto-key">B</div><div class="howto-desc">Abrir o menu de construção do acampamento (podes arrastar edifícios diretamente para o mapa!)</div></div>
-      <div class="howto-row"><div class="howto-key">M</div><div class="howto-desc">Consultar os teus objetivos atuais</div></div>
-      <div class="howto-row"><div class="howto-key">C</div><div class="howto-desc">Abrir a coleção de dinossauros</div></div>
-      <div class="howto-row"><div class="howto-key">Esc</div><div class="howto-desc">Fechar qualquer painel aberto</div></div>
+      <div class="howto-row"><div class="howto-key">WASD</div><div class="howto-desc">Move-te pelo vale</div></div>
+      <div class="howto-row"><div class="howto-key">E</div><div class="howto-desc">Recolhe recursos ou estuda um dinossauro quando a indicação aparecer</div></div>
+      <div class="howto-row"><div class="howto-key">B</div><div class="howto-desc">Abre o menu de construção do teu acampamento</div></div>
+      <div class="howto-row"><div class="howto-key">M</div><div class="howto-desc">Consulta as tuas missões atuais</div></div>
+      <div class="howto-row"><div class="howto-key">C</div><div class="howto-desc">Abre a coleção de dinossauros</div></div>
+      <div class="howto-row"><div class="howto-key">Esc</div><div class="howto-desc">Fecha qualquer painel aberto</div></div>
+      <div class="howto-row"><div class="howto-key">Idade</div><div class="howto-desc">Clica no indicador de Idade no topo para veres o que a tua civilização precisa para avançar para a Idade seguinte — o acampamento transforma-se visivelmente de cada vez</div></div>
+      <div class="howto-row"><div class="howto-key">Cuidar</div><div class="howto-desc">Os dinossauros conhecidos ficam com fome e sede ao longo do tempo. Prime E perto de um para o alimentar, dar água ou fazer festas — pequenas barras por cima deles mostram fome, sede e felicidade quando estás perto</div></div>
+      <div class="howto-row"><div class="howto-key">R</div><div class="howto-desc">Entra no Modo Estradas e depois clica e arrasta em qualquer ponto do vale para construir uma estrada — custa Madeira e melhora o seu aspeto automaticamente conforme a tua civilização avança</div></div>
+      <div class="howto-row"><div class="howto-key">Acampamentos</div><div class="howto-desc">Abre o menu Construir e escolhe "Fundar Novo Acampamento" para iniciares uma segunda povoação noutro ponto do vale — a Idade Industrial exige pelo menos mais um acampamento, ligado ao de Santiago por estrada. Depois de ligados, um comboio circulará entre eles</div></div>
+      <div class="howto-row"><div class="howto-key">Clique</div><div class="howto-desc">Clica em qualquer edifício construído para o inspecionar — a partir daí podes Mover para outro local do teu acampamento, ou Demolir para receberes parte dos recursos de volta (Demolir precisa de um segundo clique para confirmar)</div></div>
+      <div class="howto-row"><div class="howto-key">Guardar</div><div class="howto-desc">A tua civilização guarda-se automaticamente enquanto jogas — fecha o separador quando quiseres, e "Continuar a Tua Civilização" estará à tua espera neste ecrã da próxima vez</div></div>
+      <div class="howto-row"><div class="howto-key">P</div><div class="howto-desc">Abre o Guarda-Roupa de Santiago para mudares a sua roupa — a tua escolha é guardada com a tua civilização</div></div>
+      <div class="howto-row"><div class="howto-key">Toque</div><div class="howto-desc">Em telemóvel ou tablet: usa o joystick para te moveres, toca no botão Interagir para recolher ou estudar, e toca/arrasta no mapa tal como farias um clique — tudo funciona por toque</div></div>
     </div>
   </div>
 
-  <!-- ERA OVERLAY -->
+  <!-- AGE OVERLAY -->
   <div class="overlay" id="overlay-age">
     <div class="panel" style="width:min(620px,92vw)">
-      <div class="sheet-handle"></div>
       <div class="panel-header">
-        <h2 id="age-panel-title">Era do Progresso</h2>
+        <h2 id="age-panel-title">Idade de Progresso</h2>
         <button class="close-btn" data-close="overlay-age">✕</button>
       </div>
       <p class="panel-sub" id="age-panel-tagline">—</p>
       <div id="age-requirements"></div>
       <div id="age-unlock-preview"></div>
-      <div id="age-advance-btn" style="width:100%; text-align:center; margin-top:6px; cursor:default;">Avançar Era</div>
+      <div id="age-advance-btn" style="width:100%; text-align:center; margin-top:6px; cursor:default;">Avançar de Idade</div>
       <div id="age-timeline"></div>
     </div>
   </div>
 
-  <!-- TRANSIÇÃO DE ERA CINEMÁTICA -->
+  <!-- AGE TRANSITION CINEMATIC -->
   <div id="age-transition">
     <canvas id="transition-canvas" width="900" height="380"></canvas>
-    <div id="transition-years">Passam-se Anos</div>
+    <div id="transition-years">Os Anos Passam</div>
     <div id="transition-title" class="display">—</div>
     <div id="transition-tagline">—</div>
   </div>
 
-  <!-- VITÓRIA OVERLAY -->
+  <!-- VICTORY OVERLAY -->
   <div class="overlay" id="overlay-victory">
     <div class="panel" style="width:min(640px,92vw)">
       <div class="panel-header" style="justify-content:center; flex-direction:column; gap:4px;">
         <div class="brand-eyebrow" style="margin:0">Do Primeiro Acampamento ao Mundo Moderno</div>
-        <h2 style="font-size:30px">Civilização Concluída</h2>
+        <h2 style="font-size:30px">Civilização Completa</h2>
       </div>
       <div id="victory-stats"></div>
       <div id="victory-timeline"></div>
@@ -745,7 +580,7 @@
     </div>
   </div>
 
-  <!-- INSPETOR DE EDIFÍCIO -->
+  <!-- BUILDING INSPECTOR -->
   <div class="overlay" id="overlay-inspector">
     <div class="panel" style="width:min(520px,92vw)">
       <div class="panel-header">
@@ -765,7 +600,7 @@
     </div>
   </div>
 
-  <!-- GUARDA-ROUPA -->
+  <!-- WARDROBE -->
   <div class="overlay" id="overlay-character">
     <div class="panel" style="width:min(480px,92vw); text-align:center;">
       <div class="panel-header" style="justify-content:center; flex-direction:column; gap:4px;">
@@ -778,7 +613,7 @@
     </div>
   </div>
 
-  <!-- REVELAÇÃO DE DESCOBERTA -->
+  <!-- DISCOVERY REVEAL -->
   <div id="discovery-overlay">
     <canvas id="discovery-canvas" width="600" height="600"></canvas>
     <div id="discovery-eyebrow">Nova Espécie Descoberta</div>
@@ -794,110 +629,7 @@
 "use strict";
 
 /* =====================================================================
-   SISTEMA DE ÁUDIO (Sintetizador Procedural Web Audio API)
-===================================================================== */
-class SoundEngine {
-  constructor(){
-    this.ctx = null;
-    this.muted = false;
-  }
-  init(){
-    if(!this.ctx){
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if(AudioCtx) this.ctx = new AudioCtx();
-    }
-    if(this.ctx && this.ctx.state === 'suspended'){
-      this.ctx.resume();
-    }
-  }
-  toggle(){
-    this.muted = !this.muted;
-    return !this.muted;
-  }
-  play(type){
-    if(this.muted) return;
-    this.init();
-    if(!this.ctx) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    if(type==='click'){
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, t);
-      osc.frequency.exponentialRampToValueAtTime(400, t+0.05);
-      gain.gain.setValueAtTime(0.12, t);
-      gain.gain.linearRampToValueAtTime(0.01, t+0.05);
-      osc.start(t); osc.stop(t+0.05);
-    } else if(type==='gather'){
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(320, t);
-      osc.frequency.exponentialRampToValueAtTime(680, t+0.09);
-      gain.gain.setValueAtTime(0.2, t);
-      gain.gain.exponentialRampToValueAtTime(0.01, t+0.09);
-      osc.start(t); osc.stop(t+0.09);
-    } else if(type==='build'){
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(140, t);
-      osc.frequency.exponentialRampToValueAtTime(70, t+0.14);
-      gain.gain.setValueAtTime(0.25, t);
-      gain.gain.exponentialRampToValueAtTime(0.01, t+0.14);
-      osc.start(t); osc.stop(t+0.14);
-    } else if(type==='levelup'){
-      const notes = [300, 400, 500, 600];
-      notes.forEach((freq, idx)=>{
-        const o = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        o.connect(g); g.connect(this.ctx.destination);
-        o.type = 'triangle';
-        o.frequency.setValueAtTime(freq, t + idx*0.06);
-        g.gain.setValueAtTime(0.18, t + idx*0.06);
-        g.gain.exponentialRampToValueAtTime(0.01, t + idx*0.06 + 0.12);
-        o.start(t + idx*0.06); o.stop(t + idx*0.06 + 0.12);
-      });
-    } else if(type==='ageup'){
-      const chords = [220, 277.18, 329.63, 440];
-      chords.forEach(freq=>{
-        const o = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        o.connect(g); g.connect(this.ctx.destination);
-        o.type = 'sine';
-        o.frequency.setValueAtTime(freq, t);
-        g.gain.setValueAtTime(0.12, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
-        o.start(t); o.stop(t + 0.8);
-      });
-    } else if(type==='care'){
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(450, t);
-      osc.frequency.exponentialRampToValueAtTime(750, t+0.12);
-      gain.gain.setValueAtTime(0.15, t);
-      gain.gain.exponentialRampToValueAtTime(0.01, t+0.12);
-      osc.start(t); osc.stop(t+0.12);
-    } else if(type==='dino'){
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(160, t);
-      osc.frequency.linearRampToValueAtTime(110, t+0.25);
-      gain.gain.setValueAtTime(0.14, t);
-      gain.gain.exponentialRampToValueAtTime(0.01, t+0.25);
-      osc.start(t); osc.stop(t+0.25);
-    }
-  }
-}
-const sfx = new SoundEngine();
-
-// Áudio: o toggle será feito pelo menu, mas mantemos o listener do botão original
-document.getElementById('btn-audio')?.addEventListener('click', ()=>{
-  const active = sfx.toggle();
-  document.getElementById('audio-icon').style.opacity = active ? '1' : '0.4';
-  showToast(active ? 'Som ativado' : 'Som desativado', null);
-});
-
-/* =====================================================================
-   ÍCONES (SVG)
+   ICONS (inline SVG path data, reused across HUD/panels)
 ===================================================================== */
 const ICONS = {
   wood: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#C2653F" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#C2653F" stroke-width="1.6"/></svg>',
@@ -912,115 +644,127 @@ const ICONS = {
 function icon(name){ return ICONS[name] || ''; }
 
 /* =====================================================================
-   RARIDADE
+   RARITY
 ===================================================================== */
 const RARITY = {
-  Comum:     { color:'#9C9186' },
-  Incomum:   { color:'#6B8F5C' },
-  Raro:      { color:'#6C9EAA' },
-  Épico:     { color:'#C2653F' },
-  Lendário:  { color:'#E3A75B' }
+  Common:    { color:'#9C9186' },
+  Uncommon:  { color:'#6B8F5C' },
+  Rare:      { color:'#6C9EAA' },
+  Epic:      { color:'#C2653F' },
+  Legendary: { color:'#E3A75B' }
 };
+/* Internal values (sp.rarity, sp.diet) stay in English since some are used
+   in game logic (diet especially — see updateDino). These translate them
+   for display only, in European Portuguese. */
+function rarityLabel(r){
+  return { Common:'Comum', Uncommon:'Pouco Comum', Rare:'Raro', Epic:'Épico', Legendary:'Lendário' }[r] || r;
+}
+function dietLabel(d){
+  return { Carnivore:'Carnívoro', Herbivore:'Herbívoro', Omnivore:'Onívoro' }[d] || d;
+}
 
 /* =====================================================================
-   DADOS DAS ESPÉCIES
+   SPECIES DATA
 ===================================================================== */
 const SPECIES = [
   {
-    id:'triceratops', name:'Triceratops', rarity:'Incomum', diet:'Herbívoro',
+    id:'triceratops', name:'Tricerátops', rarity:'Uncommon', diet:'Herbivore',
     speed:45, strength:85, intelligence:50, size:1.15, minAge:1,
     traits:['Leal','Protetor','Territorial'],
-    desc:'Um herbívoro de três cornos que forma manadas unidas. Lento a confiar, mas quando o faz, colocar-se-á entre ti e qualquer perigo.',
+    desc:'Um herbívoro de três cornos que forma manadas muito unidas. Demora a confiar, mas quando confia, coloca-se entre ti e qualquer perigo.',
     color:'#8FAE6B', accent:'#5C7A54'
   },
   {
-    id:'stegosaurus', name:'Estegossauro', rarity:'Comum', diet:'Herbívoro',
+    id:'stegosaurus', name:'Estegossauro', rarity:'Common', diet:'Herbivore',
     speed:30, strength:60, intelligence:45, size:1.05, minAge:1,
     traits:['Calmo','Pacífico','Cauteloso'],
-    desc:'Placas de armadura percorrem o seu dorso como uma fila de velas. Sereno e calmo, raramente se afasta dos fetos que aprecia.',
+    desc:'Placas blindadas percorrem-lhe as costas como uma fila de velas. Plácido e sem pressa, raramente se afasta muito dos fetos que tanto aprecia.',
     color:'#7FA0A0', accent:'#4E6C6C'
   },
   {
-    id:'velociraptor', name:'Velociraptor', rarity:'Raro', diet:'Carnívoro',
+    id:'velociraptor', name:'Velocirraptor', rarity:'Rare', diet:'Carnivore',
     speed:95, strength:40, intelligence:90, size:0.8, minAge:1,
-    traits:['Curioso','Social','Astuto'],
-    desc:'Rápido, de olhar afiado e incrivelmente inteligente. Estuda-te tanto quanto tu o estudas a ele, rodeando em arranques curiosos.',
+    traits:['Curioso','Sociável','Astuto'],
+    desc:'Rápido, atento e inquietantemente inteligente. Estuda-te tanto quanto tu o estudas, rodeando-te em breves rajadas de curiosidade.',
     color:'#C2653F', accent:'#8C4A2E'
   },
   {
-    id:'brachiosaurus', name:'Braquiossauro', rarity:'Épico', diet:'Herbívoro',
+    id:'brachiosaurus', name:'Braquiossauro', rarity:'Epic', diet:'Herbivore',
     speed:25, strength:70, intelligence:60, size:1.9, minAge:1,
     traits:['Gentil','Sereno','Sábio'],
     desc:'Um gigante gentil cuja cabeça desaparece na copa das árvores. Os seus movimentos lentos e deliberados parecem carregar a paciência de séculos.',
     color:'#6C9EAA', accent:'#3F6C77'
   },
   {
-    id:'trex', name:'Tiranossauro Rex', rarity:'Lendário', diet:'Carnívoro',
+    id:'trex', name:'Tiranossauro Rex', rarity:'Legendary', diet:'Carnivore',
     speed:65, strength:100, intelligence:55, size:1.6, minAge:1,
     traits:['Feroz','Dominante','Solitário'],
-    desc:'O vale fica silencioso quando ele se move. Poucos se aproximaram o suficiente para estudar um — ainda menos ganharam sequer um olhar.',
+    desc:'O vale fica em silêncio quando ele se move. Poucos se aproximaram o suficiente para o estudar — menos ainda mereceram sequer um olhar.',
     color:'#B4482F', accent:'#7A2E1C'
   },
   {
-    id:'parasaurolophus', name:'Parassaurolofo', rarity:'Comum', diet:'Herbívoro',
+    id:'parasaurolophus', name:'Parassaurolofo', rarity:'Common', diet:'Herbivore',
     speed:55, strength:55, intelligence:50, size:1.1, minAge:3,
-    traits:['Social','Alerta','Migratório'],
-    desc:'A sua crista emite um chamamento grave por todo o vale — o resto da manada parece saber sempre onde ele se encontra.',
+    traits:['Sociável','Alerta','Migratório'],
+    desc:'A sua crista transporta um som grave por todo o vale — o resto da manada parece saber sempre onde ele está. Atraído assim que o teu acampamento se tornou uma povoação.',
     color:'#D9A464', accent:'#A9793E'
   },
   {
-    id:'ankylosaurus', name:'Anquilossauro', rarity:'Raro', diet:'Herbívoro',
+    id:'ankylosaurus', name:'Anquilossauro', rarity:'Rare', diet:'Herbivore',
     speed:20, strength:90, intelligence:40, size:1.3, minAge:5,
     traits:['Defensivo','Teimoso','Resistente'],
-    desc:'Uma fortaleza viva, desde as placas blindadas até à clava na cauda. Apenas avistado quando a tua civilização avançou para os confins do vale.',
+    desc:'Uma fortaleza viva, da placa blindada à maça na cauda. Só avistado depois de a tua civilização se ter estendido até aos confins do vale.',
     color:'#6E7B6B', accent:'#454F44'
   },
   {
-    id:'pteranodon', name:'Pteranodonte', rarity:'Raro', diet:'Carnívoro',
+    id:'pteranodon', name:'Pteranodonte', rarity:'Rare', diet:'Carnivore',
     speed:95, strength:40, intelligence:65, size:0.9, minAge:1, flying:true,
     traits:['Alerta','Solitário','Aéreo'],
-    desc:'Roda nas alturas sobre o vale muito antes de aterrar — o primeiro sinal da sua presença é sempre uma sombra a cruzar o chão.',
+    desc:'Sobrevoa o vale em largos círculos muito antes de pousar — o primeiro sinal da sua chegada é sempre uma sombra a atravessar o chão.',
     color:'#C9B08A', accent:'#8C7452'
   },
   {
-    id:'spinosaurus', name:'Espinossauro', rarity:'Lendário', diet:'Carnívoro',
+    id:'spinosaurus', name:'Espinossauro', rarity:'Legendary', diet:'Carnivore',
     speed:60, strength:95, intelligence:65, size:1.7, minAge:4,
     traits:['Feroz','Territorial','Aquático'],
-    desc:'A sua vela corta as águas rasas antes que o resto do corpo surja na superfície. Nada mais no vale caça como ele.',
+    desc:'A sua vela corta as águas rasas antes de o resto do corpo emergir. Nada mais no vale caça como ele.',
     color:'#4A6B5C', accent:'#2E4A3E'
   }
 ];
 function speciesById(id){ return SPECIES.find(s=>s.id===id); }
 
 /* =====================================================================
-   DADOS DAS ERAS (PROGRESSÃO)
+   AGE DATA — the central progression architecture. Every age is data,
+   not hardcoded logic: requirements, unlocked buildings, palette and
+   the transportation/world layer are all declared here. AgeManager
+   (below) reads this table to drive world transformation.
 ===================================================================== */
 const AGES = [
-  { id:1, name:'Primal', epithet:'Fogo, pedra e instinto.',
+  { id:1, name:'Primitiva', epithet:'Fogo, pedra e instinto.',
     palette:{ ground:'#2A4A35', path:'#8a7a55', pathW:34, structure:'#6E4B34', accent:'#5C4530', roof:'#3E6B45' },
     req:null, year:1 },
-  { id:2, name:'Tribal', epithet:'Os primeiros campos são semeados.',
+  { id:2, name:'Tribal', epithet:'Semeiam-se os primeiros campos.',
     palette:{ ground:'#33502F', path:'#A08A5C', pathW:36, structure:'#7A5A3C', accent:'#5E4830', roof:'#8C6440' },
     req:{ level:2, buildings:1, species:1, resources:12 }, year:8, unlocks:['storage','farm'] },
-  { id:3, name:'Povoado', epithet:'Um acampamento torna-se uma aldeia.',
+  { id:3, name:'Povoação', epithet:'Um acampamento torna-se aldeia.',
     palette:{ ground:'#3A552F', path:'#B79E72', pathW:38, structure:'#8C6440', accent:'#6E4B34', roof:'#A9885A' },
     req:{ level:2, buildings:3, species:2, resources:26, building:'farm' }, year:20, unlocks:['workshop','market'] },
-  { id:4, name:'Ancestral', epithet:'Ergue-se a arquitetura de pedra.',
+  { id:4, name:'Antiga', epithet:'Ergue-se a arquitetura de pedra.',
     palette:{ ground:'#41562E', path:'#9C9186', pathW:42, structure:'#8B8579', accent:'#5F5A50', roof:'#B0AA9C' },
     req:{ level:3, buildings:5, species:3, resources:42, building:'workshop' }, year:45, unlocks:['monument'] },
   { id:5, name:'Clássica', epithet:'Cidades, bibliotecas e comércio.',
     palette:{ ground:'#47582D', path:'#ABA599', pathW:44, structure:'#9C9186', accent:'#6C6558', roof:'#C7C0AF' },
     req:{ level:4, buildings:7, species:4, resources:60, building:'monument' }, year:80, unlocks:['library'] },
-  { id:6, name:'Industrial', epithet:'O fumo ergue-se. Os comboios ligam os teus acampamentos.',
+  { id:6, name:'Industrial', epithet:'O fumo sobe. As ferrovias ligam os teus acampamentos.',
     palette:{ ground:'#3E4A34', path:'#5C5850', pathW:46, structure:'#5C5850', accent:'#3A3A38', roof:'#7A4A3A' },
     req:{ level:5, buildings:9, species:5, resources:80, building:'library', camps:2, campsConnected:true }, year:120, unlocks:['factory'], rail:true },
-  { id:7, name:'Elétrica', epithet:'A iluminação espalha-se pelo acampamento.',
+  { id:7, name:'Elétrica', epithet:'As luzes espalham-se pelo acampamento.',
     palette:{ ground:'#37453A', path:'#4A5058', pathW:46, structure:'#4A5058', accent:'#2E3238', roof:'#3F6C77' },
     req:{ level:6, buildings:11, resources:100, building:'factory' }, year:160, unlocks:['powerplant'], lights:true },
-  { id:8, name:'Digital', epithet:'Os dados substituem a adivinhação.',
+  { id:8, name:'Digital', epithet:'Os dados substituem as suposições.',
     palette:{ ground:'#303C40', path:'#40484E', pathW:48, structure:'#40484E', accent:'#262E33', roof:'#6C9EAA' },
     req:{ level:7, buildings:13, resources:120, building:'powerplant' }, year:200, unlocks:['datacenter'], drone:true },
-  { id:9, name:'Tecnologia Avançada', epithet:'A automatização molda a civilização.',
+  { id:9, name:'Tecnologia Avançada', epithet:'A automação remodela a civilização.',
     palette:{ ground:'#2C3838', path:'#3A4444', pathW:50, structure:'#3A4444', accent:'#202828', roof:'#B4482F' },
     req:{ level:8, buildings:15, resources:140, building:'datacenter' }, year:240, unlocks:['researchlab'], autoVehicle:true },
   { id:10, name:'Moderna', epithet:'Uma metrópole nascida de um único acampamento.',
@@ -1030,89 +774,109 @@ const AGES = [
 function ageById(n){ return AGES.find(a=>a.id===n); }
 
 /* =====================================================================
-   DADOS DOS EDIFÍCIOS
+   BUILDING DATA — every entry can appear at any age (the primitive
+   buildings persist and are visually re-skinned by the current age's
+   palette); newer entries unlock only once their age is reached.
+   Some buildings produce resources passively (production system).
 ===================================================================== */
 const BUILDINGS = [
   { id:'campfire', name:'Fogueira', cost:{wood:3,stone:0,food:0}, minAge:1, desc:'O coração do teu acampamento.' },
-  { id:'shelter',  name:'Abrigo', cost:{wood:6,stone:3,food:0}, minAge:1, desc:'Um local para descansar entre expedições.' },
-  { id:'habitat',  name:'Hábitat de Dinossauro', cost:{wood:5,stone:2,food:0}, minAge:1, desc:'Um espaço cuidado para os dinossauros descansarem.' },
-  { id:'storage',  name:'Armazém', cost:{wood:5,stone:2,food:0}, minAge:2, desc:'Guarda os recursos recolhidos em segurança.' },
-  { id:'farm',     name:'Quinta', cost:{wood:6,stone:0,food:1}, minAge:2, desc:'Produz comida lentamente de forma autónoma.', produce:{key:'food',amount:1,interval:20} },
+  { id:'shelter',  name:'Abrigo', cost:{wood:6,stone:3,food:0}, minAge:1, desc:'Um lugar para descansar entre expedições.' },
+  { id:'habitat',  name:'Habitat dos Dinossauros', cost:{wood:5,stone:2,food:0}, minAge:1, desc:'Um espaço cuidado onde os dinossauros podem descansar. Melhorá-lo ajuda todos os dinossauros descobertos a recuperar felicidade mais depressa.' },
+  { id:'storage',  name:'Cabana de Armazenamento', cost:{wood:5,stone:2,food:0}, minAge:2, desc:'Mantém os recursos recolhidos em segurança.' },
+  { id:'farm',     name:'Quinta', cost:{wood:6,stone:0,food:1}, minAge:2, desc:'Produz comida lentamente, por conta própria.', produce:{key:'food',amount:1,interval:20} },
   { id:'workshop', name:'Oficina', cost:{wood:8,stone:4,food:0}, minAge:3, desc:'Artesanato organizado para a povoação.' },
-  { id:'market',   name:'Mercado', cost:{wood:7,stone:3,food:2}, minAge:3, desc:'O comércio traz suprimentos constantes.', produce:{key:'wood',amount:1,interval:22} },
-  { id:'monument', name:'Monumento', cost:{wood:10,stone:12,food:0}, minAge:4, desc:'Um marco duradouro da civilização.' },
+  { id:'market',   name:'Mercado', cost:{wood:7,stone:3,food:2}, minAge:3, desc:'O comércio traz um fluxo constante de bens.', produce:{key:'wood',amount:1,interval:22} },
+  { id:'monument', name:'Monumento', cost:{wood:10,stone:12,food:0}, minAge:4, desc:'Uma marca duradoura da civilização.' },
   { id:'library',  name:'Biblioteca', cost:{wood:9,stone:8,food:0}, minAge:5, desc:'O conhecimento preservado acelera o progresso.' },
-  { id:'factory',  name:'Fábrica', cost:{wood:8,stone:14,food:0}, minAge:6, desc:'Produção mecânica à escala.', produce:{key:'stone',amount:2,interval:20} },
+  { id:'factory',  name:'Fábrica', cost:{wood:8,stone:14,food:0}, minAge:6, desc:'Produção mecânica, em grande escala.', produce:{key:'stone',amount:2,interval:20} },
   { id:'powerplant', name:'Central Elétrica', cost:{wood:6,stone:16,food:0}, minAge:7, desc:'A eletricidade espalha-se pelo acampamento.' },
-  { id:'datacenter', name:'Centro de Dados', cost:{wood:5,stone:18,food:0}, minAge:8, desc:'Computação para uma civilização digital.' },
-  { id:'researchlab', name:'Laboratório de Investigação', cost:{wood:6,stone:20,food:0}, minAge:9, desc:'Sistemas autónomos e investigação genética.' },
+  { id:'datacenter', name:'Centro de Dados', cost:{wood:5,stone:18,food:0}, minAge:8, desc:'Capacidade de computação para uma civilização digital.' },
+  { id:'researchlab', name:'Laboratório de Investigação', cost:{wood:6,stone:20,food:0}, minAge:9, desc:'Sistemas autónomos, investigação genética.' },
   { id:'metropolistower', name:'Torre da Metrópole', cost:{wood:8,stone:26,food:0}, minAge:10, desc:'O marco final da civilização.' }
 ];
 function buildingDef(id){ return BUILDINGS.find(b=>b.id===id); }
 
+/* =====================================================================
+   BUILDING LEVELS — a data-driven progression system, proven out on two
+   buildings before expanding to the rest. Each level has its own visual
+   identity (drawn in drawBuilding/drawShelterLevel/drawHabitatLevel) and
+   an Age gate, so upgrading isn't just a number going up. Buildings not
+   listed here simply don't offer an upgrade path yet.
+===================================================================== */
 const BUILDING_LEVELS = {
   campfire: [
     { level:1, name:'Fogueira', minAge:1, cost:null, desc:'O coração do teu acampamento.' },
-    { level:2, name:'Lareira de Pedra', minAge:3, cost:{wood:3,stone:6,food:0}, desc:'Uma lareira rodeada por pedras que mantém o calor durante a noite.' }
+    { level:2, name:'Lareira de Pedra', minAge:3, cost:{wood:3,stone:6,food:0}, desc:'Uma lareira em círculo de pedra que mantém o calor durante toda a noite.' }
   ],
   shelter: [
-    { level:1, name:'Abrigo Primitivo', minAge:1, cost:null, desc:'Uma tenda simples — proteção contra o vento, nada mais.' },
-    { level:2, name:'Casa de Madeira', minAge:2, cost:{wood:6,stone:2,food:0}, desc:'Paredes a sério e um telhado adequado. Feita para durar.' },
-    { level:3, name:'Casa de Pedra', minAge:4, cost:{wood:4,stone:10,food:0}, desc:'Paredes de pedra e lareira. As noites frias são agora uma memória.' }
+    { level:1, name:'Abrigo Primitivo', minAge:1, cost:null, desc:'Uma simples tenda — abrigo do vento, nada mais.' },
+    { level:2, name:'Casa de Madeira', minAge:2, cost:{wood:6,stone:2,food:0}, desc:'Paredes verdadeiras e um telhado à altura. Feita para durar uma estação.' },
+    { level:3, name:'Casa de Pedra', minAge:4, cost:{wood:4,stone:10,food:0}, desc:'Paredes de pedra e uma lareira. As noites frias já são passado.' }
   ],
   habitat: [
-    { level:1, name:'Cercado Primitivo', minAge:1, cost:null, desc:'Um anel de estacas — suficiente para marcar o limite.' },
-    { level:2, name:'Curral de Madeira', minAge:2, cost:{wood:8,stone:2,food:0}, desc:'Um curral vedado com abrigo. Os dinossauros recuperam felicidade 30% mais rápido.' },
-    { level:3, name:'Santuário de Pedra', minAge:4, cost:{wood:5,stone:14,food:0}, desc:'Murado e vigiado. Os dinossauros recuperam felicidade 60% mais rápido.' }
+    { level:1, name:'Cercado Primitivo', minAge:1, cost:null, desc:'Um círculo de estacas — o suficiente para marcar o limite, pouco mais.' },
+    { level:2, name:'Curral de Madeira', minAge:2, cost:{wood:8,stone:2,food:0}, desc:'Um curral vedado com abrigo. Os dinossauros aqui recuperam felicidade 30% mais depressa.' },
+    { level:3, name:'Santuário de Pedra', minAge:4, cost:{wood:5,stone:14,food:0}, desc:'Murado e vigiado. Os dinossauros aqui recuperam felicidade 60% mais depressa.' }
   ],
   storage: [
-    { level:1, name:'Cabana de Armazenamento', minAge:2, cost:null, desc:'Guarda os recursos recolhidos em segurança.' },
-    { level:2, name:'Grande Armazém', minAge:5, cost:{wood:6,stone:8,food:0}, desc:'Espaço suficiente para o excedente de uma povoação em crescimento.' }
+    { level:1, name:'Cabana de Armazenamento', minAge:2, cost:null, desc:'Mantém os recursos recolhidos em segurança.' },
+    { level:2, name:'Armazém', minAge:5, cost:{wood:6,stone:8,food:0}, desc:'Espaço suficiente para o excedente de uma povoação em crescimento.' }
   ],
   farm: [
-    { level:1, name:'Pequena Horta', minAge:2, cost:null, desc:'Produz comida lentamente de forma autónoma.', produce:{key:'food',amount:1,interval:20} },
-    { level:2, name:'Quinta em Patamares', minAge:4, cost:{wood:5,stone:3,food:0}, desc:'Campos em degraus produzem mais no mesmo espaço.', produce:{key:'food',amount:2,interval:18} },
-    { level:3, name:'Quinta Mecanizada', minAge:6, cost:{wood:4,stone:10,food:0}, desc:'O maquinário faz o trabalho de uma dúzia de braços.', produce:{key:'food',amount:3,interval:15} }
+    { level:1, name:'Pequena Horta', minAge:2, cost:null, desc:'Produz comida lentamente, por conta própria.', produce:{key:'food',amount:1,interval:20} },
+    { level:2, name:'Quinta em Socalcos', minAge:4, cost:{wood:5,stone:3,food:0}, desc:'Campos em socalcos produzem mais no mesmo espaço.', produce:{key:'food',amount:2,interval:18} },
+    { level:3, name:'Quinta Mecanizada', minAge:6, cost:{wood:4,stone:10,food:0}, desc:'A maquinaria faz o trabalho de uma dezena de mãos.', produce:{key:'food',amount:3,interval:15} }
   ],
   workshop: [
     { level:1, name:'Oficina', minAge:3, cost:null, desc:'Artesanato organizado para a povoação.' },
     { level:2, name:'Fundição', minAge:6, cost:{wood:6,stone:12,food:0}, desc:'O calor e o metal substituem as ferramentas manuais.' }
   ],
   market: [
-    { level:1, name:'Mercado', minAge:3, cost:null, desc:'O comércio traz suprimentos constantes.', produce:{key:'wood',amount:1,interval:22} },
-    { level:2, name:'Salão Comercial', minAge:5, cost:{wood:8,stone:6,food:0}, desc:'Comerciantes de fora do vale passam agora por aqui.', produce:{key:'wood',amount:2,interval:20} }
+    { level:1, name:'Mercado', minAge:3, cost:null, desc:'O comércio traz um fluxo constante de bens.', produce:{key:'wood',amount:1,interval:22} },
+    { level:2, name:'Salão de Comércio', minAge:5, cost:{wood:8,stone:6,food:0}, desc:'Mercadores de fora do vale passam agora por aqui.', produce:{key:'wood',amount:2,interval:20} }
   ],
   monument: [
-    { level:1, name:'Monumento', minAge:4, cost:null, desc:'Um marco duradouro da civilização.' },
-    { level:2, name:'Grande Monumento', minAge:7, cost:{wood:6,stone:20,food:0}, desc:'Visível de todos os cantos da povoação.' }
+    { level:1, name:'Monumento', minAge:4, cost:null, desc:'Uma marca duradoura da civilização.' },
+    { level:2, name:'Grande Monumento', minAge:7, cost:{wood:6,stone:20,food:0}, desc:'Visível de qualquer ponto da povoação.' }
   ],
   library: [
     { level:1, name:'Biblioteca', minAge:5, cost:null, desc:'O conhecimento preservado acelera o progresso.' },
     { level:2, name:'Grande Biblioteca', minAge:8, cost:{wood:6,stone:16,food:0}, desc:'Um registo de tudo o que a civilização aprendeu.' }
   ],
   factory: [
-    { level:1, name:'Fábrica', minAge:6, cost:null, desc:'Produção mecânica à escala.', produce:{key:'stone',amount:2,interval:20} },
-    { level:2, name:'Fábrica Automatizada', minAge:9, cost:{wood:6,stone:22,food:0}, desc:'Máquinas que antes precisavam de operários funcionam agora sozinhas.', produce:{key:'stone',amount:4,interval:18} }
+    { level:1, name:'Fábrica', minAge:6, cost:null, desc:'Produção mecânica, em grande escala.', produce:{key:'stone',amount:2,interval:20} },
+    { level:2, name:'Fábrica Automatizada', minAge:9, cost:{wood:6,stone:22,food:0}, desc:'Máquinas que antes precisavam de mãos agora funcionam sozinhas.', produce:{key:'stone',amount:4,interval:18} }
   ],
   powerplant: [
     { level:1, name:'Central Elétrica', minAge:7, cost:null, desc:'A eletricidade espalha-se pelo acampamento.' },
     { level:2, name:'Central de Fusão', minAge:10, cost:{wood:5,stone:24,food:0}, desc:'Energia suficiente para uma metrópole.' }
   ],
   datacenter: [
-    { level:1, name:'Centro de Dados', minAge:8, cost:null, desc:'Computação para uma civilização digital.' },
+    { level:1, name:'Centro de Dados', minAge:8, cost:null, desc:'Capacidade de computação para uma civilização digital.' },
     { level:2, name:'Centro de Dados Quântico', minAge:10, cost:{wood:4,stone:22,food:0}, desc:'Poder de processamento além de tudo o que existiu antes.' }
   ]
+  // researchlab e metropolistower são propositadamente de nível único: desbloqueiam
+  // tão tarde (Idade 9 e Idade 10) que um segundo nível nunca seria alcançável —
+  // são estruturas finais por conceção, não por omissão.
 };
 function levelDef(type, level){
   const levels = BUILDING_LEVELS[type];
   return levels ? levels.find(l=>l.level===level) : null;
 }
+/* The best (highest-level) Habitat built anywhere in the camp boosts
+   every discovered dinosaur's happiness regen — the explicit
+   buildings-affect-dinosaurs connection. */
 function habitatBonus(){
   const best = state.buildings.filter(b=>b.type==='habitat').reduce((m,b)=>Math.max(m,b.level||1), 0);
   if(best>=3) return 1.6;
   if(best>=2) return 1.3;
   return 1;
 }
+/* A building's current production — reads the level's own `produce`
+   override if the level table defines one, otherwise falls back to the
+   building's base definition. This is what makes farm/market/factory
+   upgrades functionally better, not just better-looking. */
 function currentProduce(b){
   const ld = levelDef(b.type, b.level||1);
   if(ld && ld.produce) return ld.produce;
@@ -1121,22 +885,22 @@ function currentProduce(b){
 }
 
 /* =====================================================================
-   CONSTANTES DO MUNDO
+   WORLD CONSTANTS
 ===================================================================== */
 const WORLD_W = 4200, WORLD_H = 2900;
 const CAMP_W = 560, CAMP_H = 400, CAMP_CELL = 80;
-const XP_THRESHOLDS = [0,80,180,320,520,800,1150,1550,2000,2500];
+const XP_THRESHOLDS = [0,80,180,320,520,800,1150,1550,2000,2500]; // index = level-1
 
 /* =====================================================================
-   ESTADO DO JOGO
+   GAME STATE
 ===================================================================== */
 const state = {
   started:false,
-  paused:false,
+  paused:false, // true while a blocking overlay (discovery) is open
   res:{ wood:2, stone:0, food:1, water:0 },
   xp:0, level:1,
   discovered:new Set(),
-  buildings:[],
+  buildings:[], // {type,gx,gy,cx,cy,bornAt}
   missionsCompleted:new Set(),
   placingType:null,
   keys:{},
@@ -1148,10 +912,10 @@ const state = {
   inspectingBuilding:null,
   notifiedUpgrades:new Set(),
   roadMode:false,
-  roads:[],
+  roads:[], // {x1,y1,x2,y2}
   movingBuilding:null,
   outfitId:'explorer',
-  camps:[ { id:'camp1', name:'Acampamento do Santiago', x:130, y:130, w:CAMP_W, h:CAMP_H, cell:CAMP_CELL } ],
+  camps:[ { id:'camp1', name:'Acampamento de Santiago', x:130, y:130, w:CAMP_W, h:CAMP_H, cell:CAMP_CELL } ],
   foundingCamp:false
 };
 
@@ -1168,19 +932,34 @@ function xpProgress(xp){
   return Math.max(0, Math.min(1, (xp-cur)/(next-cur)));
 }
 
+/* =====================================================================
+   OBJECTIVES ("Missions") — no longer a fixed list. The active mission
+   set IS the requirement list for the next Age, so it's always themed
+   to whatever Age the player is currently working toward. Completing
+   every objective automatically advances the civilization (see
+   checkAgeReady below) and the panel then refreshes to the new set.
+===================================================================== */
 function currentObjectives(){
   const na = nextAge();
   return na ? ageRequirementList(na) : [];
 }
+function allObjectivesMet(list){
+  return list.length>0 && list.every(o=>o.met);
+}
 
 /* =====================================================================
-   EXP / NÍVEL / ELOGIOS
+   XP / LEVEL
+===================================================================== */
+/* =====================================================================
+   REWARDS & PRAISE — small delight moments so progress feels celebrated,
+   not just logged. Phrases rotate randomly so repeat actions don't feel
+   like the same canned line every time.
 ===================================================================== */
 const PRAISE_PHRASES = [
-  'Bom trabalho, Santiago!', 'O vale está a prosperar!', 'O Santiago está imparável!',
-  'Excelente escolha!', 'O teu acampamento cresce forte!', 'Muito bem jogado!',
+  'Bom trabalho, Santiago!', 'O vale está a prosperar!', 'Santiago está em grande forma!',
+  'Excelente escolha!', 'O teu acampamento fica mais forte!', 'Muito bem jogado!',
   'O vale aprova!', 'Progresso fantástico!', 'Continua assim, Santiago!',
-  'É esse o espírito!', 'Com um aspeto ótimo!', 'A reputação do Santiago aumenta!'
+  'É esse o espírito!', 'Está com bom aspeto!', 'A reputação de Santiago cresce!'
 ];
 function praise(){ return choice(PRAISE_PHRASES); }
 function celebrate(wx, wy, text, color){
@@ -1193,9 +972,8 @@ function grantXP(amount){
   state.level = currentLevel(state.xp);
   updateLevelUI();
   if(state.level > before){
-    sfx.play('levelup');
-    showToast('Subiste de Nível! És agora Nível '+state.level+' — '+praise(), 'level');
-    celebrate(player.x, player.y-56, '★ Subiu de Nível! ★', '#E3A75B');
+    showToast('Subiste de Nível! Estás agora no Nível '+state.level+' — '+praise(), 'level');
+    celebrate(player.x, player.y-56, '★ Level Up! ★', '#E3A75B');
     renderBuildGrid();
   }
   checkAgeReady();
@@ -1206,7 +984,7 @@ function updateLevelUI(){
 }
 
 /* =====================================================================
-   RECURSOS UI
+   RESOURCES UI
 ===================================================================== */
 const RESOURCE_META = [
   {key:'wood', label:'Madeira', icon:'wood'},
@@ -1214,6 +992,10 @@ const RESOURCE_META = [
   {key:'food', label:'Comida', icon:'food'},
   {key:'water', label:'Água', icon:'water'}
 ];
+function resourceLabel(key){
+  const m = RESOURCE_META.find(r=>r.key===key);
+  return m ? m.label : key;
+}
 function renderResourceBar(){
   const bar = document.getElementById('resource-bar');
   bar.innerHTML = RESOURCE_META.map(r=>
@@ -1241,7 +1023,7 @@ function payCost(cost){
 }
 
 /* =====================================================================
-   NOTIFICAÇÕES (TOASTS)
+   TOASTS
 ===================================================================== */
 function showToast(text, type){
   const container = document.getElementById('toast-container');
@@ -1256,9 +1038,9 @@ function showToast(text, type){
 }
 
 /* =====================================================================
-   TEXTO FLUTUANTE
+   FLOATING WORLD TEXT (DOM, screen-space, positioned by camera projection)
 ===================================================================== */
-const floatingTexts = [];
+const floatingTexts = []; // {worldX, worldY, text, color, born}
 function spawnFloatingText(wx, wy, text, color){
   floatingTexts.push({ wx, wy, text, color: color||'#F3EEE4', born: performance.now() });
 }
@@ -1290,7 +1072,7 @@ function renderFloatingTexts(){
 }
 
 /* =====================================================================
-   FUNÇÕES AUXILIARES
+   RANDOM HELPERS
 ===================================================================== */
 function rand(a,b){ return a + Math.random()*(b-a); }
 function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -1299,6 +1081,8 @@ function insideBaseZone(x,y,margin){
   margin = margin||0;
   return state.camps.some(c => x > c.x-margin && x < c.x+c.w+margin && y > c.y-margin && y < c.y+c.h+margin);
 }
+/* Which specific camp a world point falls inside — needed for grid math
+   (placement/move/preview) once there's more than one camp. */
 function campContaining(x,y,margin){
   margin = margin||0;
   return state.camps.find(c => x > c.x-margin && x < c.x+c.w+margin && y > c.y-margin && y < c.y+c.h+margin) || null;
@@ -1306,7 +1090,7 @@ function campContaining(x,y,margin){
 function primaryCamp(){ return state.camps[0]; }
 
 /* =====================================================================
-   NODOS DE RECURSOS
+   RESOURCE NODES (in-world, gatherable)
 ===================================================================== */
 const resourceNodes = [];
 function generateResourceNodes(){
@@ -1332,13 +1116,15 @@ function generateResourceNodes(){
 }
 
 /* =====================================================================
-   RENDERIZAÇÃO DO TERRENO
+   DECORATION (static, non-interactive; baked into terrain layer)
 ===================================================================== */
 function paintTerrain(ctx){
   const age = ageById(state.age);
   const pal = age.palette;
-  const developed = (state.age-1)/9;
+  const developed = (state.age-1)/9; // 0 at Primal, 1 at Modern — how far the land has been shaped
 
+  // base gradient wash — tints from wild valley green toward the Age's
+  // ground color as the civilization develops
   const topColor = lerpColor('#2A4A35', pal.ground, developed);
   const bottomColor = lerpColor('#1C3527', darkenColor(pal.ground,0.35), developed);
   const grad = ctx.createLinearGradient(0,0,0,WORLD_H);
@@ -1347,6 +1133,7 @@ function paintTerrain(ctx){
   ctx.fillStyle = grad;
   ctx.fillRect(0,0,WORLD_W,WORLD_H);
 
+  // mottled texture patches — the wild valley grain fades as land is developed
   const textureCount = Math.round(2200 * (1 - developed*0.55));
   for(let i=0;i<textureCount;i++){
     const x = Math.random()*WORLD_W, y = Math.random()*WORLD_H;
@@ -1357,6 +1144,7 @@ function paintTerrain(ctx){
     ctx.fill();
   }
 
+  // decorative wild bushes / rocks — thin out as the valley is settled
   const wildCount = Math.round(300 * (1 - developed*0.7));
   for(let i=0;i<wildCount;i++){
     const x = rand(0,WORLD_W), y = rand(0,WORLD_H);
@@ -1370,6 +1158,8 @@ function paintTerrain(ctx){
     }
   }
 
+  // developed ground patches — plots of cleared/worked land that appear
+  // as the Age advances, tinted with the Age's own palette
   if(developed>0.25){
     const patchCount = Math.round(115*developed);
     for(let i=0;i<patchCount;i++){
@@ -1381,6 +1171,10 @@ function paintTerrain(ctx){
     }
   }
 
+  // camp zone ground — tinted with the Age's structure color, signature
+  // amber border kept for continuity across every Age. Every founded camp
+  // gets its own zone; buildTerrain() is re-run whenever a camp is founded
+  // so a new one appears immediately rather than waiting for the next Age.
   state.camps.forEach(camp=>{
     ctx.save();
     ctx.fillStyle = hexToRgba(pal.structure, 0.14);
@@ -1394,6 +1188,7 @@ function paintTerrain(ctx){
     ctx.restore();
   });
 
+  // world border vignette
   ctx.strokeStyle = 'rgba(0,0,0,0.4)';
   ctx.lineWidth = 60;
   ctx.strokeRect(30,30,WORLD_W-60,WORLD_H-60);
@@ -1415,6 +1210,9 @@ function buildTerrain(){
   paintTerrain(terrainCanvas.getContext('2d'));
 }
 
+/* Shared path geometry, reused by the dynamic infrastructure layer below
+   so the road / rail / streetlamps always trace the same route the camp
+   has always used — the world upgrades in place, it never resets. */
 const PATH_START = { x: primaryCamp().x+primaryCamp().w/2, y: primaryCamp().y+primaryCamp().h };
 const PATH_CTRL  = { x: primaryCamp().x+primaryCamp().w/2+120, y: primaryCamp().y+primaryCamp().h+220 };
 const PATH_END   = { x: WORLD_W*0.55, y: WORLD_H*0.55 };
@@ -1424,14 +1222,19 @@ function pathPoint(t){
   return {x,y};
 }
 
+/* Draws the road (and, from the Industrial age onward, the layered
+   infrastructure that sits alongside it) live each frame — this is the
+   "World Technology Layer" that visibly communicates the current Age. */
+/* =====================================================================
+   ROAD NETWORK GRAPH — powers two things: (1) the "camps must be
+   road-connected" Age requirement, and (2) the Industrial-age train,
+   which travels along whatever path YOUR roads actually form between
+   two camps rather than a fixed predetermined track. Cached and only
+   rebuilt when a road is added or a camp is founded (see roadGraphDirty).
+===================================================================== */
 let roadGraphDirty = true;
 let cachedTrainPath = null;
 function pointKey(x,y){ return x+','+y; }
-
-function isPointInOrNearCamp(px, py, camp, margin = 90){
-  return px >= camp.x - margin && px <= camp.x + camp.w + margin &&
-         py >= camp.y - margin && py <= camp.y + camp.h + margin;
-}
 
 function buildRoadGraph(){
   const adj = new Map();
@@ -1442,17 +1245,17 @@ function buildRoadGraph(){
     adj.get(k2).add(k1);
   }
   state.roads.forEach(r=>{ addEdge(pointKey(r.x1,r.y1), pointKey(r.x2,r.y2)); });
-  const roadEndpointKeys = Array.from(adj.keys());
+  const roadEndpointKeys = Array.from(adj.keys()); // snapshot before adding camp nodes below
   const campNodeKeys = {};
+  const campConnectRadius = 260;
   state.camps.forEach(camp=>{
     const campKey = 'camp:'+camp.id;
     campNodeKeys[camp.id] = campKey;
     if(!adj.has(campKey)) adj.set(campKey, new Set());
+    const cx = camp.x+camp.w/2, cy = camp.y+camp.h/2;
     roadEndpointKeys.forEach(key=>{
       const [px,py] = key.split(',').map(Number);
-      if(isPointInOrNearCamp(px, py, camp, 90)){
-        addEdge(campKey, key);
-      }
+      if(dist(px,py,cx,cy) < campConnectRadius) addEdge(campKey, key);
     });
   });
   return { adj, campNodeKeys };
@@ -1483,6 +1286,8 @@ function bfsPath(adj, startKey, endKey){
   return null;
 }
 
+/* Every camp must be reachable from every other camp through the road
+   network for this to be true. Trivially true with 0 or 1 camps. */
 function allCampsConnected(){
   if(state.camps.length<=1) return true;
   const { adj, campNodeKeys } = buildRoadGraph();
@@ -1516,10 +1321,13 @@ function drawWorldInfrastructure(ctx){
   const age = ageById(state.age);
   const pal = age.palette;
 
+  // industrial haze — a full-map tint so the shift from wild valley to
+  // machine-age civilization reads instantly, not just in the road/buildings
   if(state.age>=6){
     ctx.fillStyle = hexToRgba(pal.accent, Math.min(0.09, 0.02*(state.age-5)));
     ctx.fillRect(0,0,WORLD_W,WORLD_H);
   }
+  // digital-age tech grid — another unmistakable full-map signal of Age
   if(state.age>=8){
     ctx.strokeStyle = hexToRgba(pal.roof, 0.05);
     ctx.lineWidth = 1;
@@ -1527,6 +1335,7 @@ function drawWorldInfrastructure(ctx){
     for(let gy=0; gy<WORLD_H; gy+=90){ ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(WORLD_W,gy); ctx.stroke(); }
   }
 
+  // road — style upgrades with age (color/width only; same route always)
   ctx.strokeStyle = hexToRgba(pal.path, 0.55);
   ctx.lineWidth = pal.pathW;
   ctx.lineCap = 'round';
@@ -1534,14 +1343,18 @@ function drawWorldInfrastructure(ctx){
   ctx.moveTo(PATH_START.x, PATH_START.y);
   ctx.quadraticCurveTo(PATH_CTRL.x, PATH_CTRL.y, PATH_END.x, PATH_END.y);
   ctx.stroke();
-  if(state.age>=4){
+  if(state.age>=4){ // ancient onward: paved edge lines
     ctx.strokeStyle = hexToRgba(pal.accent,0.5); ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(PATH_START.x, PATH_START.y); ctx.quadraticCurveTo(PATH_CTRL.x, PATH_CTRL.y, PATH_END.x, PATH_END.y); ctx.stroke();
   }
 
+  // train (Industrial age onward) — travels along YOUR actual roads
+  // connecting two camps. No connected path yet? No train — that's the
+  // incentive to build one.
   if(age.rail){
     const path = getTrainPath();
     if(path && path.length>=2){
+      // rail ties along the path, for flavor
       ctx.strokeStyle = 'rgba(150,140,120,0.35)'; ctx.lineWidth=1.2;
       for(let i=0;i<path.length-1;i++){
         const a=path[i], b=path[i+1];
@@ -1555,6 +1368,7 @@ function drawWorldInfrastructure(ctx){
           ctx.beginPath(); ctx.moveTo(px-perpX,py-perpY); ctx.lineTo(px+perpX,py+perpY); ctx.stroke();
         }
       }
+      // animate the train along cumulative path length
       let totalLen = 0;
       for(let i=1;i<path.length;i++) totalLen += dist(path[i-1].x,path[i-1].y,path[i].x,path[i].y);
       const cycle = Math.max(6000, totalLen*22);
@@ -1582,6 +1396,7 @@ function drawWorldInfrastructure(ctx){
     }
   }
 
+  // streetlamps (Electric age onward), spaced along the road
   if(age.lights){
     for(let t=0.08;t<0.98;t+=0.14){
       const p = pathPoint(t);
@@ -1594,6 +1409,7 @@ function drawWorldInfrastructure(ctx){
     }
   }
 
+  // patrol drone (Digital age onward)
   if(age.drone){
     const t = performance.now()/1400;
     const dx = primaryCamp().x+primaryCamp().w*0.5 + Math.cos(t)*180;
@@ -1604,6 +1420,7 @@ function drawWorldInfrastructure(ctx){
     ctx.beginPath(); ctx.moveTo(dx-10,dy); ctx.lineTo(dx+10,dy); ctx.stroke();
   }
 
+  // autonomous vehicle along the road (Advanced Tech age onward)
   if(age.autoVehicle){
     const t = (performance.now()/4200)%1;
     const p = pathPoint(t);
@@ -1611,6 +1428,7 @@ function drawWorldInfrastructure(ctx){
     roundRectPath(ctx, p.x-10, p.y-6, 20, 12, 4); ctx.fill();
   }
 
+  // skyline silhouette on the horizon (Modern age)
   if(age.skyline){
     if(!skylineBuildings){
       skylineBuildings = [];
@@ -1631,10 +1449,13 @@ function drawWorldInfrastructure(ctx){
 let skylineBuildings = null;
 
 /* =====================================================================
-   ENTIDADES DINOSSAUROS
+   DINOSAUR ENTITIES
 ===================================================================== */
 const dinos = [];
 
+/* Every entry appears once the player reaches `minAge` — the valley's
+   population grows and new species arrive as the civilization advances,
+   not all at once at the start. */
 const DINO_SPAWN_SCHEDULE = [
   { minAge:1, sp:'triceratops', x:1600, y:835, range:300 },
   { minAge:1, sp:'triceratops', x:1745, y:965, range:300 },
@@ -1643,15 +1464,15 @@ const DINO_SPAWN_SCHEDULE = [
   { minAge:1, sp:'velociraptor', x:2910, y:770, range:360 },
   { minAge:1, sp:'brachiosaurus', x:3440, y:1930, range:250 },
   { minAge:1, sp:'trex', x:3680, y:645, range:520 },
-  { minAge:1, sp:'pteranodon', x:2100, y:2400, range:420 },
-  { minAge:2, sp:'triceratops', x:1520, y:1205, range:280 },
-  { minAge:3, sp:'parasaurolophus', x:2080, y:2090, range:320 },
+  { minAge:1, sp:'pteranodon', x:2100, y:2400, range:420 },     // new species — flies from the start
+  { minAge:2, sp:'triceratops', x:1520, y:1205, range:280 },    // herd grows — Tribal
+  { minAge:3, sp:'parasaurolophus', x:2080, y:2090, range:320 }, // new species — Settlement
   { minAge:3, sp:'parasaurolophus', x:2210, y:2185, range:320 },
-  { minAge:4, sp:'stegosaurus', x:3120, y:1610, range:300 },
-  { minAge:4, sp:'spinosaurus', x:3800, y:2500, range:340 },
-  { minAge:5, sp:'ankylosaurus', x:3600, y:2410, range:280 },
-  { minAge:6, sp:'velociraptor', x:2560, y:2490, range:360 },
-  { minAge:8, sp:'brachiosaurus', x:1440, y:2330, range:280 }
+  { minAge:4, sp:'stegosaurus', x:3120, y:1610, range:300 },    // Ancient
+  { minAge:4, sp:'spinosaurus', x:3800, y:2500, range:340 },    // new species — Ancient
+  { minAge:5, sp:'ankylosaurus', x:3600, y:2410, range:280 },   // new species — Classical
+  { minAge:6, sp:'velociraptor', x:2560, y:2490, range:360 },   // Industrial
+  { minAge:8, sp:'brachiosaurus', x:1440, y:2330, range:280 }   // Digital
 ];
 const spawnedScheduleIndices = new Set();
 
@@ -1659,6 +1480,9 @@ function makeInitialNeeds(){
   return { hunger: rand(65,90), thirst: rand(65,90), happiness: rand(55,80), lastPet:0 };
 }
 
+/* Spawns every schedule entry whose minAge has been reached and that
+   hasn't already been spawned. Returns the list of species names that
+   were newly introduced (for the "new arrivals" toast). */
 function spawnDinosForAgeUpTo(ageId){
   const newSpecies = new Set();
   DINO_SPAWN_SCHEDULE.forEach((d,i)=>{
@@ -1680,6 +1504,14 @@ function spawnDinosForAgeUpTo(ageId){
 }
 function spawnDinos(){ spawnDinosForAgeUpTo(state.age); }
 
+/* =====================================================================
+   MIGRATION — the valley is bigger than what's ever on screen at once.
+   Every so often, an already-discovered dinosaur wanders off toward the
+   nearest edge and leaves; a little while later, a new individual — often
+   a species you don't currently have anywhere nearby — walks in from an
+   edge to replace it. Undiscovered, schedule-placed dinosaurs never
+   migrate, so the species you still need to find are always reachable.
+===================================================================== */
 let nextMigrationCheck = null;
 let migrationDinoCounter = 0;
 
@@ -1695,12 +1527,15 @@ function startLeaving(d){
 
 function pickEdgePoint(){
   const side = Math.floor(rand(0,4));
-  if(side===0) return {x:-140, y:rand(150,WORLD_H-150)};
-  if(side===1) return {x:WORLD_W+140, y:rand(150,WORLD_H-150)};
-  if(side===2) return {x:rand(150,WORLD_W-150), y:-140};
-  return {x:rand(150,WORLD_W-150), y:WORLD_H+140};
+  if(side===0) return {x:-140, y:rand(150,WORLD_H-150)};      // left
+  if(side===1) return {x:WORLD_W+140, y:rand(150,WORLD_H-150)}; // right
+  if(side===2) return {x:rand(150,WORLD_W-150), y:-140};        // top
+  return {x:rand(150,WORLD_W-150), y:WORLD_H+140};               // bottom
 }
 
+/* Weighted toward species not currently represented anywhere in the
+   valley, so a migration event is more likely to bring genuine variety
+   rather than just another individual of something already common. */
 function pickMigrationSpecies(){
   const eligible = SPECIES.filter(s=>s.minAge<=state.age);
   if(!eligible.length) return null;
@@ -1730,10 +1565,12 @@ function spawnArrival(){
 }
 
 function tryMigrationEvent(){
+  // send one eligible (discovered, currently settled) dinosaur toward the edge
   const eligible = dinos.filter(d=>d.state!=='leaving' && d.state!=='arriving' && state.discovered.has(d.speciesId));
   if(eligible.length){
     startLeaving(choice(eligible));
   }
+  // ...and bring in a new arrival to replace it, keeping the valley populated
   spawnArrival();
 }
 
@@ -1747,6 +1584,9 @@ function updateMigration(now){
 function updateDino(d, dt){
   const sp = speciesById(d.speciesId);
 
+  // Migration states (see startLeaving / spawnArrival) take full priority
+  // over normal AI — a dinosaur that's walking off or onto the map just
+  // walks, it doesn't flee or wander mid-journey.
   if(d.state==='leaving' || d.state==='arriving'){
     const dx = d.target.x-d.x, dy = d.target.y-d.y;
     const dd = Math.hypot(dx,dy);
@@ -1771,7 +1611,7 @@ function updateDino(d, dt){
   const alreadyKnown = state.discovered.has(d.speciesId);
   const neglected = alreadyKnown && d.needs && d.needs.happiness < 20;
 
-  if(pd < fleeRadius && (!alreadyKnown || neglected) && sp.diet==='Herbívoro'){
+  if(pd < fleeRadius && (!alreadyKnown || neglected) && sp.diet==='Herbivore'){
     d.state = 'flee';
     const ang = Math.atan2(d.y-player.y, d.x-player.x);
     d.target.x = clamp(d.x + Math.cos(ang)*140, d.homeX-d.range, d.homeX+d.range);
@@ -1795,18 +1635,26 @@ function updateDino(d, dt){
   }
 }
 
+/* =====================================================================
+   CARETAKER SYSTEM — every dinosaur has hunger/thirst/happiness that
+   drift on their own; the player keeps them up by feeding, watering,
+   and petting once a species has been discovered.
+===================================================================== */
 function tickNeeds(d, dt){
   if(!d.needs) d.needs = makeInitialNeeds();
   const n = d.needs;
-  n.hunger = clamp(n.hunger - dt*(100/420), 0, 100);
-  n.thirst = clamp(n.thirst - dt*(100/300), 0, 100);
+  n.hunger = clamp(n.hunger - dt*(100/420), 0, 100);   // ~7 minutes to fully starve
+  n.thirst = clamp(n.thirst - dt*(100/300), 0, 100);   // ~5 minutes to fully dehydrate
   if(n.hunger>55 && n.thirst>55){
-    n.happiness = clamp(n.happiness + dt*(100/600)*habitatBonus(), 0, 100);
+    n.happiness = clamp(n.happiness + dt*(100/600)*habitatBonus(), 0, 100); // slowly content when well cared for — faster with a better Habitat
   } else if(n.hunger<25 || n.thirst<25){
-    n.happiness = clamp(n.happiness - dt*(100/240), 0, 100);
+    n.happiness = clamp(n.happiness - dt*(100/240), 0, 100); // neglect hurts happiness faster
   }
 }
 
+/* Decides what pressing E on a known dinosaur should do right now —
+   shared by the interact hint (so the label is honest) and the actual
+   action, so they can never disagree. */
 function planCareAction(d){
   const n = d.needs || (d.needs = makeInitialNeeds());
   const needsFood = n.hunger < 60, needsWater = n.thirst < 60;
@@ -1819,43 +1667,43 @@ function planCareAction(d){
 function careActionLabel(d){
   const sp = speciesById(d.speciesId);
   const action = planCareAction(d);
-  if(action==='feed') return 'Alimentar '+sp.name+' (gasta 1 Comida)';
-  if(action==='water') return 'Dar Água a '+sp.name+' (gasta 1 Água)';
-  return 'Acariciar '+sp.name;
+  if(action==='feed') return 'Alimentar '+sp.name+' (usa 1 Comida)';
+  if(action==='water') return 'Dar Água a '+sp.name+' (usa 1 Água)';
+  return 'Fazer Festas a '+sp.name;
 }
 function performCareAction(d){
   const sp = speciesById(d.speciesId);
   const n = d.needs || (d.needs = makeInitialNeeds());
   const action = planCareAction(d);
-  sfx.play('care');
   if(action==='feed'){
     addResource('food', -1);
     n.hunger = clamp(n.hunger+35,0,100);
     n.happiness = clamp(n.happiness+6,0,100);
     spawnFloatingText(d.x, d.y-46, '+35 Fome', '#E3A75B');
-    showToast('O '+sp.name+' gostou da refeição', null);
+    showToast(sp.name+' gostou da refeição', null);
   } else if(action==='water'){
     addResource('water', -1);
     n.thirst = clamp(n.thirst+35,0,100);
     n.happiness = clamp(n.happiness+6,0,100);
     spawnFloatingText(d.x, d.y-46, '+35 Sede', '#6C9EAA');
-    showToast('O '+sp.name+' bebeu com vontade', null);
+    showToast(sp.name+' bebeu bastante', null);
   } else {
     const now = performance.now();
     if(now - (n.lastPet||0) > 12000){
       n.lastPet = now;
       n.happiness = clamp(n.happiness+8,0,100);
       spawnFloatingText(d.x, d.y-46, '❤ Felicidade', '#C2653F');
-      showToast('O '+sp.name+' roça-se carinhosamente', null);
+      showToast(sp.name+' aconchega-se mais perto', null);
     } else {
-      showToast('O '+sp.name+' está satisfeito por agora', null);
+      showToast(sp.name+' está satisfeito por agora', null);
     }
   }
 }
 function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
 
 /* =====================================================================
-   RENDERIZAÇÃO DOS DINOSSAUROS
+   DINOSAUR RENDERING (stylized, procedural — used both in-world & in the
+   discovery reveal / dex thumbnails)
 ===================================================================== */
 function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
   ctx.save();
@@ -1875,15 +1723,18 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
   const bodyColor = sp.color, shade = sp.accent;
   const bobY = Math.sin(bob)*2.4;
 
+  // shadow
   ctx.fillStyle = 'rgba(0,0,0,0.28)';
   ctx.beginPath(); ctx.ellipse(0, 46, 44, 10, 0,0,Math.PI*2); ctx.fill();
 
   ctx.translate(0, bobY);
 
+  // legs
   ctx.fillStyle = shade;
   ctx.beginPath(); roundRectPath(ctx,-30,10,13,32,5); ctx.fill();
   ctx.beginPath(); roundRectPath(ctx,17,10,13,32,5); ctx.fill();
 
+  // tail
   ctx.fillStyle = bodyColor;
   ctx.beginPath();
   ctx.moveTo(-32,-6);
@@ -1891,10 +1742,12 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
   ctx.quadraticCurveTo(-70,6, -32, 10);
   ctx.closePath(); ctx.fill();
 
+  // body
   ctx.beginPath();
   ctx.ellipse(0,-8,46,30,0,0,Math.PI*2);
   ctx.fill();
 
+  // species-specific back details
   if(sp.id==='stegosaurus'){
     ctx.fillStyle = shade;
     for(let i=-1;i<=3;i++){
@@ -1912,6 +1765,7 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
     for(let i=-2;i<=2;i++){
       ctx.beginPath(); ctx.ellipse(i*16,-26,8,6,0,0,Math.PI*2); ctx.fill();
     }
+    // tail club
     ctx.fillStyle = shade;
     ctx.beginPath(); ctx.arc(-88,8,10,0,Math.PI*2); ctx.fill();
   }
@@ -1927,6 +1781,7 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
     ctx.closePath(); ctx.fill();
   }
 
+  // neck/head
   ctx.fillStyle = bodyColor;
   const headX = 40, headY = sp.id==='brachiosaurus' ? -58 : -18;
   if(sp.id==='brachiosaurus'){
@@ -1938,11 +1793,13 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
   }
   ctx.beginPath(); ctx.ellipse(headX, headY, 15, 11, 0.15, 0, Math.PI*2); ctx.fill();
 
+  // horns for triceratops
   if(sp.id==='triceratops'){
     ctx.strokeStyle = '#EDE7D8'; ctx.lineWidth = 3; ctx.lineCap='round';
     ctx.beginPath(); ctx.moveTo(headX+6,headY-6); ctx.lineTo(headX+18,headY-20); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(headX+2,headY-8); ctx.lineTo(headX+2,headY-22); ctx.stroke();
   }
+  // crest for parasaurolophus
   if(sp.id==='parasaurolophus'){
     ctx.fillStyle = shade;
     ctx.beginPath();
@@ -1951,27 +1808,34 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
     ctx.quadraticCurveTo(headX-16,headY-10, headX-2,headY+2);
     ctx.closePath(); ctx.fill();
   }
-  if(sp.diet==='Carnívoro'){
+  // teeth hint for trex/raptor
+  if(sp.diet==='Carnivore'){
     ctx.fillStyle = shade;
     ctx.beginPath(); ctx.moveTo(headX+8,headY+6); ctx.lineTo(headX+22,headY+9); ctx.lineTo(headX+7,headY+12); ctx.closePath(); ctx.fill();
   }
 
+  // eye
   ctx.fillStyle = '#12100C';
   ctx.beginPath(); ctx.arc(headX+3, headY-2, 2.1, 0, Math.PI*2); ctx.fill();
 
   ctx.restore();
 }
+/* Flying creatures (Pteranodon) get an entirely different silhouette —
+   no legs, a spread wing pair that flaps with the idle bob, and a
+   distinctive backward head crest instead of the quadruped body plan. */
 function drawFlyingDino(ctx, sp, bob){
   const bodyColor = sp.color, shade = sp.accent;
   const flap = Math.sin(bob*1.6);
   const altitudeBob = Math.sin(bob*0.7)*5;
 
+  // shadow on the ground, smaller and offset to suggest altitude
   ctx.fillStyle = 'rgba(0,0,0,0.18)';
   ctx.beginPath(); ctx.ellipse(4, 50, 26, 7, 0,0,Math.PI*2); ctx.fill();
 
   ctx.save();
   ctx.translate(0, altitudeBob - 14);
 
+  // wings — angle oscillates with the flap for a continuous flying motion
   ctx.fillStyle = shade;
   ctx.save(); ctx.rotate(flap*0.25 - 0.1);
   ctx.beginPath();
@@ -1986,9 +1850,11 @@ function drawFlyingDino(ctx, sp, bob){
   ctx.closePath(); ctx.fill();
   ctx.restore();
 
+  // body
   ctx.fillStyle = bodyColor;
   ctx.beginPath(); ctx.ellipse(0,0,20,11,0,0,Math.PI*2); ctx.fill();
 
+  // head + long backward crest + beak
   const headX = 22, headY = -6;
   ctx.beginPath(); ctx.ellipse(headX, headY, 9, 6, -0.1, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = shade;
@@ -2024,7 +1890,9 @@ function darkenColor(hex, amt){
 }
 
 /* =====================================================================
-   RENDERIZAÇÃO DOS EDIFÍCIOS
+   BUILDING RENDERING — every structure is re-skinned live by the current
+   Age's palette, so the same footprint visibly ages as the civilization
+   advances (world memory: nothing is destroyed and rebuilt, it upgrades).
 ===================================================================== */
 function drawBuilding(ctx, cx, cy, type, scale, paletteOverride, level){
   level = level || 1;
@@ -2037,7 +1905,7 @@ function drawBuilding(ctx, cx, cy, type, scale, paletteOverride, level){
   ctx.beginPath(); ctx.ellipse(0,28,34,9,0,0,Math.PI*2); ctx.fill();
 
   if(type==='campfire'){
-    if(level>=2){
+    if(level>=2){ // Stone Hearth — a ring of stones instead of logs
       ctx.fillStyle = pal.structure;
       for(let i=0;i<8;i++){
         const a = (i/8)*Math.PI*2;
@@ -2064,7 +1932,7 @@ function drawBuilding(ctx, cx, cy, type, scale, paletteOverride, level){
     ctx.closePath(); ctx.fill();
     ctx.restore();
   } else if(type==='storage'){
-    if(level>=2){
+    if(level>=2){ // Warehouse — wider, taller, two-bay silhouette
       ctx.fillStyle = pal.structure;
       roundRectPath(ctx,-38,-10,76,40,6); ctx.fill();
       ctx.fillStyle = pal.roof;
@@ -2091,8 +1959,11 @@ function drawBuilding(ctx, cx, cy, type, scale, paletteOverride, level){
   ctx.restore();
 }
 
+/* SHELTER — proof-of-concept multi-level building. Same footprint, same
+   camp location, but the structure itself physically changes at each
+   level (not just a recolor). */
 function drawShelterLevel(ctx, pal, level){
-  if(level>=3){
+  if(level>=3){ // Stone House
     ctx.fillStyle = pal.structure;
     roundRectPath(ctx,-28,-4,56,30,5); ctx.fill();
     ctx.fillStyle = pal.roof;
@@ -2104,14 +1975,14 @@ function drawShelterLevel(ctx, pal, level){
     ctx.save(); ctx.globalAlpha=0.4; ctx.fillStyle='rgba(200,200,200,0.5)';
     ctx.beginPath(); ctx.arc(19, -34-((t*10)%14), 4, 0, Math.PI*2); ctx.fill();
     ctx.restore();
-  } else if(level>=2){
+  } else if(level>=2){ // Wooden House
     ctx.fillStyle = pal.accent;
     roundRectPath(ctx,-24,-2,48,26,4); ctx.fill();
     ctx.fillStyle = pal.roof;
     ctx.beginPath(); ctx.moveTo(-30,-2); ctx.lineTo(0,-26); ctx.lineTo(30,-2); ctx.closePath(); ctx.fill();
     ctx.fillStyle='rgba(255,225,170,0.5)';
     ctx.fillRect(-6,4,12,10);
-  } else {
+  } else { // Level 1 — Primitive Shelter
     ctx.fillStyle = pal.roof;
     ctx.beginPath(); ctx.moveTo(-34,10); ctx.lineTo(0,-32); ctx.lineTo(34,10); ctx.lineTo(24,10); ctx.lineTo(0,-16); ctx.lineTo(-24,10); ctx.closePath(); ctx.fill();
     ctx.fillStyle= pal.accent;
@@ -2119,15 +1990,18 @@ function drawShelterLevel(ctx, pal, level){
   }
 }
 
+/* DINOSAUR HABITAT — the second proof-of-concept building. Levels here
+   aren't just cosmetic: higher levels speed up happiness recovery for
+   every discovered dinosaur (see habitatBonus / tickNeeds). */
 function drawHabitatLevel(ctx, pal, level){
-  if(level>=3){
+  if(level>=3){ // Stone Sanctuary
     ctx.strokeStyle = pal.structure; ctx.lineWidth=8; ctx.lineCap='round';
     ctx.beginPath(); ctx.arc(0,4,30,Math.PI*0.15,Math.PI*0.85); ctx.stroke();
     ctx.beginPath(); ctx.arc(0,4,30,Math.PI*1.15,Math.PI*1.85); ctx.stroke();
     ctx.fillStyle = pal.accent; roundRectPath(ctx,-8,-30,16,26,3); ctx.fill();
     ctx.fillStyle = pal.roof;
     ctx.beginPath(); ctx.moveTo(-10,-30); ctx.lineTo(0,-42); ctx.lineTo(10,-30); ctx.closePath(); ctx.fill();
-  } else if(level>=2){
+  } else if(level>=2){ // Wooden Pen
     ctx.strokeStyle = pal.accent; ctx.lineWidth=5; ctx.lineCap='round';
     for(let i=0;i<8;i++){
       const a = (i/8)*Math.PI*2;
@@ -2135,7 +2009,7 @@ function drawHabitatLevel(ctx, pal, level){
     }
     ctx.fillStyle = pal.roof;
     ctx.beginPath(); ctx.moveTo(-14,-8); ctx.lineTo(0,-22); ctx.lineTo(14,-8); ctx.closePath(); ctx.fill();
-  } else {
+  } else { // Level 1 — Primitive Enclosure
     ctx.strokeStyle = pal.accent; ctx.lineWidth=4; ctx.lineCap='round';
     for(let i=0;i<10;i++){
       const a = (i/10)*Math.PI*2;
@@ -2147,7 +2021,7 @@ function drawHabitatLevel(ctx, pal, level){
 
 function drawGenericStructure(ctx, type, pal, minAge, level){
   level = level || 1;
-  const effectiveAge = minAge + (level-1)*2;
+  const effectiveAge = minAge + (level-1)*2; // a level-up looks like the building jumped ~2 Ages ahead of its neighbors
   const h = 24 + (effectiveAge-1)*5;
   ctx.fillStyle = pal.structure;
   roundRectPath(ctx,-24,-h,48,h+14,6); ctx.fill();
@@ -2164,10 +2038,10 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
     case 'farm':
       ctx.strokeStyle = pal.accent; ctx.lineWidth=2;
       for(let i=-2;i<=2;i++){ ctx.beginPath(); ctx.moveTo(i*8,14); ctx.lineTo(i*8,22); ctx.stroke(); }
-      if(level>=2){
+      if(level>=2){ // Terraced Farm — a second, wider row of crops
         for(let i=-3;i<=3;i++){ ctx.beginPath(); ctx.moveTo(i*7,26); ctx.lineTo(i*7,32); ctx.stroke(); }
       }
-      if(level>=3){
+      if(level>=3){ // Mechanized Farm — a small silo
         ctx.fillStyle = pal.structure;
         roundRectPath(ctx,26,-h-2,10,h+4,5); ctx.fill();
         ctx.fillStyle = pal.roof;
@@ -2177,7 +2051,7 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
     case 'workshop':
       ctx.fillStyle = pal.accent;
       ctx.beginPath(); ctx.arc(20,-h-2,6,0,Math.PI*2); ctx.fill();
-      if(level>=2){
+      if(level>=2){ // Foundry — a second gear + a chimney with heat-haze
         ctx.beginPath(); ctx.arc(-18,-h-4,5,0,Math.PI*2); ctx.fill();
         ctx.fillStyle = pal.accent; ctx.fillRect(6,-h-24,7,20);
         const t = performance.now()/700;
@@ -2189,7 +2063,7 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
     case 'market':
       ctx.fillStyle = pal.accent;
       for(let i=-2;i<2;i++){ ctx.fillRect(i*12-24,-h-2,11,8); }
-      if(level>=2){
+      if(level>=2){ // Trade Hall — a second row of stalls + a banner
         for(let i=-2;i<2;i++){ ctx.fillRect(i*12-24,-h+8,11,6); }
         ctx.fillStyle = pal.roof;
         ctx.beginPath(); ctx.moveTo(-4,-h-16); ctx.lineTo(8,-h-16); ctx.lineTo(2,-h-8); ctx.closePath(); ctx.fill();
@@ -2198,7 +2072,7 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
     case 'monument':
       ctx.fillStyle = pal.roof;
       ctx.beginPath(); ctx.moveTo(-6,-h-16); ctx.lineTo(6,-h-16); ctx.lineTo(3,-h-42); ctx.lineTo(-3,-h-42); ctx.closePath(); ctx.fill();
-      if(level>=2){
+      if(level>=2){ // Grand Monument — taller spire on a wider base platform
         ctx.fillStyle = pal.structure;
         roundRectPath(ctx,-20,-h-2,40,10,3); ctx.fill();
         ctx.fillStyle = pal.roof;
@@ -2208,7 +2082,7 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
     case 'library':
       ctx.strokeStyle = pal.accent; ctx.lineWidth=3;
       for(let i=-18;i<=18;i+=12){ ctx.beginPath(); ctx.moveTo(i,-h); ctx.lineTo(i,12); ctx.stroke(); }
-      if(level>=2){
+      if(level>=2){ // Great Library — a dome on top
         ctx.fillStyle = pal.roof;
         ctx.beginPath(); ctx.arc(0,-h-16,16,Math.PI,0); ctx.fill();
         ctx.fillStyle = pal.accent;
@@ -2225,7 +2099,7 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
         ctx.beginPath(); ctx.arc(18, -h-28-phase, 4+i*1.4, 0, Math.PI*2); ctx.fill();
       }
       ctx.globalAlpha=1;
-      if(level>=2){
+      if(level>=2){ // Automated Factory — a second chimney, busier smoke
         ctx.fillStyle = pal.accent; ctx.fillRect(-22,-h-34,8,30);
         for(let i=0;i<3;i++){
           const phase = (t*26+i*11+7)%48;
@@ -2240,7 +2114,7 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
     case 'powerplant': {
       ctx.strokeStyle = '#E3A75B'; ctx.lineWidth=2.4; ctx.lineJoin='round';
       ctx.beginPath(); ctx.moveTo(2,-h-4); ctx.lineTo(-4,-h-16); ctx.lineTo(2,-h-16); ctx.lineTo(-4,-h-28); ctx.stroke();
-      if(level>=2){
+      if(level>=2){ // Fusion Plant — a cooling tower beside the bolt
         ctx.fillStyle = pal.accent;
         ctx.beginPath();
         ctx.moveTo(-26,-h); ctx.quadraticCurveTo(-30,-h-20,-24,-h-34); ctx.quadraticCurveTo(-18,-h-20,-22,-h);
@@ -2257,7 +2131,7 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
       const blink = Math.sin(performance.now()/320) > 0;
       ctx.fillStyle = blink ? '#8FE3A7' : '#3A5A44';
       ctx.beginPath(); ctx.arc(0,-h-32,3,0,Math.PI*2); ctx.fill();
-      if(level>=2){
+      if(level>=2){ // Quantum Data Center — a second antenna + a server-rack row of lights
         ctx.strokeStyle = pal.accent;
         ctx.beginPath(); ctx.moveTo(14,-h-10); ctx.lineTo(14,-h-22); ctx.stroke();
         const blink2 = Math.sin(performance.now()/280+1) > 0;
@@ -2285,8 +2159,10 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
 }
 
 /* =====================================================================
-   RENDERIZAÇÃO DE RECURSOS E BARRAS
+   RESOURCE NODE RENDERING
 ===================================================================== */
+/* Small hunger/thirst/happiness readout floating above a known dinosaur,
+   only drawn when the player is close enough to actually act on it. */
 function drawNeedBars(ctx, d){
   const n = d.needs;
   if(!n) return;
@@ -2355,32 +2231,40 @@ function drawResourceNode(ctx, node){
 }
 
 /* =====================================================================
-   JOGADOR (SANTIAGO)
+   PLAYER
 ===================================================================== */
 const PLAYER_NAME = 'Santiago';
 const OUTFITS = [
   { id:'explorer', name:'Explorador', jacket:'#C2653F', pack:'#8C4A2E', hair:'#3E2C1E' },
-  { id:'ranger',   name:'Guarda-Florestal', jacket:'#5C7A54', pack:'#3F5636', hair:'#2A1F16' },
-  { id:'scholar',  name:'Erudito', jacket:'#6C9EAA', pack:'#3F6C77', hair:'#1F1712' },
-  { id:'amber',    name:'Crepúsculo Âmbar', jacket:'#E3A75B', pack:'#A9793E', hair:'#3E2C1E' },
+  { id:'ranger',   name:'Verde-Guarda', jacket:'#5C7A54', pack:'#3F5636', hair:'#2A1F16' },
+  { id:'scholar',  name:'Azul-Erudito', jacket:'#6C9EAA', pack:'#3F6C77', hair:'#1F1712' },
+  { id:'amber',    name:'Âmbar do Crepúsculo', jacket:'#E3A75B', pack:'#A9793E', hair:'#3E2C1E' },
   { id:'charcoal', name:'Carvão', jacket:'#4A4A4A', pack:'#2E2E2E', hair:'#1A1A1A' }
 ];
 function currentOutfit(){ return OUTFITS.find(o=>o.id===state.outfitId) || OUTFITS[0]; }
 
 const player = { x: primaryCamp().x+primaryCamp().w/2, y: primaryCamp().y+primaryCamp().h+70, speed:190, facing:1, walkT:0 };
 
+/* Shared body renderer — used both for the in-world player sprite and the
+   Wardrobe panel's live preview, so a chosen outfit always looks exactly
+   like it will in the valley, not an approximation. */
 function drawPlayerBody(ctx, outfit){
   ctx.fillStyle='rgba(0,0,0,0.3)';
   ctx.beginPath(); ctx.ellipse(0,20,15,5,0,0,Math.PI*2); ctx.fill();
+  // legs
   ctx.fillStyle='#3E3A34';
   ctx.fillRect(-7,6,5,14);
   ctx.fillRect(2,6,5,14);
+  // body / jacket
   ctx.fillStyle=outfit.jacket;
   roundRectPath(ctx,-9,-10,18,20,6); ctx.fill();
+  // pack
   ctx.fillStyle=outfit.pack;
   roundRectPath(ctx,-13,-6,6,12,3); ctx.fill();
+  // head
   ctx.fillStyle='#E7C9A1';
   ctx.beginPath(); ctx.arc(0,-16,8,0,Math.PI*2); ctx.fill();
+  // hair
   ctx.fillStyle=outfit.hair;
   ctx.beginPath(); ctx.arc(0,-19,8,Math.PI,Math.PI*2); ctx.fill();
 }
@@ -2396,129 +2280,41 @@ function drawPlayer(ctx){
 }
 
 /* =====================================================================
-   CÂMARA
+   CAMERA
 ===================================================================== */
-/* =====================================================================
-   CÂMARA E SISTEMA DE GESTOS APPLE (ZOOM, PANNING E HÁPTICA)
-===================================================================== */
-const camera = { x:0, y:0, w:0, h:0, zoom:1.0, targetZoom:1.0, vx:0, vy:0, isPanning:false };
-let hudRecessTimer = null;
-
-function triggerHaptic(type = 'light'){
-  if(typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function'){
-    try {
-      if(type==='light') navigator.vibrate(10);
-      else if(type==='medium') navigator.vibrate(22);
-      else if(type==='heavy') navigator.vibrate([30, 20, 30]);
-    } catch(e){}
-  }
-}
-
-function triggerHudRecess(){
-  document.body.classList.add('hud-recessed');
-  clearTimeout(hudRecessTimer);
-  hudRecessTimer = setTimeout(()=>{
-    document.body.classList.remove('hud-recessed');
-  }, 1400);
-}
-
+const camera = { x:0, y:0, w:0, h:0 };
 function updateCamera(){
-  camera.zoom += (camera.targetZoom - camera.zoom) * 0.12;
-
-  if(!camera.isPanning && Math.abs(camera.vx) < 0.2 && Math.abs(camera.vy) < 0.2){
-    const targetX = clamp(player.x - camera.w/(2*camera.zoom), 0, Math.max(0, WORLD_W - camera.w/camera.zoom));
-    const targetY = clamp(player.y - camera.h/(2*camera.zoom), 0, Math.max(0, WORLD_H - camera.h/camera.zoom));
-    camera.x += (targetX - camera.x) * 0.14;
-    camera.y += (targetY - camera.y) * 0.14;
-  } else {
-    camera.x = clamp(camera.x, 0, Math.max(0, WORLD_W - camera.w/camera.zoom));
-    camera.y = clamp(camera.y, 0, Math.max(0, WORLD_H - camera.h/camera.zoom));
-  }
+  camera.x = clamp(player.x - camera.w/2, 0, Math.max(0,WORLD_W-camera.w));
+  camera.y = clamp(player.y - camera.h/2, 0, Math.max(0,WORLD_H-camera.h));
 }
 
 /* =====================================================================
-   MINIMAPA
-===================================================================== */
-const minimapCanvas = document.getElementById('minimap-canvas');
-const mctx = minimapCanvas ? minimapCanvas.getContext('2d') : null;
-function renderMinimap(){
-  if(!minimapCanvas || !mctx) return;
-  const w = 160, h = 110;
-  minimapCanvas.width = w; minimapCanvas.height = h;
-  mctx.clearRect(0,0,w,h);
-
-  mctx.fillStyle = '#182C20';
-  mctx.fillRect(0,0,w,h);
-
-  const sx = w / WORLD_W, sy = h / WORLD_H;
-
-  mctx.strokeStyle = '#E3A75B';
-  mctx.lineWidth = 1;
-  state.camps.forEach(c=>{
-    mctx.strokeRect(c.x*sx, c.y*sy, c.w*sx, c.h*sy);
-  });
-
-  mctx.strokeStyle = 'rgba(217,196,160,0.5)';
-  mctx.lineWidth = 1.5;
-  state.roads.forEach(r=>{
-    mctx.beginPath(); mctx.moveTo(r.x1*sx, r.y1*sy); mctx.lineTo(r.x2*sx, r.y2*sy); mctx.stroke();
-  });
-
-  dinos.forEach(d=>{
-    const known = state.discovered.has(d.speciesId);
-    mctx.fillStyle = known ? '#8FE3A7' : 'rgba(255,255,255,0.2)';
-    mctx.beginPath(); mctx.arc(d.x*sx, d.y*sy, known?2:1, 0, Math.PI*2); mctx.fill();
-  });
-
-  mctx.strokeStyle = 'rgba(255,255,255,0.7)';
-  mctx.lineWidth = 1;
-  mctx.strokeRect(camera.x*sx, camera.y*sy, (camera.w/camera.zoom)*sx, (camera.h/camera.zoom)*sy);
-
-  mctx.fillStyle = '#E3A75B';
-  mctx.beginPath(); mctx.arc(player.x*sx, player.y*sy, 3, 0, Math.PI*2); mctx.fill();
-}
-if(minimapCanvas){
-  minimapCanvas.addEventListener('click', (e)=>{
-    const rect = minimapCanvas.getBoundingClientRect();
-    const clickX = (e.clientX - rect.left) / rect.width;
-    const clickY = (e.clientY - rect.top) / rect.height;
-    player.x = clamp(clickX * WORLD_W, 40, WORLD_W-40);
-    player.y = clamp(clickY * WORLD_H, 40, WORLD_H-40);
-  });
-}
-
-/* =====================================================================
-   AJUSTE DE ECRÃ
+   CANVAS SETUP
 ===================================================================== */
 const gameCanvas = document.getElementById('game-canvas');
-const gctx = gameCanvas ? gameCanvas.getContext('2d') : null;
+const gctx = gameCanvas.getContext('2d');
 let dpr = Math.min(window.devicePixelRatio||1, 2);
 
 function resizeCanvas(){
   dpr = Math.min(window.devicePixelRatio||1, 2);
   const w = window.innerWidth, h = window.innerHeight;
-  if(gameCanvas){
-    gameCanvas.width = w*dpr; gameCanvas.height = h*dpr;
-    gameCanvas.style.width = w+'px'; gameCanvas.style.height = h+'px';
-  }
+  gameCanvas.width = w*dpr; gameCanvas.height = h*dpr;
+  gameCanvas.style.width = w+'px'; gameCanvas.style.height = h+'px';
   camera.w = w; camera.h = h;
 
   const tCanvas = document.getElementById('title-canvas');
-  if(tCanvas){
-    tCanvas.width = w*dpr; tCanvas.height = h*dpr; tCanvas.style.width=w+'px'; tCanvas.style.height=h+'px';
-  }
+  tCanvas.width = w*dpr; tCanvas.height = h*dpr; tCanvas.style.width=w+'px'; tCanvas.style.height=h+'px';
 }
 window.addEventListener('resize', resizeCanvas);
 
 /* =====================================================================
-   ECRÃ DO TÍTULO
+   TITLE SCREEN BACKGROUND (parallax cinematic)
 ===================================================================== */
-const tCanvasEl = document.getElementById('title-canvas');
-const tctx = tCanvasEl ? tCanvasEl.getContext('2d') : null;
+const tctx = document.getElementById('title-canvas').getContext('2d');
 let titleRunning = true;
 const mistBlobs = Array.from({length:6}, ()=>({ x:Math.random(), y:0.55+Math.random()*0.3, s:rand(0.4,1.1), speed:rand(0.004,0.012) }));
 function drawTitleBG(t){
-  if(!titleRunning || !tctx) return;
+  if(!titleRunning) return;
   const w = window.innerWidth, h = window.innerHeight;
   tctx.setTransform(dpr,0,0,dpr,0,0);
   tctx.clearRect(0,0,w,h);
@@ -2527,11 +2323,13 @@ function drawTitleBG(t){
   sky.addColorStop(0,'#3C5A45'); sky.addColorStop(0.55,'#1E3A2B'); sky.addColorStop(1,'#0E1E15');
   tctx.fillStyle = sky; tctx.fillRect(0,0,w,h);
 
+  // sun glow
   const sunX = w*0.72, sunY = h*0.32;
   const g = tctx.createRadialGradient(sunX,sunY,10,sunX,sunY,320);
   g.addColorStop(0,'rgba(227,167,88,0.55)'); g.addColorStop(1,'rgba(227,167,88,0)');
   tctx.fillStyle=g; tctx.beginPath(); tctx.arc(sunX,sunY,320,0,Math.PI*2); tctx.fill();
 
+  // hill layers (parallax via slow offset)
   const layers = [
     {y:h*0.62, amp:26, col:'#16301F', speed:0.010},
     {y:h*0.72, amp:34, col:'#122A1B', speed:0.006},
@@ -2549,6 +2347,7 @@ function drawTitleBG(t){
     tctx.fillStyle = L.col; tctx.fill();
   });
 
+  // distant brachiosaurus silhouette
   tctx.save();
   tctx.globalAlpha = 0.5;
   const bx = w*0.22 + Math.sin(t*0.0002)*10, by = h*0.68;
@@ -2559,6 +2358,7 @@ function drawTitleBG(t){
   tctx.beginPath(); tctx.ellipse(60,-78,9,7,0,0,Math.PI*2); tctx.fill();
   tctx.restore();
 
+  // mist
   mistBlobs.forEach(m=>{
     m.x += m.speed*0.016;
     if(m.x>1.3) m.x=-0.3;
@@ -2568,6 +2368,7 @@ function drawTitleBG(t){
     tctx.fillStyle=mg; tctx.beginPath(); tctx.ellipse(mx,my,180*m.s,50*m.s,0,0,Math.PI*2); tctx.fill();
   });
 
+  // birds
   for(let i=0;i<3;i++){
     const bx2 = ((t*0.02 + i*160) % (w+200)) - 100;
     const by2 = h*0.22 + i*26 + Math.sin(t*0.002+i)*8;
@@ -2580,14 +2381,8 @@ function drawTitleBG(t){
   requestAnimationFrame(drawTitleBG);
 }
 
-window.addEventListener('wheel', (e)=>{
-  if(anyOverlayOpen()) return;
-  const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
-  camera.targetZoom = clamp(camera.targetZoom * zoomFactor, 0.65, 1.45);
-}, {passive:true});
-
 /* =====================================================================
-   ENTRADAS DE TECLADO / RATO / TOQUE MULTI-GESTOS
+   INPUT
 ===================================================================== */
 window.addEventListener('keydown', (e)=>{
   state.keys[e.key.toLowerCase()] = true;
@@ -2598,61 +2393,25 @@ window.addEventListener('keydown', (e)=>{
   if(e.key.toLowerCase()==='c') toggleOverlay('overlay-collection');
   if(e.key.toLowerCase()==='r') toggleRoadMode();
   if(e.key.toLowerCase()==='p') toggleOverlay('overlay-character');
-  if(e.key==='Escape'){ closeAllOverlays(); cancelPlacement(); exitRoadMode(); closeMenu(); }
+  if(e.key==='Escape'){ closeAllOverlays(); cancelPlacement(); exitRoadMode(); }
 });
 window.addEventListener('keyup', (e)=>{ state.keys[e.key.toLowerCase()] = false; });
 
 let mouseWorld = {x:0,y:0};
 gameCanvas.addEventListener('mousemove', (e)=>{
-  mouseWorld.x = (e.clientX / camera.zoom) + camera.x;
-  mouseWorld.y = (e.clientY / camera.zoom) + camera.y;
+  mouseWorld.x = e.clientX + camera.x;
+  mouseWorld.y = e.clientY + camera.y;
   if(roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
 });
-
-let lastTapTime = 0, lastTapPos = null;
-gameCanvas.addEventListener('click', (e)=>{
-  sfx.play('click');
-  triggerHaptic('light');
-
-  const now = performance.now();
-  const isDoubleTap = (now - lastTapTime < 320) && lastTapPos && (Math.hypot(e.clientX - lastTapPos.x, e.clientY - lastTapPos.y) < 28);
-  lastTapTime = now;
-  lastTapPos = { x: e.clientX, y: e.clientY };
-
-  if(isDoubleTap && state.started && !state.paused && !anyOverlayOpen()){
-    const dinoHit = dinos.find(d => dist(mouseWorld.x, mouseWorld.y, d.x, d.y) < 54);
-    if(dinoHit && state.discovered.has(dinoHit.speciesId)){
-      toggleOverlay('overlay-collection');
-      return;
-    }
-    const bHit = findBuildingAt(mouseWorld.x, mouseWorld.y);
-    if(bHit){
-      openBuildingInspector(bHit);
-      return;
-    }
-    if(dist(mouseWorld.x, mouseWorld.y, player.x, player.y) < 40){
-      toggleOverlay('overlay-character');
-      return;
-    }
-  }
-
-  if(state.roadMode) return;
+gameCanvas.addEventListener('click', ()=>{
+  if(state.roadMode) return; // roads are placed via drag (mousedown/mouseup below), not click
   if(state.foundingCamp){ attemptFoundCampAt(mouseWorld.x, mouseWorld.y); return; }
   if(state.placingType){ attemptPlaceAt(mouseWorld.x, mouseWorld.y); return; }
   if(state.movingBuilding){ attemptMoveAt(mouseWorld.x, mouseWorld.y); return; }
   if(!state.started || state.paused || anyOverlayOpen()) return;
-
   const hit = findBuildingAt(mouseWorld.x, mouseWorld.y);
-  if(hit){
-    openBuildingInspector(hit);
-  } else {
-    // Tap to path player
-    player.targetX = mouseWorld.x;
-    player.targetY = mouseWorld.y;
-    spawnTapRipple(mouseWorld.x, mouseWorld.y);
-  }
+  if(hit) openBuildingInspector(hit);
 });
-
 function findBuildingAt(wx, wy){
   let best = null, bestDist = 46;
   state.buildings.forEach(b=>{
@@ -2662,79 +2421,59 @@ function findBuildingAt(wx, wy){
   return best;
 }
 
-const tapRipples = [];
-function spawnTapRipple(wx, wy){
-  tapRipples.push({ wx, wy, born: performance.now() });
-}
-
+/* =====================================================================
+   TOUCH SUPPORT — phones have no keyboard and no hover, so every desktop
+   interaction gets a touch equivalent: a virtual joystick drives movement,
+   tap replaces click, and drag-to-draw-a-road works identically via
+   touchstart/touchmove/touchend instead of mouse events. preventDefault
+   on the canvas stops the page from scrolling/zooming while playing.
+===================================================================== */
 const hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
 if(hasTouch) document.body.classList.add('has-touch');
 
-let touchStartPos = null, touchMoved = false, touchPanLast = null, initialPinchDist = 0;
+let touchStartPos = null, touchMoved = false;
 gameCanvas.addEventListener('touchstart', (e)=>{
-  if(e.touches.length===1){
-    const t = e.touches[0];
-    mouseWorld.x = (t.clientX / camera.zoom) + camera.x;
-    mouseWorld.y = (t.clientY / camera.zoom) + camera.y;
-    touchStartPos = {x:t.clientX, y:t.clientY};
-    touchPanLast = {x:t.clientX, y:t.clientY};
-    touchMoved = false;
-    if(state.roadMode && !anyOverlayOpen()){
-      roadDragStart = { x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y) };
-      roadDragEnd = { x: roadDragStart.x, y: roadDragStart.y };
-    }
-  } else if(e.touches.length===2){
-    initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  if(e.touches.length!==1) return;
+  const t = e.touches[0];
+  mouseWorld.x = t.clientX + camera.x;
+  mouseWorld.y = t.clientY + camera.y;
+  touchStartPos = {x:t.clientX, y:t.clientY};
+  touchMoved = false;
+  if(state.roadMode && !anyOverlayOpen()){
+    roadDragStart = { x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y) };
+    roadDragEnd = { x: roadDragStart.x, y: roadDragStart.y };
   }
   e.preventDefault();
 }, {passive:false});
-
 gameCanvas.addEventListener('touchmove', (e)=>{
-  if(e.touches.length===1 && touchPanLast){
-    const t = e.touches[0];
-    const dx = t.clientX - touchPanLast.x;
-    const dy = t.clientY - touchPanLast.y;
-    touchPanLast = {x:t.clientX, y:t.clientY};
-    mouseWorld.x = (t.clientX / camera.zoom) + camera.x;
-    mouseWorld.y = (t.clientY / camera.zoom) + camera.y;
-
-    if(touchStartPos && Math.hypot(t.clientX-touchStartPos.x, t.clientY-touchStartPos.y) > 10){
-      touchMoved = true;
-    }
-
-    if(state.roadMode){
-      if(roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
-    } else if(!state.placingType && !state.movingBuilding && !state.foundingCamp && !anyOverlayOpen() && Math.abs(touchMoveVector.x)<0.1){
-      // Touch Drag Terrain Panning with Momentum
-      camera.isPanning = true;
-      camera.x -= dx / camera.zoom;
-      camera.y -= dy / camera.zoom;
-      camera.vx = -dx * 0.4 / camera.zoom;
-      camera.vy = -dy * 0.4 / camera.zoom;
-      triggerHudRecess();
-    }
-  } else if(e.touches.length===2 && initialPinchDist > 0){
-    const distNow = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-    const factor = distNow / initialPinchDist;
-    initialPinchDist = distNow;
-    camera.targetZoom = clamp(camera.targetZoom * factor, 0.65, 1.45);
-    triggerHudRecess();
-  }
+  if(e.touches.length!==1) return;
+  const t = e.touches[0];
+  mouseWorld.x = t.clientX + camera.x;
+  mouseWorld.y = t.clientY + camera.y;
+  if(touchStartPos && Math.hypot(t.clientX-touchStartPos.x, t.clientY-touchStartPos.y) > 10) touchMoved = true;
+  if(roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
   e.preventDefault();
 }, {passive:false});
-
 gameCanvas.addEventListener('touchend', (e)=>{
-  camera.isPanning = false;
   if(state.roadMode){
     commitRoadDrag();
-  } else if(!touchMoved && e.touches.length===0 && touchStartPos){
-    const clickEvt = new MouseEvent('click', { clientX: touchStartPos.x, clientY: touchStartPos.y });
-    gameCanvas.dispatchEvent(clickEvt);
+  } else if(!touchMoved){
+    // a genuine tap (not a drag) — equivalent to the desktop click handler
+    if(state.foundingCamp){ attemptFoundCampAt(mouseWorld.x, mouseWorld.y); }
+    else if(state.placingType){ attemptPlaceAt(mouseWorld.x, mouseWorld.y); }
+    else if(state.movingBuilding){ attemptMoveAt(mouseWorld.x, mouseWorld.y); }
+    else if(state.started && !state.paused && !anyOverlayOpen()){
+      const hit = findBuildingAt(mouseWorld.x, mouseWorld.y);
+      if(hit) openBuildingInspector(hit);
+    }
   }
-  touchStartPos = null; touchPanLast = null; initialPinchDist = 0;
+  touchStartPos = null;
   e.preventDefault();
 }, {passive:false});
 
+/* Virtual joystick — drag within the base sets a normalized (-1..1)
+   direction vector that updatePlayer blends in alongside WASD, so all
+   existing movement logic stays exactly as it is. */
 let touchMoveVector = {x:0, y:0};
 (function setupJoystick(){
   const base = document.getElementById('joystick-base');
@@ -2749,7 +2488,6 @@ let touchMoveVector = {x:0, y:0};
     originX = rect.left + rect.width/2;
     originY = rect.top + rect.height/2;
     knob.classList.add('active');
-    triggerHaptic('light');
     update(clientX, clientY);
   }
   function update(clientX, clientY){
@@ -2758,7 +2496,6 @@ let touchMoveVector = {x:0, y:0};
     if(d>radius){ dx = dx/d*radius; dy = dy/d*radius; }
     knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
     touchMoveVector = { x: dx/radius, y: dy/radius };
-    triggerHudRecess();
   }
   function end(){
     dragging = false;
@@ -2775,58 +2512,16 @@ let touchMoveVector = {x:0, y:0};
   window.addEventListener('touchend', ()=>{ if(dragging) end(); });
 })();
 
-// Sheet Drag-to-Dismiss on Mobile (corrigido)
-(function setupSheetHandles(){
-  document.querySelectorAll('.panel').forEach(panel=>{
-    const handle = panel.querySelector('.sheet-handle');
-    if(!handle) return;
-    let startY = 0, currentY = 0, dragging = false;
-    const overlay = panel.closest('.overlay');
-
-    panel.addEventListener('touchstart', (e)=>{
-      if(e.touches[0].target === handle || panel.scrollTop === 0){
-        startY = e.touches[0].clientY;
-        dragging = true;
-        currentY = 0;
-        panel.style.willChange = 'transform';
-      }
-    }, {passive: true});
-
-    panel.addEventListener('touchmove', (e)=>{
-      if(!dragging) return;
-      currentY = e.touches[0].clientY - startY;
-      if(currentY > 0){
-        const maxDrag = 120;
-        const delta = Math.min(currentY, maxDrag);
-        panel.style.transform = `translateY(${delta}px)`;
-        if(overlay) overlay.style.backgroundColor = `rgba(6,12,8,${0.58 - delta/maxDrag * 0.3})`;
-      }
-    }, {passive: true});
-
-    panel.addEventListener('touchend', ()=>{
-      if(!dragging) return;
-      dragging = false;
-      panel.style.willChange = '';
-      if(overlay) overlay.style.backgroundColor = '';
-      if(currentY > 90){
-        triggerHaptic('medium');
-        if(overlay) overlay.classList.remove('open');
-        panel.style.transform = '';
-      } else {
-        panel.style.transform = '';
-      }
-      currentY = 0;
-    });
-  });
-})();
-
 document.getElementById('touch-interact-btn').addEventListener('click', ()=>{
-  triggerHaptic('light');
   tryInteract();
 });
 
 /* =====================================================================
-   SISTEMA DE ESTRADAS
+   ROAD SYSTEM — a dedicated Build Mode: press R (or the Roads button) to
+   start, click-drag to lay a segment snapped to a construction-only grid,
+   release to commit it. Roads never need per-Age data of their own — they
+   render through the same styling function as the original camp path, so
+   they upgrade automatically whenever the civilization advances.
 ===================================================================== */
 const ROAD_GRID = 50;
 function snapRoad(v){ return Math.round(v/ROAD_GRID)*ROAD_GRID; }
@@ -2845,8 +2540,8 @@ function exitRoadMode(){
   document.getElementById('road-banner').classList.remove('show');
   document.getElementById('btn-roads').style.background = '';
 }
-document.getElementById('btn-roads')?.addEventListener('click', toggleRoadMode);
-document.getElementById('road-mode-exit')?.addEventListener('click', exitRoadMode);
+document.getElementById('btn-roads').addEventListener('click', toggleRoadMode);
+document.getElementById('road-mode-exit').addEventListener('click', exitRoadMode);
 
 function roadCost(len){ return Math.max(1, Math.round(len/ROAD_GRID)); }
 
@@ -2860,11 +2555,10 @@ function commitRoadDrag(){
   const a = roadDragStart, b = roadDragEnd || roadDragStart;
   const len = dist(a.x,a.y,b.x,b.y);
   roadDragStart = null; roadDragEnd = null;
-  if(len < ROAD_GRID*0.6) return;
+  if(len < ROAD_GRID*0.6) return; // too short — treat as an accidental tap, no cost, no segment
   const cost = { wood: roadCost(len), stone:0, food:0 };
   if(!canAfford(cost)){ showToast('Madeira insuficiente para esta estrada', null); return; }
   payCost(cost);
-  sfx.play('build');
   state.roads.push({ x1:a.x, y1:a.y, x2:b.x, y2:b.y });
   roadGraphDirty = true;
   grantXP(5);
@@ -2882,7 +2576,7 @@ function drawRoadSegments(ctx){
   state.roads.forEach(r=>{
     ctx.beginPath(); ctx.moveTo(r.x1,r.y1); ctx.lineTo(r.x2,r.y2); ctx.stroke();
   });
-  if(state.age>=4){
+  if(state.age>=4){ // paved edge lines, matching the main camp path's upgrade
     ctx.strokeStyle = hexToRgba(pal.accent,0.45); ctx.lineWidth = 1.6;
     state.roads.forEach(r=>{
       ctx.beginPath(); ctx.moveTo(r.x1,r.y1); ctx.lineTo(r.x2,r.y2); ctx.stroke();
@@ -2890,6 +2584,7 @@ function drawRoadSegments(ctx){
   }
   ctx.restore();
 
+  // live drag preview + construction grid, construction-mode only
   if(state.roadMode){
     ctx.save();
     ctx.strokeStyle = 'rgba(243,238,228,0.06)';
@@ -2911,13 +2606,14 @@ function drawRoadSegments(ctx){
 }
 
 /* =====================================================================
-   INSPETOR DE EDIFÍCIO
+   BUILDING INSPECTOR — click any placed building to see what it does.
+   Buildings listed in BUILDING_LEVELS (currently Shelter and Habitat)
+   also offer a real, data-driven upgrade with its own visual identity.
 ===================================================================== */
 function openBuildingInspector(b){
   state.inspectingBuilding = b;
   demolishConfirming = false;
   closeAllOverlays();
-  closeMenu();
   document.getElementById('overlay-inspector').classList.add('open');
   renderInspector();
 }
@@ -2943,10 +2639,10 @@ function renderInspector(){
   const prodEl = document.getElementById('inspector-production');
   const prod = currentProduce(b);
   if(prod){
-    prodEl.textContent = 'Produz +'+prod.amount+' '+prod.key+' a cada '+prod.interval+'s';
+    prodEl.textContent = 'Produz +'+prod.amount+' '+resourceLabel(prod.key)+' a cada '+prod.interval+'s';
   } else if(b.type==='habitat'){
     const mult = habitatBonus();
-    prodEl.textContent = mult>1 ? ('Aumenta a recuperação de felicidade dos dinossauros em '+Math.round((mult-1)*100)+'%') : 'Melhora-o para aumentar a recuperação de felicidade dos dinossauros.';
+    prodEl.textContent = mult>1 ? ('Atualmente a aumentar a recuperação de felicidade de cada dinossauro em '+Math.round((mult-1)*100)+'%') : 'Melhora-o para começares a aumentar a recuperação de felicidade dos dinossauros.';
   } else {
     prodEl.textContent = '';
   }
@@ -2959,11 +2655,11 @@ function renderInspector(){
   const section = document.getElementById('inspector-upgrade-section');
   const levels = BUILDING_LEVELS[b.type];
   if(!levels){
-    section.innerHTML = '<div style="font-size:12.5px;color:var(--sand)">Este edifício ainda não tem caminho de melhoria.</div>';
+    section.innerHTML = '<div style="font-size:12.5px;color:var(--sand)">Este edifício ainda não tem um percurso de melhoria.</div>';
   } else {
     const nextLevel = levelDef(b.type, (b.level||1)+1);
     if(!nextLevel){
-      section.innerHTML = '<div style="font-size:12.5px;color:var(--sand)">Nível máximo atingido — este edifício está totalmente desenvolvido.</div>';
+      section.innerHTML = '<div style="font-size:12.5px;color:var(--sand)">Nível máximo alcançado — este edifício está totalmente desenvolvido.</div>';
     } else {
       const ageOk = state.age >= nextLevel.minAge;
       const afford = nextLevel.cost ? canAfford(nextLevel.cost) : true;
@@ -2974,8 +2670,8 @@ function renderInspector(){
           <div style="flex:1;">
             <div style="font-size:13px;font-weight:700;margin-bottom:2px;">Seguinte: ${nextLevel.name}</div>
             <div style="font-size:12px;color:var(--sand);margin-bottom:6px;">${nextLevel.desc}</div>
-            ${nextLevel.produce ? `<div style="font-size:11.5px;color:var(--moss);font-weight:600;margin-bottom:6px;">+${nextLevel.produce.amount} ${nextLevel.produce.key} a cada ${nextLevel.produce.interval}s</div>` : ''}
-            ${!ageOk ? `<div style="font-size:11.5px;color:var(--stone-gray);font-weight:600;">Requer a Era ${ageById(nextLevel.minAge).name}</div>` : `
+            ${nextLevel.produce ? `<div style="font-size:11.5px;color:var(--moss);font-weight:600;margin-bottom:6px;">+${nextLevel.produce.amount} ${resourceLabel(nextLevel.produce.key)} a cada ${nextLevel.produce.interval}s</div>` : ''}
+            ${!ageOk ? `<div style="font-size:11.5px;color:var(--stone-gray);font-weight:600;">Requer a Idade ${ageById(nextLevel.minAge).name}</div>` : `
             <div class="build-cost">
               ${nextLevel.cost.wood?`<span>${icon('wood')} ${nextLevel.cost.wood}</span>`:''}
               ${nextLevel.cost.stone?`<span>${icon('stone')} ${nextLevel.cost.stone}</span>`:''}
@@ -2996,6 +2692,10 @@ function renderInspector(){
   renderInspectorActions(b);
 }
 
+/* Move + Demolish — Move re-enters the same click-to-place flow used for
+   new construction; Demolish requires a deliberate second click (never a
+   single accidental click) and refunds half of everything ever spent on
+   the building. */
 let demolishConfirming = false;
 function refundableCost(b){
   const def = buildingDef(b.type);
@@ -3029,8 +2729,7 @@ function startMoveBuilding(b){
   state.movingBuilding = b;
   demolishConfirming = false;
   closeAllOverlays();
-  closeMenu();
-  document.getElementById('placement-text').textContent = 'Clica num piso para mover '+(levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' — Esc para cancelar';
+  document.getElementById('placement-text').textContent = 'Clica numa célula para mover '+(levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' — Esc para cancelar';
   document.getElementById('placement-banner').classList.add('show');
 }
 function demolishBuilding(b){
@@ -3043,7 +2742,7 @@ function demolishBuilding(b){
   state.notifiedUpgrades.delete(b.gx+'_'+b.gy);
   if(state.inspectingBuilding===b) state.inspectingBuilding = null;
   demolishConfirming = false;
-  showToast(buildingDef(b.type).name+' demolido — '+refund.wood+' madeira, '+refund.stone+' pedra reembolsados', null);
+  showToast(buildingDef(b.type).name+' demolido — '+refund.wood+' madeira, '+refund.stone+' pedra devolvidas', null);
   closeAllOverlays();
   checkAgeReady();
 }
@@ -3055,16 +2754,20 @@ function upgradeBuilding(b){
   if(state.age < nextLevel.minAge) return;
   if(nextLevel.cost) payCost(nextLevel.cost);
   b.level = nextLevel.level;
-  b.bornAt = performance.now();
-  state.notifiedUpgrades.delete(b.gx+'_'+b.gy);
-  sfx.play('build');
+  b.bornAt = performance.now(); // replay the construction pop-in animation in the world
+  state.notifiedUpgrades.delete(b.gx+'_'+b.gy); // it just upgraded — allow a fresh notification for the level after this one
   showToast('Melhorado para '+nextLevel.name+(Math.random()<0.5 ? ' — '+praise() : ''), 'level');
-  spawnFloatingText(b.cx, b.cy-50, '★ Melhorado! ★', '#E3A75B');
+  spawnFloatingText(b.cx, b.cy-50, '★ Upgraded! ★', '#E3A75B');
   renderInspector();
   grantXP(20);
   checkAgeReady();
 }
 
+/* =====================================================================
+   UPGRADE-READY NOTIFICATIONS — a persistent glowing badge floats above
+   any placed building whose next level is affordable and Age-unlocked,
+   plus a one-time toast the moment it first becomes ready.
+===================================================================== */
 function isBuildingUpgradeReady(b){
   const next = levelDef(b.type, (b.level||1)+1);
   if(!next) return false;
@@ -3081,7 +2784,7 @@ function checkBuildingUpgradeNotifications(){
       const lv = levelDef(b.type, (b.level||1)+1);
       showToast((levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' pode ser melhorado para '+lv.name, 'mission');
     } else if(!ready && state.notifiedUpgrades.has(key)){
-      state.notifiedUpgrades.delete(key);
+      state.notifiedUpgrades.delete(key); // resources spent elsewhere — re-notify once it's ready again
     }
   });
 }
@@ -3104,34 +2807,17 @@ function drawUpgradeReadyBadge(ctx, cx, cy){
 }
 
 /* =====================================================================
-   PAINÉIS E SOBREPOSIÇÕES (CORRIGIDOS)
+   OVERLAYS
 ===================================================================== */
 const OVERLAY_IDS = ['overlay-collection','overlay-missions','overlay-build','overlay-howto','overlay-age','overlay-victory','overlay-inspector','overlay-character'];
-
 function anyOverlayOpen(){
   return OVERLAY_IDS.some(id=>document.getElementById(id).classList.contains('open'));
 }
-
-// --- toggleOverlay com reset de transform e limpeza de banners ---
 function toggleOverlay(id){
-  sfx.play('click');
   exitRoadMode();
-  cancelPlacement();
-  cancelFoundingCamp();
-  cancelMove();
-  closeMenu();
-  // Esconde banners
-  document.getElementById('placement-banner').classList.remove('show');
-  document.getElementById('road-banner').classList.remove('show');
-
+  if(state.movingBuilding || state.foundingCamp){ cancelPlacement(); }
   const el = document.getElementById(id);
-  if(el.classList.contains('open')){
-    el.classList.remove('open');
-    // Remove transform inline deixado pelo sheet-handle
-    const panel = el.querySelector('.panel');
-    if(panel) panel.style.transform = '';
-    return;
-  }
+  if(el.classList.contains('open')){ el.classList.remove('open'); return; }
   closeAllOverlays();
   el.classList.add('open');
   if(id==='overlay-collection') renderDexGrid();
@@ -3140,122 +2826,28 @@ function toggleOverlay(id){
   if(id==='overlay-age') renderAgePanel();
   if(id==='overlay-character') renderWardrobe();
 }
-
-// --- closeAllOverlays com reset e remoção de transform ---
 function closeAllOverlays(){
-  OVERLAY_IDS.forEach(id=>{
-    const el = document.getElementById(id);
-    el.classList.remove('open');
-    const panel = el.querySelector('.panel');
-    if(panel) panel.style.transform = '';
-  });
-  // Fecha também discovery se estiver aberto (mas não a transition)
-  document.getElementById('discovery-overlay').classList.remove('open');
+  OVERLAY_IDS.forEach(id=>document.getElementById(id).classList.remove('open'));
 }
-
-// Listeners dos overlays com suporte a toque fora do painel
-document.querySelectorAll('.overlay').forEach(ov=>{
-  const close = (e) => {
-    if(e.target === ov){
-      ov.classList.remove('open');
-      const panel = ov.querySelector('.panel');
-      if(panel) panel.style.transform = '';
-    }
-  };
-  ov.addEventListener('click', close);
-  ov.addEventListener('touchstart', close, { passive: true });
-});
-
 document.querySelectorAll('[data-close]').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const id = btn.dataset.close;
-    const el = document.getElementById(id);
-    el.classList.remove('open');
-    const panel = el.querySelector('.panel');
-    if(panel) panel.style.transform = '';
-  });
+  btn.addEventListener('click', ()=>document.getElementById(btn.dataset.close).classList.remove('open'));
+});
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click', (e)=>{ if(e.target===ov) ov.classList.remove('open'); });
 });
 
-// ---------- Menu Hambúrguer ----------
-function toggleMenu(){
-  const overlay = document.getElementById('menu-overlay');
-  overlay.classList.toggle('open');
-}
-function closeMenu(){
-  document.getElementById('menu-overlay').classList.remove('open');
-}
-document.getElementById('btn-menu-toggle').addEventListener('click', toggleMenu);
-document.getElementById('menu-close').addEventListener('click', closeMenu);
-// Fechar ao clicar fora do painel
-document.getElementById('menu-overlay').addEventListener('click', (e)=>{
-  if(e.target === document.getElementById('menu-overlay')) closeMenu();
-});
-// Itens do menu
-document.querySelectorAll('.menu-item[data-action]').forEach(item=>{
-  item.addEventListener('click', ()=>{
-    const action = item.dataset.action;
-    closeMenu();
-    switch(action){
-      case 'collection': toggleOverlay('overlay-collection'); break;
-      case 'missions': toggleOverlay('overlay-missions'); break;
-      case 'build': toggleOverlay('overlay-build'); break;
-      case 'roads': toggleRoadMode(); break;
-      case 'character': toggleOverlay('overlay-character'); break;
-      case 'age': toggleOverlay('overlay-age'); break;
-      case 'howto': toggleOverlay('overlay-howto'); break;
-      case 'audio': {
-        const active = sfx.toggle();
-        document.getElementById('audio-icon').style.opacity = active ? '1' : '0.4';
-        showToast(active ? 'Som ativado' : 'Som desativado', null);
-        break;
-      }
-    }
-  });
-});
-
-// Atualizar badges do menu
-function updateMenuBadges(){
-  const menuDex = document.getElementById('menu-dex-badge');
-  const menuMission = document.getElementById('menu-mission-badge');
-  if(state.discovered.size>0){ menuDex.style.display='inline'; menuDex.textContent=state.discovered.size; } else menuDex.style.display='none';
-  const objectives = currentObjectives();
-  const remaining = objectives.filter(o=>!o.met).length;
-  if(remaining>0){ menuMission.style.display='inline'; menuMission.textContent=remaining; } else menuMission.style.display='none';
-}
-
-// Chamar updateMenuBadges nos locais apropriados (dentro de renderDexGrid, renderMissionList, etc.)
-// Vamos sobrescrever as funções originais para incluir updateMenuBadges
-const origRenderDexGrid = renderDexGrid;
-renderDexGrid = function(){
-  origRenderDexGrid();
-  updateMenuBadges();
-};
-const origRenderMissionList = renderMissionList;
-renderMissionList = function(){
-  origRenderMissionList();
-  updateMenuBadges();
-};
-const origUpdateMissionBadge = updateMissionBadge;
-updateMissionBadge = function(){
-  origUpdateMissionBadge();
-  updateMenuBadges();
-};
-const origUpdateDexBadge = updateDexBadge;
-updateDexBadge = function(){
-  origUpdateDexBadge();
-  updateMenuBadges();
-};
-
-// Botões principais ainda funcionam (já estavam)
 document.getElementById('btn-collection').addEventListener('click', ()=>toggleOverlay('overlay-collection'));
 document.getElementById('btn-missions').addEventListener('click', ()=>toggleOverlay('overlay-missions'));
 document.getElementById('btn-build').addEventListener('click', ()=>toggleOverlay('overlay-build'));
+document.getElementById('btn-character').addEventListener('click', ()=>toggleOverlay('overlay-character'));
 document.getElementById('btn-title-collection').addEventListener('click', ()=>{ renderDexGrid(); document.getElementById('overlay-collection').classList.add('open'); });
 document.getElementById('btn-title-howto').addEventListener('click', ()=>{ document.getElementById('overlay-howto').classList.add('open'); });
 document.getElementById('age-chip').addEventListener('click', ()=>toggleOverlay('overlay-age'));
 
 /* =====================================================================
-   GUARDA-ROUPA
+   WARDROBE — a live preview of Santiago rendered with the shared
+   drawPlayerBody function, so it always matches exactly what he looks
+   like in the valley. Selecting an outfit applies immediately.
 ===================================================================== */
 function renderWardrobe(){
   const canvas = document.getElementById('wardrobe-preview');
@@ -3276,7 +2868,6 @@ function renderWardrobe(){
   `).join('');
   wrap.querySelectorAll('.outfit-swatch').forEach(el=>{
     el.addEventListener('click', ()=>{
-      sfx.play('click');
       state.outfitId = el.dataset.outfit;
       renderWardrobe();
       scheduleSave();
@@ -3285,7 +2876,7 @@ function renderWardrobe(){
 }
 
 /* =====================================================================
-   GRELHA DA COLEÇÃO
+   COLLECTION PANEL
 ===================================================================== */
 function renderDexGrid(){
   const grid = document.getElementById('dex-grid');
@@ -3302,7 +2893,7 @@ function renderDexGrid(){
     card.innerHTML = `
       <div class="dex-icon-wrap"><canvas width="180" height="180"></canvas></div>
       <div class="dex-name">${known? sp.name : '???'}</div>
-      <div class="dex-rarity" style="color:${RARITY[sp.rarity].color}; background:${hexToRgba(RARITY[sp.rarity].color,0.16)}">${known? sp.rarity : 'Por Descobrir'}</div>
+      <div class="dex-rarity" style="color:${RARITY[sp.rarity].color}; background:${hexToRgba(RARITY[sp.rarity].color,0.16)}">${known? rarityLabel(sp.rarity) : 'Não Descoberto'}</div>
       ${known ? `<div class="dex-detail">
         <div>${sp.desc}</div>
         <div class="stat-row"><span class="stat-label">Velocidade</span><div class="stat-track"><div class="stat-fill" style="width:${sp.speed}%; background:${sp.color}"></div></div></div>
@@ -3336,22 +2927,24 @@ function updateDexBadge(){
 }
 
 /* =====================================================================
-   PAINEL DE OBJETIVOS
+   MISSIONS PANEL — now always shows the objectives for the Age the
+   player is currently working toward; refreshes automatically the
+   moment the civilization advances.
 ===================================================================== */
 function renderMissionList(){
   const list = document.getElementById('mission-list');
   const na = nextAge();
   const header = document.getElementById('mission-panel-title');
   const sub = document.getElementById('mission-panel-sub');
-  if(header) header.textContent = na ? 'Objetivos — Era '+na.name : 'Objetivos';
+  if(header) header.textContent = na ? 'Objetivos — Idade '+na.name : 'Objetivos';
   if(sub) sub.textContent = na
-    ? 'Conclui estes objetivos e a tua civilização avança para a Era '+na.name+' automaticamente.'
-    : 'A tua civilização atingiu a Era Moderna. Não existem mais objetivos.';
+    ? 'Cumpre estes objetivos e a tua civilização avança automaticamente para a Idade '+na.name+'.'
+    : 'A tua civilização atingiu a Idade Moderna. Não há mais objetivos.';
 
   const objectives = currentObjectives();
   list.innerHTML='';
   if(objectives.length===0){
-    list.innerHTML = '<div class="mission-desc" style="padding:8px 0">Nada mais a cumprir por aqui — continua a explorar o vale livremente.</div>';
+    list.innerHTML = '<div class="mission-desc" style="padding:8px 0">Não há mais nada a perseguir aqui — continua a explorar o vale livremente.</div>';
   } else {
     objectives.forEach(o=>{
       const row = document.createElement('div');
@@ -3374,12 +2967,12 @@ function updateObjectiveTracker(){
   const next = objectives.find(o=>!o.met);
   const titleEl = document.getElementById('ot-title'), descEl = document.getElementById('ot-desc'), labelEl = document.querySelector('#objective-tracker .ot-label');
   if(!na){
-    if(labelEl) labelEl.textContent = 'Civilização Concluída';
-    titleEl.textContent = 'A Era Moderna foi atingida';
+    if(labelEl) labelEl.textContent = 'Civilização Completa';
+    titleEl.textContent = 'A Idade Moderna foi alcançada';
     descEl.textContent = 'Continua a explorar o vale livremente.';
     return;
   }
-  if(labelEl) labelEl.textContent = 'Rumo à Era '+na.name;
+  if(labelEl) labelEl.textContent = 'Rumo à Idade '+na.name;
   if(!next){
     titleEl.textContent = 'Pronto para avançar';
     descEl.textContent = 'A tua civilização está a transformar-se...';
@@ -3390,12 +2983,14 @@ function updateObjectiveTracker(){
 }
 
 /* =====================================================================
-   PAINEL DE CONSTRUÇÃO
+   BUILD PANEL
 ===================================================================== */
 function renderBuildGrid(){
   const grid = document.getElementById('build-grid');
   grid.innerHTML='';
 
+  // Found Camp — a construction action, not a placeable building: it
+  // starts an entirely new camp zone elsewhere in the valley.
   const campCost = { wood:20, stone:12, food:0 };
   const campAfford = canAfford(campCost);
   const campCard = document.createElement('div');
@@ -3429,44 +3024,32 @@ function renderBuildGrid(){
         ${b.cost.wood?`<span>${icon('wood')} ${b.cost.wood}</span>`:''}
         ${b.cost.stone?`<span>${icon('stone')} ${b.cost.stone}</span>`:''}
         ${b.cost.food?`<span>${icon('food')} ${b.cost.food}</span>`:''}
-        ${b.produce?`<span style="color:var(--moss)">+${b.produce.amount} ${b.produce.key}/${b.produce.interval}s</span>`:''}
+        ${b.produce?`<span style="color:var(--moss)">+${b.produce.amount} ${resourceLabel(b.produce.key)}/${b.produce.interval}s</span>`:''}
       </div>
       ${unlocked
         ? `<div class="build-place-btn ${affordable?'':'disabled'}">Colocar</div>`
-        : `<div class="build-locked-tag">Desbloqueia na Era ${ageById(b.minAge).name}</div>`}
+        : `<div class="build-locked-tag">Desbloqueia na Idade ${ageById(b.minAge).name}</div>`}
     `;
     const c = card.querySelector('canvas'); const cctx = c.getContext('2d');
     drawBuilding(cctx, 70, 90, b.id, 1.1, unlocked ? null : ageById(b.minAge).palette);
     if(unlocked){
       const placeBtn = card.querySelector('.build-place-btn');
-      function startBuildingDrag(){
+      placeBtn.addEventListener('click', ()=>{
         if(!canAfford(b.cost)) return;
-        triggerHaptic('medium');
         state.placingType = b.id;
         document.getElementById('overlay-build').classList.remove('open');
-        document.getElementById('placement-text').textContent = 'Clica num piso dentro do teu acampamento para colocar a/o '+b.name;
+        document.getElementById('placement-text').textContent = 'Clica numa célula dentro do teu acampamento para colocar '+b.name;
         document.getElementById('placement-banner').classList.add('show');
-      }
-      placeBtn.addEventListener('click', startBuildingDrag);
-
-      let cardDragStart = null;
-      card.addEventListener('pointerdown', (pe)=>{
-        if(!affordable) return;
-        cardDragStart = { x: pe.clientX, y: pe.clientY };
       });
-      card.addEventListener('pointermove', (pe)=>{
-        if(!cardDragStart || !affordable) return;
-        if(Math.hypot(pe.clientX - cardDragStart.x, pe.clientY - cardDragStart.y) > 22){
-          cardDragStart = null;
-          startBuildingDrag();
-        }
-      });
-      card.addEventListener('pointerup', ()=>{ cardDragStart = null; });
     }
     grid.appendChild(card);
   });
 }
-
+/* =====================================================================
+   MULTIPLE CAMPS — Santiago can found additional camps elsewhere in the
+   valley. Each has its own building grid; the Industrial Age requires at
+   least one more camp, connected by road (see allCampsConnected below).
+===================================================================== */
 function drawFoundCampIcon(ctx){
   ctx.save();
   ctx.translate(70,90);
@@ -3485,36 +3068,35 @@ function startFoundingCamp(){
   exitRoadMode();
   cancelPlacement();
   state.foundingCamp = true;
-  document.getElementById('placement-text').textContent = 'Clica num local no vale para fundar um novo acampamento — Esc para cancelar';
+  document.getElementById('placement-text').textContent = 'Clica num ponto do vale para fundar um novo acampamento — Esc para cancelar';
   document.getElementById('placement-banner').classList.add('show');
 }
 function cancelFoundingCamp(){
   state.foundingCamp = false;
 }
 function campFoundValid(wx, wy){
-  const pad = 260;
+  const pad = 260; // minimum gap between camp edges so they never crowd each other
   const clearOfCamps = state.camps.every(c => wx < c.x-pad || wx > c.x+c.w+pad || wy < c.y-pad || wy > c.y+c.h+pad);
   const withinWorld = wx>CAMP_W/2+80 && wx<WORLD_W-CAMP_W/2-80 && wy>CAMP_H/2+80 && wy<WORLD_H-CAMP_H/2-80;
   return clearOfCamps && withinWorld;
 }
 function attemptFoundCampAt(wx, wy){
-  if(!campFoundValid(wx,wy)){ showToast('Demasiado perto de outro acampamento ou do limite do vale', null); return; }
+  if(!campFoundValid(wx,wy)){ showToast('Demasiado perto de outro acampamento, ou demasiado perto do limite do vale', null); return; }
   const cost = { wood:20, stone:12, food:0 };
   if(!canAfford(cost)){ showToast('Recursos insuficientes para fundar um acampamento', null); return; }
   payCost(cost);
-  sfx.play('build');
   const camp = {
     id: 'camp'+(state.camps.length+1),
     name: 'Acampamento '+(state.camps.length+1),
     x: wx-CAMP_W/2, y: wy-CAMP_H/2, w:CAMP_W, h:CAMP_H, cell:CAMP_CELL
   };
   state.camps.push(camp);
-  buildTerrain();
+  buildTerrain(); // bake the new camp's zone outline in immediately, not just on the next Age
   roadGraphDirty = true;
   state.foundingCamp = false;
   document.getElementById('placement-banner').classList.remove('show');
-  showToast('Fundado o '+camp.name+' — '+praise(), 'level');
-  celebrate(wx, wy-40, '★ Novo Acampamento! ★', '#E3A75B');
+  showToast(camp.name+' fundado — '+praise(), 'level');
+  celebrate(wx, wy-40, '★ New Camp! ★', '#E3A75B');
   grantXP(50);
   checkAgeReady();
   scheduleSave();
@@ -3534,7 +3116,7 @@ function attemptMoveAt(wx, wy){
   const b = state.movingBuilding;
   if(!b) return;
   const camp = campContaining(wx,wy);
-  if(!camp){ showToast("Fora dos limites de qualquer acampamento", null); return; }
+  if(!camp){ showToast('Isso está fora do limite de qualquer acampamento', null); return; }
   const gx = Math.floor((wx-camp.x)/camp.cell);
   const gy = Math.floor((wy-camp.y)/camp.cell);
   const occupied = state.buildings.some(bd=>bd!==b && bd.campId===camp.id && bd.gx===gx && bd.gy===gy);
@@ -3544,7 +3126,6 @@ function attemptMoveAt(wx, wy){
   b.cx = camp.x + gx*camp.cell + camp.cell/2;
   b.cy = camp.y + gy*camp.cell + camp.cell/2;
   b.bornAt = performance.now();
-  sfx.play('build');
   showToast('Movido', null);
   cancelPlacement();
   scheduleSave();
@@ -3553,14 +3134,13 @@ function attemptPlaceAt(wx, wy){
   const b = BUILDINGS.find(bb=>bb.id===state.placingType);
   if(!b) return;
   const camp = campContaining(wx,wy);
-  if(!camp){ showToast("Fora dos limites de qualquer acampamento", null); return; }
+  if(!camp){ showToast('Isso está fora do limite de qualquer acampamento', null); return; }
   const gx = Math.floor((wx-camp.x)/camp.cell);
   const gy = Math.floor((wy-camp.y)/camp.cell);
   const occupied = state.buildings.some(bd=>bd.campId===camp.id && bd.gx===gx && bd.gy===gy);
   if(occupied){ showToast('Já existe algo nesse local', null); return; }
   if(!canAfford(b.cost)){ showToast('Recursos insuficientes', null); return; }
   payCost(b.cost);
-  sfx.play('build');
   const bcx = camp.x + gx*camp.cell + camp.cell/2, bcy = camp.y + gy*camp.cell + camp.cell/2;
   state.buildings.push({
     type:b.id, campId:camp.id, gx, gy,
@@ -3576,6 +3156,8 @@ function attemptPlaceAt(wx, wy){
   checkAgeReady();
 }
 
+/* Passive production tick — buildings with a `produce` field slowly add
+   resources on their own, e.g. a Farm or Factory. */
 function tickProduction(now){
   state.buildings.forEach(bd=>{
     const prod = currentProduce(bd);
@@ -3589,7 +3171,11 @@ function tickProduction(now){
 }
 
 /* =====================================================================
-   GESTOR DE ERAS
+   AGE MANAGER — central progression architecture. Reads AGES (data) to
+   determine readiness, drives the cinematic Age-Up sequence, and applies
+   the world transformation (palette swap on all existing buildings +
+   the road/rail/lights layer in drawWorldInfrastructure). Nothing here
+   is hardcoded per-age; every age is one row of AGES.
 ===================================================================== */
 function nextAge(){ return ageById(state.age+1); }
 
@@ -3597,44 +3183,44 @@ function ageRequirementList(age){
   if(!age || !age.req) return [];
   const r = age.req; const list = [];
   if(r.level!=null) list.push({
-    label:'Atinge o Nível '+r.level,
-    hint:'Descobre dinossauros e conclui objetivos para ganhar EXP.',
+    label:'Atingir o Nível '+r.level,
+    hint:'Descobre dinossauros e cumpre objetivos para ganhar XP.',
     met: state.level>=r.level,
     progress: Math.min(state.level,r.level)+'/'+r.level
   });
   if(r.buildings!=null) list.push({
-    label:'Constrói '+r.buildings+' estruturas no teu acampamento',
-    hint:'Prime B para abrir o menu de Construção e coloca estruturas dentro do limite do acampamento.',
+    label:'Construir '+r.buildings+' estruturas no teu acampamento',
+    hint:'Prime B para abrir Construir, depois coloca estruturas dentro do limite tracejado do acampamento.',
     met: state.buildings.length>=r.buildings,
     progress: Math.min(state.buildings.length,r.buildings)+'/'+r.buildings
   });
   if(r.species!=null) list.push({
-    label:'Descobre '+r.species+' espécies de dinossauro',
-    hint:'Explora o vale e prime E junto a um dinossauro para o estudar.',
+    label:'Descobrir '+r.species+' espécies de dinossauros',
+    hint:'Explora o vale e prime E perto de um dinossauro para o estudar.',
     met: state.discovered.size>=r.species,
     progress: Math.min(state.discovered.size,r.species)+'/'+r.species
   });
   if(r.resources!=null) list.push({
-    label:'Recolhe '+r.resources+' recursos no total',
+    label:'Recolher '+r.resources+' recursos no total',
     hint:'Prime E perto de árvores, rochas, arbustos ou água para recolher recursos.',
     met: state.totalGathered>=r.resources,
     progress: Math.min(state.totalGathered,r.resources)+'/'+r.resources
   });
   if(r.building) list.push({
-    label:'Constrói uma/um '+buildingDef(r.building).name,
-    hint:'Prime B, seleciona '+buildingDef(r.building).name+' e coloca-o no teu acampamento.',
+    label:'Construir um(a) '+buildingDef(r.building).name,
+    hint:'Prime B, seleciona '+buildingDef(r.building).name+' e depois coloca-o no teu acampamento.',
     met: state.buildings.some(b=>b.type===r.building),
     progress: null
   });
   if(r.camps!=null) list.push({
-    label:'Funda '+r.camps+' acampamentos',
-    hint:'Prime B, escolhe "Fundar Novo Acampamento" e clica num local no vale.',
+    label:'Fundar '+r.camps+' acampamentos',
+    hint:'Prime B, depois escolhe "Fundar Novo Acampamento" e clica num ponto do vale.',
     met: state.camps.length>=r.camps,
     progress: Math.min(state.camps.length,r.camps)+'/'+r.camps
   });
   if(r.campsConnected) list.push({
-    label:'Liga os teus acampamentos por estrada',
-    hint:'Prime R para entrar no Modo Estrada e traça caminhos entre os teus acampamentos.',
+    label:'Ligar os teus acampamentos por estrada',
+    hint:'Prime R para entrar no Modo Estradas e arrasta um caminho de estradas entre os teus acampamentos.',
     met: allCampsConnected(),
     progress: null
   });
@@ -3655,9 +3241,11 @@ function checkAgeReady(){
   if(document.getElementById('overlay-missions').classList.contains('open')) renderMissionList();
   if(document.getElementById('overlay-age').classList.contains('open')) renderAgePanel();
 
+  // Auto age-up: the moment every objective for the next Age is met, the
+  // civilization advances on its own — no button required.
   if(ready && state.started && !state.transitioning && !document.getElementById('discovery-overlay').classList.contains('open')){
-    state.transitioning = true;
-    showToast('Todos os objetivos concluídos — a avançar para a Era '+na.name, 'mission');
+    state.transitioning = true; // claim immediately so repeated calls during the delay can't double-fire
+    showToast('Todos os objetivos cumpridos — a avançar para a Idade '+na.name, 'mission');
     setTimeout(()=>{ advanceAge(); }, 900);
   }
 }
@@ -3671,15 +3259,15 @@ function updateAgeHUD(){
   const age = ageById(state.age);
   document.getElementById('age-dot').textContent = age.id;
   document.getElementById('age-dot').style.background = 'linear-gradient(135deg,'+age.palette.roof+',var(--amber))';
-  document.getElementById('age-label-num').textContent = 'Era '+age.id;
+  document.getElementById('age-label-num').textContent = 'Idade '+age.id;
   document.getElementById('age-label-name').textContent = age.name;
 }
 
 function renderAgePanel(){
   const age = ageById(state.age);
   const na = nextAge();
-  document.getElementById('age-panel-title').textContent = na ? 'Avançar para a Era '+na.name : 'Era '+age.name;
-  document.getElementById('age-panel-tagline').textContent = na ? na.epithet : 'A tua civilização atingiu o seu pico tecnológico.';
+  document.getElementById('age-panel-title').textContent = na ? 'Avançar para a Idade '+na.name : 'Idade '+age.name;
+  document.getElementById('age-panel-tagline').textContent = na ? na.epithet : 'A tua civilização atingiu o seu auge tecnológico.';
 
   const reqWrap = document.getElementById('age-requirements');
   const unlockWrap = document.getElementById('age-unlock-preview');
@@ -3707,36 +3295,40 @@ function renderAgePanel(){
       return `<div class="unlock-chip">${icon('hammer')} ${d?d.name:id}</div>`;
     }).join('');
     const ready = ageIsReady(na);
-    btn.textContent = ready ? 'Todos os objetivos concluídos — a avançar automaticamente…' : 'Avança automaticamente assim que estiverem concluídos';
+    btn.textContent = ready ? 'Todos os objetivos cumpridos — a avançar automaticamente…' : 'Avança automaticamente assim que estiverem cumpridos';
     btn.className = ready ? 'ready' : '';
   }
 
   const tl = document.getElementById('age-timeline');
   tl.innerHTML = '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--sand);margin-bottom:8px">Linha do Tempo da Civilização</div>' +
-    state.ageHistory.map(h=>`<div class="timeline-row"><b>Ano ${ageById(h.age).year}</b>Era ${ageById(h.age).name} atingida</div>`).join('');
+    state.ageHistory.map(h=>`<div class="timeline-row"><b>Ano ${ageById(h.age).year}</b>Idade ${ageById(h.age).name} alcançada</div>`).join('');
 }
 
 function advanceAge(){
   const na = nextAge();
   if(!na) return;
   closeAllOverlays();
-  closeMenu();
   state.paused = true;
   state.transitioning = true;
-  sfx.play('ageup');
 
   const overlay = document.getElementById('age-transition');
   const canvas = document.getElementById('transition-canvas');
   const tctx2 = canvas.getContext('2d');
   document.getElementById('transition-years').textContent = 'Ano '+na.year;
-  document.getElementById('transition-title').textContent = 'Era '+na.name;
+  document.getElementById('transition-title').textContent = 'Idade '+na.name;
   document.getElementById('transition-tagline').textContent = na.epithet;
   overlay.classList.add('open');
 
   const fromPal = ageById(state.age).palette, toPal = na.palette;
   const start = performance.now();
-  const duration = 2400;
+  const duration = 2400; // was 5200 — the transition should feel snappy, not stall the player
 
+  // Guards against the transition ever getting permanently stuck: if the
+  // animation throws, or requestAnimationFrame stalls for any reason (a
+  // backgrounded tab, a rendering error, anything), this still guarantees
+  // finishAgeAdvance eventually runs exactly once — otherwise state.paused
+  // and state.transitioning would stay true forever and silently block
+  // every future Age from ever advancing.
   let finished = false;
   function finishOnce(){
     if(finished) return;
@@ -3745,6 +3337,8 @@ function advanceAge(){
   }
   const safetyNet = setTimeout(finishOnce, 5500);
 
+  // A handful of rising sparks for visual energy, seeded once so they
+  // don't re-randomize every frame.
   const sparks = Array.from({length:14}, ()=>({ x:rand(0,900), delay:rand(0,0.5), speed:rand(60,140), size:rand(1.5,3.5) }));
 
   function frame(now){
@@ -3758,8 +3352,8 @@ function advanceAge(){
         const a=h(c1), b=h(c2);
         return `rgb(${lerp(a.r,b.r,k)},${lerp(a.g,b.g,k)},${lerp(a.b,b.b,k)})`;
       }
-      const colorK = Math.min(1, t*1.8);
-      const growK = Math.max(0, Math.min(1, easeOutBack((t-0.15)/0.85)));
+      const colorK = Math.min(1, t*1.8); // colors settle quickly, well before the buildings finish growing
+      const growK = Math.max(0, Math.min(1, easeOutBack((t-0.15)/0.85))); // buildings pop with a bouncy overshoot
 
       const groundY = 300;
       tctx2.fillStyle = lerpColor(fromPal.ground, toPal.ground, colorK);
@@ -3773,6 +3367,7 @@ function advanceAge(){
         tctx2.fillRect(bx-4, groundY-bh-10, bw+8, 12);
       }
 
+      // rising sparks for energy/motion
       tctx2.fillStyle = 'rgba(227,167,88,0.8)';
       sparks.forEach(s=>{
         const st = Math.max(0, t - s.delay);
@@ -3783,6 +3378,7 @@ function advanceAge(){
       });
       tctx2.globalAlpha = 1;
 
+      // a quick bright flash at the midpoint for punch
       const flashT = 0.35;
       const flashWindow = 0.18;
       const distFromFlash = Math.abs(t-flashT);
@@ -3797,10 +3393,10 @@ function advanceAge(){
       } else {
         overlay.classList.add('reveal');
         clearTimeout(safetyNet);
-        setTimeout(finishOnce, 700);
+        setTimeout(finishOnce, 700); // was 1800 — hold the reveal just long enough to read it
       }
     } catch(err){
-      console.error('Erro na transição de era:', err);
+      console.error('Valeborn age transition error (recovered):', err);
       clearTimeout(safetyNet);
       finishOnce();
     }
@@ -3811,10 +3407,10 @@ function advanceAge(){
 function finishAgeAdvance(na){
   state.age = na.id;
   state.ageHistory.push({ age:na.id, year:na.year });
-  state.buildings.forEach(b=>{ b.bornAt = performance.now(); });
-  buildTerrain();
-  skylineBuildings = null;
-  const arrivedSpecies = spawnDinosForAgeUpTo(na.id);
+  state.buildings.forEach(b=>{ b.bornAt = performance.now(); }); // gentle re-pop animation as they "upgrade"
+  buildTerrain(); // map re-theme: same world, redrawn to match the new Age
+  skylineBuildings = null; // let the Modern-age skyline (if unlocked) regenerate against the new palette
+  const arrivedSpecies = spawnDinosForAgeUpTo(na.id); // the valley's population grows with the Age
   updateAgeHUD();
   renderBuildGrid();
 
@@ -3824,9 +3420,9 @@ function finishAgeAdvance(na){
   state.transitioning = false;
   state.paused = false;
 
-  showToast('Bem-vindo à Era '+na.name+' — '+praise(), 'level');
-  celebrate(player.x, player.y-70, '★ Era '+na.name+'! ★', '#E3A75B');
-  grantXP(40*na.id);
+  showToast('Bem-vindo à Idade '+na.name+' — '+praise(), 'level');
+  celebrate(player.x, player.y-70, '★ '+na.name+' Age! ★', '#E3A75B');
+  grantXP(40*na.id); // reaching a new Age is itself a major source of experience
   if(na.unlocks && na.unlocks.length){
     const names = na.unlocks.map(id=>buildingDef(id).name).join(', ');
     showToast('Novo: '+names, null);
@@ -3847,24 +3443,23 @@ function showVictory(){
     <div class="victory-stat"><div class="v-num">${state.discovered.size}/${SPECIES.length}</div><div class="v-label">Espécies Descobertas</div></div>
     <div class="victory-stat"><div class="v-num">${state.buildings.length}</div><div class="v-label">Estruturas Construídas</div></div>
     <div class="victory-stat"><div class="v-num">${state.totalGathered}</div><div class="v-label">Recursos Recolhidos</div></div>
-    <div class="victory-stat"><div class="v-num">${state.level}</div><div class="v-label">Nível Atingido</div></div>
+    <div class="victory-stat"><div class="v-num">${state.level}</div><div class="v-label">Nível Alcançado</div></div>
   `;
   document.getElementById('victory-timeline').innerHTML = state.ageHistory.map(h=>
-    `<div class="timeline-row"><b>Ano ${ageById(h.age).year}</b>Era ${ageById(h.age).name} — ${ageById(h.age).epithet}</div>`
+    `<div class="timeline-row"><b>Ano ${ageById(h.age).year}</b>Idade ${ageById(h.age).name} — ${ageById(h.age).epithet}</div>`
   ).join('');
   closeAllOverlays();
   document.getElementById('overlay-victory').classList.add('open');
 }
 
 /* =====================================================================
-   REVELAÇÃO DE DESCOBERTA
+   DISCOVERY REVEAL
 ===================================================================== */
 function triggerDiscovery(speciesId){
   const sp = speciesById(speciesId);
   state.discovered.add(speciesId);
   state.paused = true;
   updateDexBadge();
-  sfx.play('dino');
 
   const dc = document.getElementById('discovery-canvas');
   const dctx = dc.getContext('2d');
@@ -3873,7 +3468,7 @@ function triggerDiscovery(speciesId){
 
   document.getElementById('discovery-name').textContent = sp.name;
   const rarityEl = document.getElementById('discovery-rarity');
-  rarityEl.textContent = sp.rarity;
+  rarityEl.textContent = rarityLabel(sp.rarity);
   rarityEl.style.color = RARITY[sp.rarity].color;
   rarityEl.style.background = hexToRgba(RARITY[sp.rarity].color,0.16);
   document.getElementById('discovery-desc').textContent = sp.desc;
@@ -3883,16 +3478,15 @@ function triggerDiscovery(speciesId){
   checkAgeReady();
 }
 document.getElementById('discovery-continue').addEventListener('click', ()=>{
-  sfx.play('click');
   document.getElementById('discovery-overlay').classList.remove('open');
   state.paused = false;
-  checkAgeReady();
+  checkAgeReady(); // re-check now that the discovery overlay's block has lifted
 });
 
 /* =====================================================================
-   INTERAÇÃO
+   INTERACTION
 ===================================================================== */
-let currentInteractable = null;
+let currentInteractable = null; // {kind:'dino'|'resource', ref}
 
 function findInteractable(){
   let best = null, bestDist = 68;
@@ -3923,7 +3517,6 @@ function tryInteract(){
     if(n.amount<=0) return;
     n.amount -= 1;
     addResource(n.type, 1);
-    sfx.play('gather');
     const meta = RESOURCE_META.find(r=>r.key===n.type);
     spawnFloatingText(n.x, n.y-20, '+1 '+meta.label, '#F3EEE4');
     if(n.amount<=0){ n.respawnAt = performance.now() + 16000; }
@@ -3953,7 +3546,7 @@ function updateInteractHint(){
 }
 
 /* =====================================================================
-   CICLO PRINCIPAL DO JOGO
+   MAIN GAME LOOP
 ===================================================================== */
 let lastTime = performance.now();
 function gameLoop(now){
@@ -3973,13 +3566,12 @@ function gameLoop(now){
       updateCamera();
       updateInteractHint();
       render();
-      renderMinimap();
       renderFloatingTexts();
       respawnCheck(now);
       if(!state.transitioning) tickProduction(now);
     }
   } catch(err){
-    console.error('Erro no ciclo de jogo:', err);
+    console.error('Valeborn frame error (recovered):', err);
   }
   requestAnimationFrame(gameLoop);
 }
@@ -3993,23 +3585,6 @@ function updatePlayer(dt){
   if(Math.abs(touchMoveVector.x)>0.15 || Math.abs(touchMoveVector.y)>0.15){
     dx += touchMoveVector.x; dy += touchMoveVector.y;
   }
-  const keyboardOrJoystickMoving = dx!==0||dy!==0;
-
-  if(keyboardOrJoystickMoving){
-    player.targetX = null; player.targetY = null;
-    triggerHudRecess();
-  } else if(player.targetX !== null && player.targetY !== null){
-    const tdx = player.targetX - player.x, tdy = player.targetY - player.y;
-    const tdist = Math.hypot(tdx, tdy);
-    if(tdist > 12){
-      dx = tdx / tdist;
-      dy = tdy / tdist;
-      triggerHudRecess();
-    } else {
-      player.targetX = null; player.targetY = null;
-    }
-  }
-
   const moving = dx!==0||dy!==0;
   if(moving){
     const len = Math.hypot(dx,dy);
@@ -4033,38 +3608,27 @@ function render(){
   gctx.setTransform(dpr,0,0,dpr,0,0);
   gctx.clearRect(0,0,camera.w,camera.h);
   gctx.save();
-
-  // Apply camera zoom around screen center (Apple Camera Zoom System)
-  const centerX = camera.w / 2, centerY = camera.h / 2;
-  gctx.translate(centerX, centerY);
-  gctx.scale(camera.zoom, camera.zoom);
-  gctx.translate(-centerX, -centerY);
   gctx.translate(-camera.x,-camera.y);
 
+  // terrain
   gctx.drawImage(terrainCanvas,0,0);
+
+  // road / rail / power / drones / skyline — the world layer that visibly
+  // communicates the current Age (see drawWorldInfrastructure)
   drawWorldInfrastructure(gctx);
+
+  // player-built roads — drawn with the same age-reactive styling, plus
+  // the construction grid and live drag preview while in Road Mode
   drawRoadSegments(gctx);
 
-  // Render Tap Ripples
-  const now = performance.now();
-  for(let i=tapRipples.length-1; i>=0; i--){
-    const r = tapRipples[i];
-    const age = now - r.born;
-    if(age > 450){ tapRipples.splice(i,1); continue; }
-    const k = age / 450;
-    gctx.save();
-    gctx.strokeStyle = `rgba(227,167,88, ${0.8*(1-k)})`;
-    gctx.lineWidth = 2.5;
-    gctx.beginPath(); gctx.arc(r.wx, r.wy, 6 + k*24, 0, Math.PI*2); gctx.stroke();
-    gctx.restore();
-  }
-
+  // camp labels — one per founded camp, using its own name
   gctx.font = "700 13px 'Space Grotesk', sans-serif";
   gctx.fillStyle = 'rgba(227,167,88,0.85)';
   state.camps.forEach(camp=>{
     gctx.fillText(camp.name.toUpperCase(), camp.x+14, camp.y+22);
   });
 
+  // build objects (world-space, depth sort with dinos/player by y)
   const drawables = [];
   resourceNodes.forEach(n=>drawables.push({y:n.y, fn:()=>drawResourceNode(gctx,n)}));
   state.buildings.forEach(b=>{
@@ -4095,6 +3659,7 @@ function render(){
   drawables.sort((a,b)=>a.y-b.y);
   drawables.forEach(o=>o.fn());
 
+  // interactable highlight ring
   if(currentInteractable && !state.paused){
     const ref = currentInteractable.ref;
     gctx.save();
@@ -4105,6 +3670,7 @@ function render(){
     gctx.restore();
   }
 
+  // placement / move preview
   if(state.placingType || state.movingBuilding){
     const camp = campContaining(mouseWorld.x, mouseWorld.y);
     if(camp){
@@ -4123,6 +3689,8 @@ function render(){
     }
   }
 
+  // camp-founding preview — a soft circle showing where the new camp
+  // would be centered, green if valid, red if too close to another camp
   if(state.foundingCamp){
     const valid = campFoundValid(mouseWorld.x, mouseWorld.y);
     gctx.save();
@@ -4140,10 +3708,18 @@ function render(){
 function easeOutBack(x){ const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }
 
 /* =====================================================================
-   SISTEMA DE GUARDA / CARREGAMENTO
+   BOOT
+===================================================================== */
+/* =====================================================================
+   SAVE / LOAD — persisted via the artifact storage API (not localStorage,
+   which artifacts can't use). Everything is wrapped defensively: if the
+   API isn't available in whatever context this page is running in, every
+   function here becomes a silent no-op rather than breaking the game.
 ===================================================================== */
 const SAVE_KEY = 'valeborn_save_v1';
-
+function hasStorage(){
+  return typeof window!=='undefined' && !!window.storage && typeof window.storage.set==='function';
+}
 function serializeState(){
   return {
     v: 2,
@@ -4163,7 +3739,6 @@ function serializeState(){
     savedAt: Date.now()
   };
 }
-
 function applyLoadedState(data){
   state.age = data.age || 1;
   state.xp = data.xp || 0;
@@ -4172,7 +3747,7 @@ function applyLoadedState(data){
   state.totalGathered = data.totalGathered || 0;
   state.discovered = new Set(data.discovered||[]);
   state.ageHistory = (data.ageHistory && data.ageHistory.length) ? data.ageHistory : [{age:1,year:1}];
-  state.camps = (data.camps && data.camps.length) ? data.camps : [{ id:'camp1', name:'Acampamento do Santiago', x:130, y:130, w:CAMP_W, h:CAMP_H, cell:CAMP_CELL }];
+  state.camps = (data.camps && data.camps.length) ? data.camps : [{ id:'camp1', name:'Acampamento de Santiago', x:130, y:130, w:CAMP_W, h:CAMP_H, cell:CAMP_CELL }];
   state.buildings = (data.buildings||[]).map(b=>({
     type:b.type, campId:b.campId||'camp1', gx:b.gx, gy:b.gy, cx:b.cx, cy:b.cy, level:b.level||1,
     bornAt: performance.now(), lastProduced: performance.now()
@@ -4183,41 +3758,40 @@ function applyLoadedState(data){
   if(data.player){ player.x = data.player.x; player.y = data.player.y; }
   roadGraphDirty = true;
 }
-
 async function saveGame(){
-  const dataStr = JSON.stringify(serializeState());
-  if(typeof window !== 'undefined' && window.storage && typeof window.storage.set === 'function'){
-    try{ await window.storage.set(SAVE_KEY, dataStr, false); }catch(e){}
-  }
-  try{ localStorage.setItem(SAVE_KEY, dataStr); }catch(e){}
-}
-
-async function loadGame(){
-  if(typeof window !== 'undefined' && window.storage && typeof window.storage.get === 'function'){
-    try{
-      const res = await window.storage.get(SAVE_KEY, false);
-      if(res && res.value) return JSON.parse(res.value);
-    }catch(e){}
-  }
+  if(!hasStorage()) return;
   try{
-    const val = localStorage.getItem(SAVE_KEY);
-    if(val) return JSON.parse(val);
-  }catch(e){}
-  return null;
+    await window.storage.set(SAVE_KEY, JSON.stringify(serializeState()), false);
+  }catch(err){
+    console.error('Valeborn save failed:', err);
+  }
 }
-
+async function loadGame(){
+  if(!hasStorage()) return null;
+  try{
+    const result = await window.storage.get(SAVE_KEY, false);
+    if(!result || !result.value) return null;
+    return JSON.parse(result.value);
+  }catch(err){
+    return null; // no save yet, or it's corrupted — either way, treat as "no save"
+  }
+}
+async function deleteSave(){
+  if(!hasStorage()) return;
+  try{ await window.storage.delete(SAVE_KEY, false); }catch(err){ /* nothing to delete */ }
+}
 let saveTimer = null;
 function scheduleSave(){
-  if(!state.started) return;
+  if(!hasStorage() || !state.started) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveGame, 2000);
+  saveTimer = setTimeout(saveGame, 2500); // debounced so rapid actions coalesce into one write
 }
 window.addEventListener('beforeunload', ()=>{ if(state.started) saveGame(); });
 
 async function continueGame(){
   const data = await loadGame();
   if(!data){
-    showToast("Nenhuma civilização guardada encontrada — a começar do zero", null);
+    showToast('Nenhuma civilização guardada encontrada — a começar do zero', null);
     beginPlay();
     return;
   }
@@ -4234,30 +3808,30 @@ function beginPlay(){
   document.getElementById('title-screen').classList.add('hidden');
   document.getElementById('hud').classList.add('visible');
   state.started = true;
-  sfx.init();
   initGame();
 }
 
 function initGame(){
   const steps = [
-    ['terreno', buildTerrain],
-    ['nodos de recursos', generateResourceNodes],
-    ['dinossauros', spawnDinos],
-    ['barra de recursos', renderResourceBar],
-    ['UI de nível', updateLevelUI],
-    ['lista de objetivos', renderMissionList],
-    ['rastreador de objetivos', updateObjectiveTracker],
-    ['HUD de era', updateAgeHUD],
-    ['prontidão de era', checkAgeReady]
+    ['terrain', buildTerrain],
+    ['resource nodes', generateResourceNodes],
+    ['dinosaurs', spawnDinos],
+    ['resource bar', renderResourceBar],
+    ['level UI', updateLevelUI],
+    ['mission list', renderMissionList],
+    ['objective tracker', updateObjectiveTracker],
+    ['age HUD', updateAgeHUD],
+    ['age readiness', checkAgeReady]
   ];
   steps.forEach(([name, fn])=>{
-    try{ fn(); }catch(err){ console.error('Falha no passo de inicialização: '+name, err); }
+    try{ fn(); }catch(err){ console.error('Valeborn init step failed: '+name, err); }
   });
 }
 
 document.getElementById('btn-play').addEventListener('click', beginPlay);
 document.getElementById('btn-continue').addEventListener('click', continueGame);
 
+// Check for a saved civilization and offer Continue if one exists.
 (async function checkForSave(){
   const data = await loadGame();
   if(data){
