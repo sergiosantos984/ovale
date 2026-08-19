@@ -2650,34 +2650,46 @@ let touchMoveVector = {x:0, y:0};
   window.addEventListener('touchend', ()=>{ if(dragging) end(); });
 })();
 
-// Sheet Drag-to-Dismiss on Mobile
+// Sheet Drag-to-Dismiss on Mobile (corrigido)
 (function setupSheetHandles(){
   document.querySelectorAll('.panel').forEach(panel=>{
     const handle = panel.querySelector('.sheet-handle');
     if(!handle) return;
     let startY = 0, currentY = 0, dragging = false;
+    const overlay = panel.closest('.overlay');
+
     panel.addEventListener('touchstart', (e)=>{
       if(e.touches[0].target === handle || panel.scrollTop === 0){
         startY = e.touches[0].clientY;
         dragging = true;
+        currentY = 0;
+        panel.style.willChange = 'transform';
       }
-    }, {passive:true});
+    }, {passive: true});
+
     panel.addEventListener('touchmove', (e)=>{
       if(!dragging) return;
       currentY = e.touches[0].clientY - startY;
       if(currentY > 0){
-        panel.style.transform = `translateY(${currentY}px)`;
+        const maxDrag = 120;
+        const delta = Math.min(currentY, maxDrag);
+        panel.style.transform = `translateY(${delta}px)`;
+        if(overlay) overlay.style.backgroundColor = `rgba(6,12,8,${0.58 - delta/maxDrag * 0.3})`;
       }
-    }, {passive:true});
+    }, {passive: true});
+
     panel.addEventListener('touchend', ()=>{
       if(!dragging) return;
       dragging = false;
+      panel.style.willChange = '';
+      if(overlay) overlay.style.backgroundColor = '';
       if(currentY > 90){
         triggerHaptic('medium');
-        const overlay = panel.closest('.overlay');
         if(overlay) overlay.classList.remove('open');
+        panel.style.transform = '';
+      } else {
+        panel.style.transform = '';
       }
-      panel.style.transform = '';
       currentY = 0;
     });
   });
@@ -2965,18 +2977,33 @@ function drawUpgradeReadyBadge(ctx, cx, cy){
 }
 
 /* =====================================================================
-   PAINÉIS E SOBREPOSIÇÕES
+   PAINÉIS E SOBREPOSIÇÕES (CORRIGIDOS)
 ===================================================================== */
 const OVERLAY_IDS = ['overlay-collection','overlay-missions','overlay-build','overlay-howto','overlay-age','overlay-victory','overlay-inspector','overlay-character'];
+
 function anyOverlayOpen(){
   return OVERLAY_IDS.some(id=>document.getElementById(id).classList.contains('open'));
 }
+
+// --- toggleOverlay com reset de transform e limpeza de banners ---
 function toggleOverlay(id){
   sfx.play('click');
   exitRoadMode();
-  if(state.movingBuilding || state.foundingCamp){ cancelPlacement(); }
+  cancelPlacement();
+  cancelFoundingCamp();
+  cancelMove();
+  // Esconde banners
+  document.getElementById('placement-banner').classList.remove('show');
+  document.getElementById('road-banner').classList.remove('show');
+
   const el = document.getElementById(id);
-  if(el.classList.contains('open')){ el.classList.remove('open'); return; }
+  if(el.classList.contains('open')){
+    el.classList.remove('open');
+    // Remove transform inline deixado pelo sheet-handle
+    const panel = el.querySelector('.panel');
+    if(panel) panel.style.transform = '';
+    return;
+  }
   closeAllOverlays();
   el.classList.add('open');
   if(id==='overlay-collection') renderDexGrid();
@@ -2985,14 +3012,40 @@ function toggleOverlay(id){
   if(id==='overlay-age') renderAgePanel();
   if(id==='overlay-character') renderWardrobe();
 }
+
+// --- closeAllOverlays com reset e remoção de transform ---
 function closeAllOverlays(){
-  OVERLAY_IDS.forEach(id=>document.getElementById(id).classList.remove('open'));
+  OVERLAY_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    el.classList.remove('open');
+    const panel = el.querySelector('.panel');
+    if(panel) panel.style.transform = '';
+  });
+  // Fecha também discovery se estiver aberto (mas não a transition)
+  document.getElementById('discovery-overlay').classList.remove('open');
 }
-document.querySelectorAll('[data-close]').forEach(btn=>{
-  btn.addEventListener('click', ()=>document.getElementById(btn.dataset.close).classList.remove('open'));
-});
+
+// Listeners dos overlays com suporte a toque fora do painel
 document.querySelectorAll('.overlay').forEach(ov=>{
-  ov.addEventListener('click', (e)=>{ if(e.target===ov) ov.classList.remove('open'); });
+  const close = (e) => {
+    if(e.target === ov){
+      ov.classList.remove('open');
+      const panel = ov.querySelector('.panel');
+      if(panel) panel.style.transform = '';
+    }
+  };
+  ov.addEventListener('click', close);
+  ov.addEventListener('touchstart', close, { passive: true });
+});
+
+document.querySelectorAll('[data-close]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const id = btn.dataset.close;
+    const el = document.getElementById(id);
+    el.classList.remove('open');
+    const panel = el.querySelector('.panel');
+    if(panel) panel.style.transform = '';
+  });
 });
 
 document.getElementById('btn-collection').addEventListener('click', ()=>toggleOverlay('overlay-collection'));
