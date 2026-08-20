@@ -323,20 +323,23 @@
   .action-btn.danger:hover{ background:rgba(180,72,47,0.3); }
   .action-btn.danger.confirming{ background:var(--danger); border-color:var(--danger); color:var(--ivory); }
 
-  #placement-banner{
-    position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
-    padding:12px 22px; border-radius:100px; display:none; align-items:center; gap:14px; z-index:25;
+  #placement-banner, #road-banner{
+    position:absolute; top:150px; left:50%; transform:translateX(-50%);
+    padding:10px 10px 10px 16px; border-radius:16px; display:none; align-items:center; gap:10px; z-index:25;
+    max-width:min(86vw, 360px);
   }
-  #placement-banner.show{ display:flex; }
-  #placement-banner button{ background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600; }
-
-  #road-banner{
-    position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
-    padding:12px 22px; border-radius:100px; display:none; align-items:center; gap:14px; z-index:25;
-    font-size:13px; font-weight:600;
+  #placement-banner.show, #road-banner.show{ display:flex; }
+  #placement-banner .banner-icon, #road-banner .banner-icon{ width:17px; height:17px; flex-shrink:0; }
+  #placement-text, #road-banner-text{
+    font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;
   }
-  #road-banner.show{ display:flex; }
-  #road-banner button{ background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600; }
+  #placement-cancel, #road-mode-exit{
+    width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.12);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:background .15s ease;
+  }
+  #placement-cancel:hover, #road-mode-exit:hover{ background:rgba(255,255,255,0.22); }
+  #placement-cancel svg, #road-mode-exit svg{ width:13px; height:13px; }
 
   /* ---------- Touch controls ---------- */
   .touch-only{ display:none; }
@@ -458,14 +461,30 @@
   /* ---------- Age transition cinematic ---------- */
   #age-transition{
     position:absolute; inset:0; z-index:80; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background:#08110B; opacity:0; pointer-events:none; transition:opacity .5s ease;
+    background:#08110B; opacity:0; pointer-events:none;
+    transition:opacity .5s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
   }
   #age-transition.open{ opacity:1; pointer-events:auto; }
-  #transition-canvas{ width:min(520px,70vw); height:min(220px,30vw); }
+  #age-transition.impact{ transform:scale(1.018); }
+  #transition-canvas{ width:min(760px,88vw); height:min(335px,39vw); }
   #transition-years{ font-size:12px; letter-spacing:0.25em; text-transform:uppercase; color:var(--amber); font-weight:700; opacity:0; transition:opacity .35s ease; margin-top:14px; }
   #age-transition.reveal #transition-years{ opacity:1; }
-  #transition-title{ font-size:clamp(30px,5vw,50px); font-weight:700; margin-top:8px; opacity:0; transition:opacity .35s ease .08s; }
-  #age-transition.reveal #transition-title{ opacity:1; }
+  #transition-title{
+    font-size:clamp(30px,5vw,50px); font-weight:700; margin-top:8px; opacity:0;
+    transform:scale(0.92); filter:blur(6px);
+    transition:opacity .4s ease .08s, transform .4s cubic-bezier(.2,.9,.3,1.2) .08s, filter .4s ease .08s;
+    background:linear-gradient(100deg, var(--ivory) 40%, #FFF8E8 50%, var(--ivory) 60%);
+    background-size:300% 100%; background-position:100% 0;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  #age-transition.reveal #transition-title{
+    opacity:1; transform:scale(1); filter:blur(0);
+    animation:title-shimmer 1.6s ease .3s;
+  }
+  @keyframes title-shimmer{
+    0%{ background-position:100% 0; }
+    100%{ background-position:-100% 0; }
+  }
   #transition-tagline{ font-size:13.5px; color:var(--sand); margin-top:10px; opacity:0; transition:opacity .35s ease .16s; max-width:420px; text-align:center; }
   #age-transition.reveal #transition-tagline{ opacity:1; }
 
@@ -570,12 +589,14 @@
 
     <div id="interact-hint" class="glass"><span class="key-chip">E</span><span id="interact-label">Interagir</span></div>
     <div id="placement-banner" class="glass">
-      <span id="placement-text">Escolhe uma célula no teu acampamento para construir</span>
-      <button id="placement-cancel">Cancelar</button>
+      <svg class="banner-icon" viewBox="0 0 24 24" fill="none" stroke="#E3A75B" stroke-width="2" stroke-linecap="round"><path d="M12 4v16"/><path d="M4 12h16"/></svg>
+      <span id="placement-text">A construir</span>
+      <button id="placement-cancel" title="Cancelar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div id="road-banner" class="glass">
-      <span id="road-banner-text">Toca num ponto para começares uma estrada</span> <span class="key-chip">Esc</span>
-      <button id="road-mode-exit">Concluído</button>
+      <svg class="banner-icon" viewBox="0 0 24 24" fill="none" stroke="#E3A75B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 L11 4"/><path d="M15 20 L13 4"/></svg>
+      <span id="road-banner-text">Toca num ponto</span>
+      <button id="road-mode-exit" title="Concluído"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
 
     <div id="touch-joystick" class="touch-only">
@@ -663,7 +684,7 @@
 
   <!-- AGE TRANSITION CINEMATIC -->
   <div id="age-transition">
-    <canvas id="transition-canvas" width="900" height="380"></canvas>
+    <canvas id="transition-canvas" width="1000" height="440"></canvas>
     <div id="transition-years">Os Anos Passam</div>
     <div id="transition-title" class="display">—</div>
     <div id="transition-tagline">—</div>
@@ -2887,9 +2908,7 @@ function roadCost(len){ return Math.max(1, Math.round(len/ROAD_GRID)); }
 function updateRoadBannerText(){
   const el = document.getElementById('road-banner-text');
   if(!el) return;
-  el.textContent = roadDragStart
-    ? 'Toca no próximo ponto para desenhar a estrada'
-    : 'Toca num ponto para começares uma estrada';
+  el.textContent = roadDragStart ? 'Toca no próximo ponto' : 'Toca num ponto';
 }
 
 /* Roads are built with two taps instead of a drag: tap once to place a
@@ -3102,7 +3121,7 @@ function startMoveBuilding(b){
   state.movingBuilding = b;
   demolishConfirming = false;
   closeAllOverlays();
-  document.getElementById('placement-text').textContent = 'Clica numa célula para mover '+(levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' — Esc para cancelar';
+  document.getElementById('placement-text').textContent = 'A mover '+(levelDef(b.type,b.level||1)||buildingDef(b.type)).name;
   document.getElementById('placement-banner').classList.add('show');
 }
 function demolishBuilding(b){
@@ -3444,7 +3463,7 @@ function renderBuildGrid(){
         if(!canAfford(b.cost)) return;
         state.placingType = b.id;
         document.getElementById('overlay-build').classList.remove('open');
-        document.getElementById('placement-text').textContent = 'Clica numa célula dentro do teu acampamento para colocar '+b.name;
+        document.getElementById('placement-text').textContent = 'A colocar '+b.name;
         document.getElementById('placement-banner').classList.add('show');
       });
     }
@@ -3474,7 +3493,7 @@ function startFoundingCamp(){
   exitRoadMode();
   cancelPlacement();
   state.foundingCamp = true;
-  document.getElementById('placement-text').textContent = 'Clica num ponto do vale para fundar um novo acampamento — Esc para cancelar';
+  document.getElementById('placement-text').textContent = 'Novo acampamento';
   document.getElementById('placement-banner').classList.add('show');
 }
 function cancelFoundingCamp(){
@@ -3736,6 +3755,7 @@ function advanceAge(){
   state.transitioning = true;
 
   const overlay = document.getElementById('age-transition');
+  overlay.classList.remove('impact');
   const canvas = document.getElementById('transition-canvas');
   const tctx2 = canvas.getContext('2d');
   document.getElementById('transition-years').textContent = 'Ano '+na.year;
@@ -3745,7 +3765,7 @@ function advanceAge(){
 
   const fromPal = ageById(state.age).palette, toPal = na.palette;
   const start = performance.now();
-  const duration = 2400; // was 5200 — the transition should feel snappy, not stall the player
+  const duration = 2600; // enough room for the richer scene without stalling the player
 
   // Guards against the transition ever getting permanently stuck: if the
   // animation throws, or requestAnimationFrame stalls for any reason (a
@@ -3759,11 +3779,16 @@ function advanceAge(){
     finished = true;
     finishAgeAdvance(na);
   }
-  const safetyNet = setTimeout(finishOnce, 5500);
+  const safetyNet = setTimeout(finishOnce, 5700);
 
-  // A handful of rising sparks for visual energy, seeded once so they
-  // don't re-randomize every frame.
-  const sparks = Array.from({length:14}, ()=>({ x:rand(0,900), delay:rand(0,0.5), speed:rand(60,140), size:rand(1.5,3.5) }));
+  // Rising sparks — mixed warm/cool colors, varied size and drift, seeded
+  // once so they don't re-randomize every frame.
+  const sparks = Array.from({length:22}, ()=>({
+    x:rand(0,canvas.width), delay:rand(0,0.5), speed:rand(60,150), size:rand(1.5,4),
+    alpha:rand(0.55,1), warm: Math.random()<0.7, drift:rand(-1,1)*10
+  }));
+  const flashT = 0.4, flashWindow = 0.2;
+  let impactFired = false;
 
   function frame(now){
     if(finished) return;
@@ -3778,37 +3803,87 @@ function advanceAge(){
       }
       const colorK = Math.min(1, t*1.8); // colors settle quickly, well before the buildings finish growing
       const growK = Math.max(0, Math.min(1, easeOutBack((t-0.15)/0.85))); // buildings pop with a bouncy overshoot
+      const groundY = canvas.height*0.72;
 
-      const groundY = 300;
+      // full-canvas atmosphere — a soft vertical gradient from a dark void
+      // into the new Age's ground tone, so the scene reads as an actual
+      // place rather than shapes floating on a flat black backdrop
+      const sky = tctx2.createLinearGradient(0,0,0,canvas.height);
+      sky.addColorStop(0, '#050A07');
+      sky.addColorStop(1, lerpColor(fromPal.ground, toPal.ground, colorK));
+      tctx2.fillStyle = sky;
+      tctx2.fillRect(0,0,canvas.width,canvas.height);
+
       tctx2.fillStyle = lerpColor(fromPal.ground, toPal.ground, colorK);
-      tctx2.fillRect(0,groundY,canvas.width,80);
-      for(let i=0;i<7;i++){
-        const bw = 60, bx = 60+i*115;
-        const bh = (40 + i*10 + 30+i*14) * growK;
+      tctx2.fillRect(0,groundY,canvas.width,canvas.height-groundY);
+
+      // skyline — varied widths/heights instead of a uniform row, with
+      // lit windows fading in once the buildings have mostly grown
+      const buildingCount = 9;
+      for(let i=0;i<buildingCount;i++){
+        const bw = 42 + (i%3)*15;
+        const bx = canvas.width*0.05 + i*((canvas.width*0.9)/buildingCount);
+        const baseH = 55 + ((i*37)%75) + i*7;
+        const bh = baseH * growK;
         tctx2.fillStyle = lerpColor(fromPal.structure, toPal.structure, colorK);
         tctx2.fillRect(bx, groundY-bh, bw, bh);
         tctx2.fillStyle = lerpColor(fromPal.roof, toPal.roof, colorK);
         tctx2.fillRect(bx-4, groundY-bh-10, bw+8, 12);
+        if(growK>0.55){
+          const winAlpha = Math.min(1,(growK-0.55)*3)*0.5;
+          tctx2.fillStyle = `rgba(255,225,170,${winAlpha})`;
+          const rows = Math.max(1,Math.floor(bh/24));
+          const cols = Math.max(1,Math.floor(bw/16));
+          for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+            if((i+r+c)%3===0) tctx2.fillRect(bx+6+c*16, groundY-bh+10+r*22, 6,7);
+          }
+        }
       }
 
-      // rising sparks for energy/motion
-      tctx2.fillStyle = 'rgba(227,167,88,0.8)';
+      // rising sparks
       sparks.forEach(s=>{
         const st = Math.max(0, t - s.delay);
         if(st<=0 || st>=1) return;
         const y = groundY - st*s.speed*3;
-        tctx2.globalAlpha = 1-st;
-        tctx2.beginPath(); tctx2.arc(s.x, y, s.size, 0, Math.PI*2); tctx2.fill();
+        const x = s.x + Math.sin(st*6)*s.drift;
+        tctx2.globalAlpha = (1-st) * s.alpha;
+        tctx2.fillStyle = s.warm ? 'rgba(227,167,88,0.85)' : 'rgba(255,255,255,0.7)';
+        tctx2.beginPath(); tctx2.arc(x, y, s.size, 0, Math.PI*2); tctx2.fill();
       });
       tctx2.globalAlpha = 1;
 
-      // a quick bright flash at the midpoint for punch
-      const flashT = 0.35;
-      const flashWindow = 0.18;
+      // impact moment — light rays, an expanding shockwave ring, and a
+      // bright flash wash, all centered on the same instant for punch.
+      // A one-time CSS scale-pop on the whole overlay fires in lockstep.
       const distFromFlash = Math.abs(t-flashT);
       if(distFromFlash < flashWindow){
-        const flashAlpha = (1 - distFromFlash/flashWindow) * 0.35;
-        tctx2.fillStyle = `rgba(255,255,255,${flashAlpha})`;
+        const k = 1 - distFromFlash/flashWindow; // 1 at the peak, 0 at the edges
+        if(!impactFired){ impactFired = true; overlay.classList.add('impact'); setTimeout(()=>overlay.classList.remove('impact'), 260); }
+        const cx = canvas.width/2, cy = groundY*0.55;
+
+        tctx2.save();
+        tctx2.translate(cx,cy);
+        const rayCount = 10;
+        for(let i=0;i<rayCount;i++){
+          tctx2.save();
+          tctx2.rotate((i/rayCount)*Math.PI*2 + t*2);
+          tctx2.globalAlpha = k*0.22;
+          tctx2.fillStyle = '#FFFFFF';
+          tctx2.beginPath();
+          tctx2.moveTo(0,0); tctx2.lineTo(-6,0); tctx2.lineTo(0,-canvas.height*0.95); tctx2.lineTo(6,0);
+          tctx2.closePath(); tctx2.fill();
+          tctx2.restore();
+        }
+        tctx2.restore();
+
+        tctx2.save();
+        tctx2.globalAlpha = k*0.6;
+        tctx2.strokeStyle = '#FFFFFF';
+        tctx2.lineWidth = 3;
+        tctx2.beginPath(); tctx2.arc(cx, cy, (1-k)*170 + 20, 0, Math.PI*2); tctx2.stroke();
+        tctx2.restore();
+
+        tctx2.fillStyle = `rgba(255,255,255,${k*0.4})`;
         tctx2.fillRect(0,0,canvas.width,canvas.height);
       }
 
@@ -3817,7 +3892,7 @@ function advanceAge(){
       } else {
         overlay.classList.add('reveal');
         clearTimeout(safetyNet);
-        setTimeout(finishOnce, 700); // was 1800 — hold the reveal just long enough to read it
+        setTimeout(finishOnce, 700); // hold the reveal just long enough to read it
       }
     } catch(err){
       console.error('Valeborn age transition error (recovered):', err);
@@ -3841,6 +3916,7 @@ function finishAgeAdvance(na){
   const overlay = document.getElementById('age-transition');
   overlay.classList.remove('reveal');
   overlay.classList.remove('open');
+  overlay.classList.remove('impact');
   state.transitioning = false;
   state.paused = false;
 
