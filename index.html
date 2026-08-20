@@ -528,7 +528,7 @@
       <button id="placement-cancel">Cancelar</button>
     </div>
     <div id="road-banner" class="glass">
-      <span>Clica e arrasta para construir uma estrada — <span class="key-chip">Esc</span> para parar</span>
+      <span id="road-banner-text">Toca num ponto para começares uma estrada</span> <span class="key-chip">Esc</span>
       <button id="road-mode-exit">Concluído</button>
     </div>
 
@@ -591,7 +591,7 @@
       <div class="howto-row"><div class="howto-key">Esc</div><div class="howto-desc">Fecha qualquer painel aberto</div></div>
       <div class="howto-row"><div class="howto-key">Idade</div><div class="howto-desc">Clica no indicador de Idade no topo para veres o que a tua civilização precisa para avançar para a Idade seguinte — o acampamento transforma-se visivelmente de cada vez</div></div>
       <div class="howto-row"><div class="howto-key">Cuidar</div><div class="howto-desc">Os dinossauros conhecidos ficam com fome e sede ao longo do tempo. Prime E perto de um para o alimentar, dar água ou fazer festas — pequenas barras por cima deles mostram fome, sede e felicidade quando estás perto</div></div>
-      <div class="howto-row"><div class="howto-key">R</div><div class="howto-desc">Entra no Modo Estradas e depois clica e arrasta em qualquer ponto do vale para construir uma estrada — custa Madeira e melhora o seu aspeto automaticamente conforme a tua civilização avança</div></div>
+      <div class="howto-row"><div class="howto-key">R</div><div class="howto-desc">Entra no Modo Estradas: toca num ponto para começares, depois toca noutro ponto para ligares os dois com uma estrada — continua a tocar para ires encadeando o caminho. Custa Madeira e melhora o seu aspeto automaticamente conforme a tua civilização avança</div></div>
       <div class="howto-row"><div class="howto-key">Acampamentos</div><div class="howto-desc">Abre o menu Construir e escolhe "Fundar Novo Acampamento" para iniciares uma segunda povoação noutro ponto do vale — a Idade Industrial exige pelo menos mais um acampamento, ligado ao de Santiago por estrada. Depois de ligados, um comboio circulará entre eles</div></div>
       <div class="howto-row"><div class="howto-key">Clique</div><div class="howto-desc">Clica em qualquer edifício construído para o inspecionar — a partir daí podes Mover para outro local do teu acampamento, ou Demolir para receberes parte dos recursos de volta (Demolir precisa de um segundo clique para confirmar)</div></div>
       <div class="howto-row"><div class="howto-key">Guardar</div><div class="howto-desc">A tua civilização guarda-se automaticamente enquanto jogas — fecha o separador quando quiseres, e "Continuar a Tua Civilização" estará à tua espera neste ecrã da próxima vez</div></div>
@@ -2449,7 +2449,11 @@ window.addEventListener('keydown', (e)=>{
   if(e.key.toLowerCase()==='c') toggleOverlay('overlay-collection');
   if(e.key.toLowerCase()==='r') toggleRoadMode();
   if(e.key.toLowerCase()==='p') toggleOverlay('overlay-character');
-  if(e.key==='Escape'){ closeAllOverlays(); cancelPlacement(); exitRoadMode(); closeHudMenu(); }
+  if(e.key==='Escape'){
+    closeAllOverlays(); cancelPlacement(); closeHudMenu();
+    if(state.roadMode && roadDragStart){ roadDragStart = null; roadDragEnd = null; updateRoadBannerText(); }
+    else { exitRoadMode(); }
+  }
 });
 window.addEventListener('keyup', (e)=>{ state.keys[e.key.toLowerCase()] = false; });
 
@@ -2457,10 +2461,10 @@ let mouseWorld = {x:0,y:0};
 gameCanvas.addEventListener('mousemove', (e)=>{
   mouseWorld.x = e.clientX + camera.x;
   mouseWorld.y = e.clientY + camera.y;
-  if(roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
+  if(state.roadMode && roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
 });
 gameCanvas.addEventListener('click', ()=>{
-  if(state.roadMode) return; // roads are placed via drag (mousedown/mouseup below), not click
+  if(state.roadMode){ handleRoadClick(mouseWorld.x, mouseWorld.y); return; }
   if(state.foundingCamp){ attemptFoundCampAt(mouseWorld.x, mouseWorld.y); return; }
   if(state.placingType){ attemptPlaceAt(mouseWorld.x, mouseWorld.y); return; }
   if(state.movingBuilding){ attemptMoveAt(mouseWorld.x, mouseWorld.y); return; }
@@ -2495,10 +2499,6 @@ gameCanvas.addEventListener('touchstart', (e)=>{
   mouseWorld.y = t.clientY + camera.y;
   touchStartPos = {x:t.clientX, y:t.clientY};
   touchMoved = false;
-  if(state.roadMode && !anyOverlayOpen()){
-    roadDragStart = { x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y) };
-    roadDragEnd = { x: roadDragStart.x, y: roadDragStart.y };
-  }
   e.preventDefault();
 }, {passive:false});
 gameCanvas.addEventListener('touchmove', (e)=>{
@@ -2507,12 +2507,14 @@ gameCanvas.addEventListener('touchmove', (e)=>{
   mouseWorld.x = t.clientX + camera.x;
   mouseWorld.y = t.clientY + camera.y;
   if(touchStartPos && Math.hypot(t.clientX-touchStartPos.x, t.clientY-touchStartPos.y) > 10) touchMoved = true;
-  if(roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
+  if(state.roadMode && roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
   e.preventDefault();
 }, {passive:false});
 gameCanvas.addEventListener('touchend', (e)=>{
   if(state.roadMode){
-    commitRoadDrag();
+    // tap-based, same as mouse — uses wherever the finger lifted, so a
+    // small accidental wobble mid-tap doesn't prevent placement
+    handleRoadClick(mouseWorld.x, mouseWorld.y);
   } else if(!touchMoved){
     // a genuine tap (not a drag) — equivalent to the desktop click handler
     if(state.foundingCamp){ attemptFoundCampAt(mouseWorld.x, mouseWorld.y); }
@@ -2587,6 +2589,8 @@ function toggleRoadMode(){
   if(state.roadMode){ exitRoadMode(); return; }
   if(anyOverlayOpen() || state.placingType || state.movingBuilding || state.foundingCamp) return;
   state.roadMode = true;
+  roadDragStart = null; roadDragEnd = null;
+  updateRoadBannerText();
   document.getElementById('road-banner').classList.add('show');
   document.getElementById('btn-roads').style.background = 'var(--glass-strong)';
 }
@@ -2600,27 +2604,48 @@ document.getElementById('btn-roads').addEventListener('click', toggleRoadMode);
 document.getElementById('road-mode-exit').addEventListener('click', exitRoadMode);
 
 function roadCost(len){ return Math.max(1, Math.round(len/ROAD_GRID)); }
+function updateRoadBannerText(){
+  const el = document.getElementById('road-banner-text');
+  if(!el) return;
+  el.textContent = roadDragStart
+    ? 'Toca no próximo ponto para desenhar a estrada'
+    : 'Toca num ponto para começares uma estrada';
+}
 
-gameCanvas.addEventListener('mousedown', (e)=>{
-  if(!state.roadMode || anyOverlayOpen()) return;
-  roadDragStart = { x: snapRoad(e.clientX+camera.x), y: snapRoad(e.clientY+camera.y) };
-  roadDragEnd = { x: roadDragStart.x, y: roadDragStart.y };
-});
-function commitRoadDrag(){
-  if(!state.roadMode || !roadDragStart) return;
-  const a = roadDragStart, b = roadDragEnd || roadDragStart;
-  const len = dist(a.x,a.y,b.x,b.y);
-  roadDragStart = null; roadDragEnd = null;
-  if(len < ROAD_GRID*0.6) return; // too short — treat as an accidental tap, no cost, no segment
+/* Roads are built with two taps instead of a drag: tap once to place a
+   start point, tap again to place the end point and pay for the segment.
+   A successful placement continues the chain from that new point, so a
+   sequence of taps draws one long connected road. Every way this can
+   fail — too short, can't afford it — gives a visible toast instead of
+   silently doing nothing, which is what made roads feel broken before. */
+function handleRoadClick(wx, wy){
+  if(!state.roadMode || state.paused || anyOverlayOpen()) return;
+  const pt = { x: snapRoad(wx), y: snapRoad(wy) };
+  if(!roadDragStart){
+    roadDragStart = pt;
+    roadDragEnd = pt;
+    updateRoadBannerText();
+    return;
+  }
+  const len = dist(roadDragStart.x, roadDragStart.y, pt.x, pt.y);
+  if(len < ROAD_GRID*0.9){
+    showToast('Toca um pouco mais longe para desenhares a estrada', null);
+    return; // keep the start point active so they can just try again
+  }
   const cost = { wood: roadCost(len), stone:0, food:0 };
-  if(!canAfford(cost)){ showToast('Madeira insuficiente para esta estrada', null); return; }
+  if(!canAfford(cost)){
+    showToast('Madeira insuficiente para esta estrada', null);
+    return; // keep the start point active — gather more Wood and tap the same spot again
+  }
   payCost(cost);
-  state.roads.push({ x1:a.x, y1:a.y, x2:b.x, y2:b.y });
+  state.roads.push({ x1:roadDragStart.x, y1:roadDragStart.y, x2:pt.x, y2:pt.y });
   roadGraphDirty = true;
   grantXP(5);
   checkAgeReady();
+  roadDragStart = pt; // continue the chain from here
+  roadDragEnd = pt;
+  updateRoadBannerText();
 }
-window.addEventListener('mouseup', commitRoadDrag);
 
 function drawRoadSegments(ctx){
   const age = ageById(state.age);
@@ -2649,6 +2674,11 @@ function drawRoadSegments(ctx){
     const gy0 = Math.floor((camera.y-100)/ROAD_GRID)*ROAD_GRID, gy1 = camera.y+camera.h+100;
     for(let x=gx0; x<gx1; x+=ROAD_GRID){ ctx.beginPath(); ctx.moveTo(x,gy0); ctx.lineTo(x,gy1); ctx.stroke(); }
     for(let y=gy0; y<gy1; y+=ROAD_GRID){ ctx.beginPath(); ctx.moveTo(gx0,y); ctx.lineTo(gx1,y); ctx.stroke(); }
+    if(roadDragStart){
+      const pulse = 6 + Math.sin(performance.now()/220)*2;
+      ctx.fillStyle = 'rgba(227,167,88,0.9)';
+      ctx.beginPath(); ctx.arc(roadDragStart.x, roadDragStart.y, pulse, 0, Math.PI*2); ctx.fill();
+    }
     if(roadDragStart && roadDragEnd){
       const len = dist(roadDragStart.x,roadDragStart.y,roadDragEnd.x,roadDragEnd.y);
       const afford = canAfford({wood:roadCost(len),stone:0,food:0});
@@ -2656,6 +2686,13 @@ function drawRoadSegments(ctx){
       ctx.lineWidth = pal.pathW*0.55;
       ctx.lineCap='round';
       ctx.beginPath(); ctx.moveTo(roadDragStart.x,roadDragStart.y); ctx.lineTo(roadDragEnd.x,roadDragEnd.y); ctx.stroke();
+      if(len>=ROAD_GRID*0.9){
+        ctx.fillStyle = afford ? '#8FE3A7' : '#E8A08D';
+        ctx.font = "700 13px 'Space Grotesk', sans-serif";
+        ctx.textAlign = 'center';
+        ctx.fillText(roadCost(len)+' madeira', (roadDragStart.x+roadDragEnd.x)/2, (roadDragStart.y+roadDragEnd.y)/2 - 16);
+        ctx.textAlign = 'left';
+      }
     }
     ctx.restore();
   }
