@@ -840,6 +840,76 @@ const SPECIES = [
     traits:['Feroz','Territorial','Aquático'],
     desc:'A sua vela corta as águas rasas antes de o resto do corpo emergir. Nada mais no vale caça como ele.',
     color:'#4A6B5C', accent:'#2E4A3E'
+  },
+  {
+    id:'iguanodon', name:'Iguanodonte', rarity:'Common', diet:'Herbivore',
+    speed:40, strength:65, intelligence:45, size:1.2, minAge:2,
+    traits:['Sociável','Adaptável','Robusto'],
+    desc:'Anda tanto a duas como a quatro patas, e defende-se com um espigão afiado escondido no polegar. Reúne-se em manadas grandes e despreocupadas.',
+    color:'#B08B5C', accent:'#7A5E3C'
+  },
+  {
+    id:'diplodocus', name:'Diplódoco', rarity:'Epic', diet:'Herbivore',
+    speed:22, strength:60, intelligence:50, size:2.0, minAge:5,
+    traits:['Gigante','Pacato','Errante'],
+    desc:'O pescoço e a cauda somam quase o dobro do comprimento do corpo. Percorre o vale devagar, varrendo copas inteiras de vegetação à sua passagem.',
+    color:'#8B9DA8', accent:'#56666F'
+  },
+  {
+    id:'compsognathus', name:'Compsógnato', rarity:'Common', diet:'Carnivore',
+    speed:100, strength:20, intelligence:60, size:0.5, minAge:1,
+    traits:['Ágil','Curioso','Gregário'],
+    desc:'Não maior do que uma galinha, mas nunca sozinho — onde há um, há uma dúzia. Move-se em rajadas nervosas e rápidas pela vegetação rasteira.',
+    color:'#A3B06B', accent:'#6E7A45'
+  },
+  {
+    id:'carnotaurus', name:'Carnotauro', rarity:'Rare', diet:'Carnivore',
+    speed:80, strength:75, intelligence:55, size:1.3, minAge:6,
+    traits:['Feroz','Veloz','Solitário'],
+    desc:'Dois pequenos chifres sobre os olhos e braços quase inúteis — mas é um dos caçadores mais rápidos do vale, de perseguição curta e brutal.',
+    color:'#9C4A3E', accent:'#6B2E26'
+  },
+  {
+    id:'dilophosaurus', name:'Dilofossauro', rarity:'Uncommon', diet:'Carnivore',
+    speed:70, strength:45, intelligence:60, size:0.9, minAge:2,
+    traits:['Vistoso','Cauteloso','Territorial'],
+    desc:'Duas cristas finas erguem-se da cabeça como um par de velas. Prefere observar e testar antes de se aproximar de algo desconhecido.',
+    color:'#5C9482', accent:'#386258'
+  },
+  {
+    id:'pachycephalosaurus', name:'Paquicefalossauro', rarity:'Rare', diet:'Herbivore',
+    speed:50, strength:70, intelligence:40, size:1.0, minAge:5,
+    traits:['Teimoso','Combativo','Resiliente'],
+    desc:'O crânio abobadado absorve impactos que partiriam qualquer outro osso. As disputas por território resolvem-se literalmente à cabeçada.',
+    color:'#8C7A63', accent:'#5E4F3D'
+  },
+  {
+    id:'therizinosaurus', name:'Terizinossauro', rarity:'Epic', diet:'Herbivore',
+    speed:35, strength:80, intelligence:50, size:1.6, minAge:7,
+    traits:['Estranho','Pacífico','Imponente'],
+    desc:'Garras do tamanho de espadas pertencem a uma criatura que só quer alcançar os ramos mais altos. A sua silhueta é tão estranha quanto inconfundível.',
+    color:'#4A5A42', accent:'#2E3A28'
+  },
+  {
+    id:'styracosaurus', name:'Estiracossauro', rarity:'Rare', diet:'Herbivore',
+    speed:40, strength:80, intelligence:45, size:1.25, minAge:6,
+    traits:['Protetor','Vistoso','Territorial'],
+    desc:'Uma coroa de longos espigões orna-lhe a nuca, tão vistosa quanto perigosa para qualquer predador que se aproxime demasiado da manada.',
+    color:'#C08A4E', accent:'#8C5E30'
+  },
+  {
+    id:'gallimimus', name:'Galimimo', rarity:'Common', diet:'Omnivore',
+    speed:98, strength:35, intelligence:55, size:0.85, minAge:3,
+    traits:['Veloz','Alerta','Gregário'],
+    desc:'Corre como uma avestruz e come praticamente tudo o que encontra pelo caminho. Em manada, é uma das visões mais rápidas do vale.',
+    color:'#CBB47E', accent:'#99804F'
+  },
+  {
+    id:'quetzalcoatlus', name:'Quetzalcoatlus', rarity:'Legendary', diet:'Carnivore',
+    speed:90, strength:60, intelligence:70, size:1.5, minAge:9, flying:true,
+    traits:['Majestoso','Solitário','Predador'],
+    desc:'A maior criatura que já se ergueu no ar sobre o vale, com uma envergadura que projeta sombra suficiente para escurecer um acampamento inteiro.',
+    color:'#D6CFC0', accent:'#9C927E'
   }
 ];
 function speciesById(id){ return SPECIES.find(s=>s.id===id); }
@@ -1583,14 +1653,25 @@ const DINO_SPAWN_SCHEDULE = [
   { minAge:1, sp:'brachiosaurus', x:3440, y:1930, range:250 },
   { minAge:1, sp:'trex', x:3680, y:645, range:520 },
   { minAge:1, sp:'pteranodon', x:2100, y:2400, range:420 },     // new species — flies from the start
+  { minAge:1, sp:'compsognathus', x:900, y:1200, range:340 },   // new species — small and common, seen early
+  { minAge:1, sp:'compsognathus', x:1050, y:1320, range:340 },
   { minAge:2, sp:'triceratops', x:1520, y:1205, range:280 },    // herd grows — Tribal
+  { minAge:2, sp:'iguanodon', x:1900, y:1700, range:300 },      // new species — Tribal
+  { minAge:2, sp:'dilophosaurus', x:2650, y:1080, range:340 },  // new species — Tribal
   { minAge:3, sp:'parasaurolophus', x:2080, y:2090, range:320 }, // new species — Settlement
   { minAge:3, sp:'parasaurolophus', x:2210, y:2185, range:320 },
+  { minAge:3, sp:'gallimimus', x:800, y:2100, range:380 },      // new species — Settlement
   { minAge:4, sp:'stegosaurus', x:3120, y:1610, range:300 },    // Ancient
   { minAge:4, sp:'spinosaurus', x:3800, y:2500, range:340 },    // new species — Ancient
   { minAge:5, sp:'ankylosaurus', x:3600, y:2410, range:280 },   // new species — Classical
+  { minAge:5, sp:'diplodocus', x:3950, y:1300, range:260 },     // new species — Classical
+  { minAge:5, sp:'pachycephalosaurus', x:1250, y:2550, range:300 }, // new species — Classical
   { minAge:6, sp:'velociraptor', x:2560, y:2490, range:360 },   // Industrial
-  { minAge:8, sp:'brachiosaurus', x:1440, y:2330, range:280 }   // Digital
+  { minAge:6, sp:'carnotaurus', x:3300, y:850, range:400 },     // new species — Industrial
+  { minAge:6, sp:'styracosaurus', x:1750, y:2650, range:280 },  // new species — Industrial
+  { minAge:7, sp:'therizinosaurus', x:600, y:1650, range:300 }, // new species — Electric
+  { minAge:8, sp:'brachiosaurus', x:1440, y:2330, range:280 },  // Digital
+  { minAge:9, sp:'quetzalcoatlus', x:2900, y:400, range:460 }   // new species — Advanced Tech, legendary capstone
 ];
 const spawnedScheduleIndices = new Set();
 
@@ -1898,10 +1979,29 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
     }
     ctx.closePath(); ctx.fill();
   }
+  if(sp.id==='styracosaurus'){
+    ctx.fillStyle = shade;
+    ctx.beginPath(); ctx.moveTo(34,-26); ctx.lineTo(68,-30); ctx.lineTo(58,-8); ctx.closePath(); ctx.fill();
+    for(let i=0;i<5;i++){
+      const ang = -0.9 + i*0.42;
+      ctx.beginPath();
+      ctx.moveTo(50+Math.cos(ang)*8, -22+Math.sin(ang)*8);
+      ctx.lineTo(50+Math.cos(ang)*30, -22+Math.sin(ang)*30);
+      ctx.lineTo(50+Math.cos(ang+0.18)*8, -22+Math.sin(ang+0.18)*8);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+  if(sp.id==='therizinosaurus'){
+    ctx.strokeStyle = '#EDE7D8'; ctx.lineWidth = 3.2; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(30,-6); ctx.lineTo(46,10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(34,-2); ctx.lineTo(52,10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(28,2); ctx.lineTo(40,16); ctx.stroke();
+  }
 
   // neck/head
   ctx.fillStyle = bodyColor;
-  const headX = 40, headY = sp.id==='brachiosaurus' ? -58 : -18;
+  const headX = 40;
+  const headY = sp.id==='brachiosaurus' ? -58 : sp.id==='diplodocus' ? -30 : -18;
   if(sp.id==='brachiosaurus'){
     ctx.beginPath();
     ctx.moveTo(30,-20);
@@ -1909,7 +2009,18 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
     ctx.lineWidth = 20; ctx.strokeStyle = bodyColor; ctx.lineCap='round';
     ctx.stroke();
   }
+  if(sp.id==='diplodocus'){
+    ctx.beginPath();
+    ctx.moveTo(28,-18);
+    ctx.quadraticCurveTo(56,-38, headX, headY);
+    ctx.lineWidth = 15; ctx.strokeStyle = bodyColor; ctx.lineCap='round';
+    ctx.stroke();
+  }
   ctx.beginPath(); ctx.ellipse(headX, headY, 15, 11, 0.15, 0, Math.PI*2); ctx.fill();
+  if(sp.id==='pachycephalosaurus'){
+    ctx.fillStyle = shade;
+    ctx.beginPath(); ctx.ellipse(headX-2, headY-9, 11, 8, 0, 0, Math.PI*2); ctx.fill();
+  }
 
   // horns for triceratops
   if(sp.id==='triceratops'){
@@ -1925,6 +2036,17 @@ function drawDino(ctx, cx, cy, sp, scale, facing, bob, showGlow){
     ctx.quadraticCurveTo(headX-26,headY-24, headX-30,headY-2);
     ctx.quadraticCurveTo(headX-16,headY-10, headX-2,headY+2);
     ctx.closePath(); ctx.fill();
+  }
+  // twin crests for dilophosaurus
+  if(sp.id==='dilophosaurus'){
+    ctx.fillStyle = shade;
+    [-3,3].forEach(off=>{
+      ctx.beginPath();
+      ctx.moveTo(headX-6+off, headY-4);
+      ctx.quadraticCurveTo(headX-10+off, headY-26, headX-2+off, headY-24);
+      ctx.quadraticCurveTo(headX+2+off, headY-14, headX+2+off, headY-4);
+      ctx.closePath(); ctx.fill();
+    });
   }
   // teeth hint for trex/raptor
   if(sp.diet==='Carnivore'){
@@ -2542,6 +2664,21 @@ function findBuildingAt(wx, wy){
   });
   return best;
 }
+/* Double-clicking/double-tapping empty ground inside a camp is a shortcut
+   straight to the Build panel — faster than opening the hamburger menu
+   first. A building already owns single-click (the Inspector), so this
+   backs off if there's one under the cursor rather than fighting it. */
+function handleCampDoubleClick(wx, wy){
+  if(!state.started || state.paused || anyOverlayOpen()) return;
+  if(state.roadMode || state.foundingCamp || state.placingType || state.movingBuilding) return;
+  if(findBuildingAt(wx, wy)) return;
+  const camp = campContaining(wx, wy);
+  if(!camp) return;
+  toggleOverlay('overlay-build');
+}
+gameCanvas.addEventListener('dblclick', ()=>{
+  handleCampDoubleClick(mouseWorld.x, mouseWorld.y);
+});
 
 /* =====================================================================
    TOUCH SUPPORT — phones have no keyboard and no hover, so every desktop
@@ -2571,6 +2708,7 @@ gameCanvas.addEventListener('touchmove', (e)=>{
   if(state.roadMode && roadDragStart){ roadDragEnd = {x: snapRoad(mouseWorld.x), y: snapRoad(mouseWorld.y)}; }
   e.preventDefault();
 }, {passive:false});
+let lastTapTime = 0, lastTapPos = null;
 gameCanvas.addEventListener('touchend', (e)=>{
   if(state.roadMode){
     // tap-based, same as mouse — uses wherever the finger lifted, so a
@@ -2582,8 +2720,17 @@ gameCanvas.addEventListener('touchend', (e)=>{
     else if(state.placingType){ attemptPlaceAt(mouseWorld.x, mouseWorld.y); }
     else if(state.movingBuilding){ attemptMoveAt(mouseWorld.x, mouseWorld.y); }
     else if(state.started && !state.paused && !anyOverlayOpen()){
-      const hit = findBuildingAt(mouseWorld.x, mouseWorld.y);
-      if(hit) openBuildingInspector(hit);
+      const now = performance.now();
+      const isDoubleTap = lastTapPos && (now-lastTapTime) < 350
+        && dist(mouseWorld.x,mouseWorld.y,lastTapPos.x,lastTapPos.y) < 60;
+      if(isDoubleTap){
+        lastTapTime = 0; lastTapPos = null; // consumed — a third tap starts a fresh pair, not a triple
+        handleCampDoubleClick(mouseWorld.x, mouseWorld.y);
+      } else {
+        lastTapTime = now; lastTapPos = {x:mouseWorld.x, y:mouseWorld.y};
+        const hit = findBuildingAt(mouseWorld.x, mouseWorld.y);
+        if(hit) openBuildingInspector(hit);
+      }
     }
   }
   touchStartPos = null;
