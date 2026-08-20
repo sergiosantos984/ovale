@@ -98,17 +98,22 @@
   #hud.visible{ opacity:1; }
   #hud > *{ pointer-events:auto; }
 
+  #hud-top-stack{
+    position:absolute; top:16px; left:16px; right:16px; z-index:21;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  #hud-top-row{
+    width:100%;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  }
   #resource-bar{
-    position:absolute; top:20px; left:20px;
-    display:flex; gap:8px; padding:8px; border-radius:18px;
+    display:flex; gap:8px; padding:8px; border-radius:18px; flex-wrap:wrap;
   }
   .res-chip{ display:flex; align-items:center; gap:7px; padding:6px 12px 6px 8px; border-radius:14px; }
   .res-chip svg{ width:18px; height:18px; flex-shrink:0; }
   .res-chip span{ font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; min-width:16px; }
 
-  #top-right-controls{
-    position:absolute; top:20px; right:20px; display:flex; gap:8px;
-  }
+  #hud-menu-wrap{ position:relative; flex-shrink:0; }
   .icon-btn{
     width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center;
     transition:background .15s ease, transform .15s ease;
@@ -122,10 +127,29 @@
   }
   .icon-btn{ position:relative; }
 
+  #hud-dropdown{
+    position:absolute; top:54px; right:0; width:230px; z-index:23;
+    border-radius:16px; padding:8px; display:flex; flex-direction:column; gap:3px;
+    opacity:0; transform:translateY(-6px) scale(0.97); pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  #hud-dropdown.open{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+  .hud-menu-item{
+    display:flex; align-items:center; gap:12px; padding:12px 12px; border-radius:10px;
+    font-size:14px; font-weight:600; text-align:left; width:100%; min-height:44px;
+    transition:background .15s ease;
+  }
+  .hud-menu-item:hover{ background:var(--glass-strong); }
+  .hud-menu-item svg{ width:20px; height:20px; flex-shrink:0; }
+  .hud-menu-item .badge{
+    position:static; margin-left:auto; background:var(--terracotta); color:var(--ivory);
+    font-size:10px; font-weight:700; min-width:18px; height:18px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center; padding:0 5px;
+  }
+
   #level-bar{
-    position:absolute; top:20px; left:50%; transform:translateX(-50%);
     display:flex; align-items:center; gap:10px; padding:8px 16px; border-radius:16px;
-    min-width:220px;
+    flex:1 1 200px; max-width:280px; min-width:160px;
   }
   #level-badge{
     width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--amber),#c07f3a);
@@ -135,6 +159,7 @@
   #xp-track{ flex:1; height:6px; background:rgba(255,255,255,0.12); border-radius:4px; overflow:hidden; }
   #xp-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--amber),var(--terracotta)); transition:width .4s ease; }
 
+  #age-chip-row{ display:flex; justify-content:center; width:100%; }
   #interact-hint{
     position:absolute; bottom:30px; left:50%; transform:translateX(-50%) translateY(10px);
     padding:10px 20px; border-radius:100px; font-size:13px; font-weight:600;
@@ -148,7 +173,7 @@
 
   #objective-tracker{
     position:absolute; bottom:30px; left:20px; padding:14px 18px; border-radius:16px;
-    max-width:260px;
+    max-width:260px; z-index:19;
   }
   #objective-tracker .ot-label{ font-size:10px; text-transform:uppercase; letter-spacing:0.15em; color:var(--amber); font-weight:700; margin-bottom:6px; }
   #objective-tracker .ot-title{ font-size:14px; font-weight:600; margin-bottom:3px; }
@@ -314,11 +339,13 @@
   #touch-interact-btn.show{ opacity:1; pointer-events:auto; }
   #touch-interact-btn:active{ transform:scale(0.92); background:rgba(227,167,88,0.35); }
 
-  @media (max-width:640px){
-    body.has-touch #resource-bar{ transform:scale(0.88); transform-origin:top left; }
-    body.has-touch #level-bar{ transform:scale(0.88); }
-    body.has-touch #top-right-controls .icon-btn{ width:40px; height:40px; }
-    body.has-touch #interact-hint{ bottom:calc(150px + env(safe-area-inset-bottom,0px)); }
+  /* On touch devices the joystick and Interact button occupy the bottom
+     corners, so the informational hint pill must stay clear of both — it
+     used to be free-width nowrap text, which could stretch wide enough on
+     a phone to overlap the joystick or button. */
+  body.has-touch #interact-hint{
+    bottom:calc(140px + env(safe-area-inset-bottom,0px));
+    max-width:min(72vw, 320px); white-space:normal; text-align:center; border-radius:20px;
   }
 
   /* Instructions */
@@ -353,7 +380,6 @@
 
   /* ---------- Age chip ---------- */
   #age-chip{
-    position:absolute; top:76px; left:50%; transform:translateX(-50%);
     display:flex; align-items:center; gap:9px; padding:7px 16px 7px 8px; border-radius:100px;
     cursor:pointer; transition:background .15s ease;
   }
@@ -412,8 +438,29 @@
 
   @media (max-width:640px){
     #objective-tracker{ display:none; }
-    #age-chip{ top:70px; }
     .brand-title{ font-size:56px; }
+    #hud-menu-wrap .icon-btn{ width:40px; height:40px; }
+    .res-chip{ padding:5px 9px 5px 6px; gap:5px; }
+    .res-chip span{ font-size:12.5px; }
+    .res-chip svg{ width:15px; height:15px; }
+    #level-bar{ padding:6px 12px; min-width:130px; flex:1 1 140px; }
+    #age-chip{ padding:6px 12px 6px 7px; }
+    #age-chip .age-label, #age-chip .age-name{ font-size:10.5px; }
+
+
+    /* Panels & the Build (construction) menu — bigger touch targets, less
+       wasted padding, one column instead of a cramped multi-column grid */
+    .panel{ padding:18px; border-radius:20px; width:94vw; max-height:88vh; }
+    .panel-header h2{ font-size:19px; }
+    .close-btn{ width:42px; height:42px; }
+    #build-grid, #dex-grid{ grid-template-columns:1fr; }
+    .build-card{ padding:16px; flex-direction:row; flex-wrap:wrap; align-items:center; }
+    .build-icon-wrap{ width:64px; height:64px; flex-shrink:0; }
+    .build-icon-wrap canvas{ width:52px; height:52px; }
+    .build-name, .build-cost{ flex-basis:calc(100% - 80px); }
+    .build-place-btn{ flex-basis:100%; margin-top:8px; padding:14px; font-size:14.5px; min-height:46px; }
+    .build-locked-tag{ flex-basis:100%; margin-top:6px; }
+    .action-btn{ padding:13px; font-size:14px; min-height:46px; }
   }
 </style>
 </head>
@@ -440,24 +487,33 @@
 
   <!-- HUD -->
   <div id="hud">
-    <div id="resource-bar" class="glass"></div>
+    <div id="hud-top-stack">
+      <div id="hud-top-row">
+        <div id="resource-bar" class="glass"></div>
 
-    <div id="level-bar" class="glass">
-      <div id="level-badge">1</div>
-      <div id="xp-track"><div id="xp-fill"></div></div>
-    </div>
+        <div id="level-bar" class="glass">
+          <div id="level-badge">1</div>
+          <div id="xp-track"><div id="xp-fill"></div></div>
+        </div>
 
-    <div id="age-chip" class="glass" title="Vê o progresso da Idade da tua civilização">
-      <div class="age-dot" id="age-dot">1</div>
-      <div><div class="age-label" id="age-label-num">Idade 1</div><div class="age-name" id="age-label-name">Primitiva</div></div>
-    </div>
+        <div id="hud-menu-wrap">
+          <button class="icon-btn glass" id="btn-hud-menu" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg><span class="badge" id="hud-menu-badge" style="display:none">0</span></button>
+          <div id="hud-dropdown" class="glass">
+            <button class="hud-menu-item" id="btn-character" title="Santiago (P)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.2"/><path d="M5.5 20c0-4 3-6.5 6.5-6.5s6.5 2.5 6.5 6.5"/></svg><span>Santiago</span></button>
+            <button class="hud-menu-item" id="btn-roads" title="Estradas (R)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 L11 4"/><path d="M15 20 L13 4"/><path d="M12 6.5v2"/><path d="M12 11v2"/><path d="M12 15.5v2"/></svg><span>Estradas</span></button>
+            <button class="hud-menu-item" id="btn-build" title="Construir (B)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-2.5 2.5-4-4L14 6Z"/><path d="M3 21l6.5-6.5"/><path d="M15.5 4.5l4 4"/></svg><span>Construir</span></button>
+            <button class="hud-menu-item" id="btn-missions" title="Missões (M)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span>Missões</span><span class="badge" id="mission-badge" style="display:none">0</span></button>
+            <button class="hud-menu-item" id="btn-collection" title="Coleção (C)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.5-1.2 5-1.2 7 0v13c-2-1.2-4.5-1.2-7 0v-13Z"/><path d="M18 5.5c-2.5-1.2-5-1.2-7 0"/><path d="M11 18.5v-13"/></svg><span>Coleção</span><span class="badge" id="dex-badge" style="display:none">0</span></button>
+          </div>
+        </div>
+      </div>
 
-    <div id="top-right-controls">
-      <button class="icon-btn glass" id="btn-character" title="Santiago (P)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.2"/><path d="M5.5 20c0-4 3-6.5 6.5-6.5s6.5 2.5 6.5 6.5"/></svg></button>
-      <button class="icon-btn glass" id="btn-roads" title="Estradas (R)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20 L11 4"/><path d="M15 20 L13 4"/><path d="M12 6.5v2"/><path d="M12 11v2"/><path d="M12 15.5v2"/></svg></button>
-      <button class="icon-btn glass" id="btn-build" title="Construir (B)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-2.5 2.5-4-4L14 6Z"/><path d="M3 21l6.5-6.5"/><path d="M15.5 4.5l4 4"/></svg></button>
-      <button class="icon-btn glass" id="btn-missions" title="Missões (M)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span class="badge" id="mission-badge" style="display:none">0</span></button>
-      <button class="icon-btn glass" id="btn-collection" title="Coleção (C)"><svg viewBox="0 0 24 24" fill="none" stroke="#F3EEE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.5-1.2 5-1.2 7 0v13c-2-1.2-4.5-1.2-7 0v-13Z"/><path d="M18 5.5c-2.5-1.2-5-1.2-7 0"/><path d="M11 18.5v-13"/></svg><span class="badge" id="dex-badge" style="display:none">0</span></button>
+      <div id="age-chip-row">
+        <div id="age-chip" class="glass" title="Vê o progresso da Idade da tua civilização">
+          <div class="age-dot" id="age-dot">1</div>
+          <div><div class="age-label" id="age-label-num">Idade 1</div><div class="age-name" id="age-label-name">Primitiva</div></div>
+        </div>
+      </div>
     </div>
 
     <div id="objective-tracker" class="glass">
@@ -2393,7 +2449,7 @@ window.addEventListener('keydown', (e)=>{
   if(e.key.toLowerCase()==='c') toggleOverlay('overlay-collection');
   if(e.key.toLowerCase()==='r') toggleRoadMode();
   if(e.key.toLowerCase()==='p') toggleOverlay('overlay-character');
-  if(e.key==='Escape'){ closeAllOverlays(); cancelPlacement(); exitRoadMode(); }
+  if(e.key==='Escape'){ closeAllOverlays(); cancelPlacement(); exitRoadMode(); closeHudMenu(); }
 });
 window.addEventListener('keyup', (e)=>{ state.keys[e.key.toLowerCase()] = false; });
 
@@ -2815,6 +2871,7 @@ function anyOverlayOpen(){
 }
 function toggleOverlay(id){
   exitRoadMode();
+  closeHudMenu();
   if(state.movingBuilding || state.foundingCamp){ cancelPlacement(); }
   const el = document.getElementById(id);
   if(el.classList.contains('open')){ el.classList.remove('open'); return; }
@@ -2826,6 +2883,29 @@ function toggleOverlay(id){
   if(id==='overlay-age') renderAgePanel();
   if(id==='overlay-character') renderWardrobe();
 }
+
+/* ---------- Hamburger menu (collapses the 5 HUD action buttons) ---------- */
+function toggleHudMenu(){
+  document.getElementById('hud-dropdown').classList.toggle('open');
+}
+function closeHudMenu(){
+  document.getElementById('hud-dropdown').classList.remove('open');
+}
+document.getElementById('btn-hud-menu').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  toggleHudMenu();
+});
+document.querySelectorAll('.hud-menu-item').forEach(btn=>{
+  btn.addEventListener('click', closeHudMenu);
+});
+document.addEventListener('click', (e)=>{
+  const dd = document.getElementById('hud-dropdown');
+  const wrap = document.getElementById('hud-menu-wrap');
+  if(dd.classList.contains('open') && !wrap.contains(e.target)){
+    closeHudMenu();
+  }
+});
+
 function closeAllOverlays(){
   OVERLAY_IDS.forEach(id=>document.getElementById(id).classList.remove('open'));
 }
@@ -2960,6 +3040,8 @@ function updateMissionBadge(){
   const remaining = objectives.filter(o=>!o.met).length;
   const b = document.getElementById('mission-badge');
   if(remaining>0){ b.style.display='flex'; b.textContent=remaining; } else b.style.display='none';
+  const hb = document.getElementById('hud-menu-badge');
+  if(hb){ if(remaining>0){ hb.style.display='flex'; hb.textContent=remaining; } else hb.style.display='none'; }
 }
 function updateObjectiveTracker(){
   const na = nextAge();
@@ -3527,7 +3609,8 @@ function updateInteractHint(){
   const hint = document.getElementById('interact-hint');
   const touchBtn = document.getElementById('touch-interact-btn');
   currentInteractable = state.paused ? null : findInteractable();
-  if(!currentInteractable || anyOverlayOpen() || state.placingType){
+  const modeActive = state.placingType || state.movingBuilding || state.foundingCamp || state.roadMode;
+  if(!currentInteractable || anyOverlayOpen() || modeActive){
     hint.classList.remove('show');
     if(touchBtn) touchBtn.classList.remove('show');
     return;
