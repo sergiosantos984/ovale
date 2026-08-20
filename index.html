@@ -638,7 +638,7 @@
       <div class="howto-row"><div class="howto-key">C</div><div class="howto-desc">Abre a coleção de dinossauros</div></div>
       <div class="howto-row"><div class="howto-key">Esc</div><div class="howto-desc">Fecha qualquer painel aberto</div></div>
       <div class="howto-row"><div class="howto-key">Idade</div><div class="howto-desc">Clica no indicador de Idade no topo para veres o que a tua civilização precisa para avançar para a Idade seguinte — o acampamento transforma-se visivelmente de cada vez</div></div>
-      <div class="howto-row"><div class="howto-key">Cuidar</div><div class="howto-desc">Os dinossauros conhecidos ficam com fome e sede ao longo do tempo. Prime E perto de um para o alimentar, dar água ou fazer festas — pequenas barras por cima deles mostram fome, sede e felicidade quando estás perto</div></div>
+      <div class="howto-row"><div class="howto-key">Cuidar</div><div class="howto-desc">Os dinossauros conhecidos ficam com fome e sede ao longo do tempo. No computador, prime E perto de um para o alimentar, dar água ou fazer festas; no telemóvel, toca no botão Interagir — pequenas barras por cima deles mostram fome, sede e felicidade quando estás perto</div></div>
       <div class="howto-row"><div class="howto-key">R</div><div class="howto-desc">Entra no Modo Estradas: toca num ponto para começares, depois toca noutro ponto para ligares os dois com uma estrada — continua a tocar para ires encadeando o caminho. Custa Madeira e melhora o seu aspeto automaticamente conforme a tua civilização avança</div></div>
       <div class="howto-row"><div class="howto-key">Acampamentos</div><div class="howto-desc">Abre o menu Construir e escolhe "Fundar Novo Acampamento" para iniciares uma segunda povoação noutro ponto do vale — a Idade Industrial exige pelo menos mais um acampamento, ligado ao de Santiago por estrada. Depois de ligados, um comboio circulará entre eles</div></div>
       <div class="howto-row"><div class="howto-key">Clique</div><div class="howto-desc">Clica em qualquer edifício construído para o inspecionar — a partir daí podes Mover para outro local do teu acampamento, ou Demolir para receberes parte dos recursos de volta (Demolir precisa de um segundo clique para confirmar)</div></div>
@@ -731,6 +731,15 @@
 <script>
 (function(){
 "use strict";
+
+/* Detected once, up front, since it's needed by hint text throughout the
+   file (objectives, missions) as well as the touch-control setup later. */
+const hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
+/* Any instructional text that mentions a keyboard key needs a different
+   phrasing on a device with no keyboard — this is the single place that
+   decision gets made, so every hint stays consistent with the actual
+   controls the player has. */
+function deviceHint(desktopText, touchText){ return hasTouch ? touchText : desktopText; }
 
 /* =====================================================================
    ICONS (inline SVG path data, reused across HUD/panels)
@@ -2543,7 +2552,6 @@ function findBuildingAt(wx, wy){
    touchstart/touchmove/touchend instead of mouse events. preventDefault
    on the canvas stops the page from scrolling/zooming while playing.
 ===================================================================== */
-const hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
 if(hasTouch) document.body.classList.add('has-touch');
 
 let touchStartPos = null, touchMoved = false;
@@ -3371,37 +3379,55 @@ function ageRequirementList(age){
   });
   if(r.buildings!=null) list.push({
     label:'Construir '+r.buildings+' estruturas no teu acampamento',
-    hint:'Prime B para abrir Construir, depois coloca estruturas dentro do limite tracejado do acampamento.',
+    hint: deviceHint(
+      'Prime B para abrir Construir, depois coloca estruturas dentro do limite tracejado do acampamento.',
+      'Toca no menu (☰) e escolhe Construir, depois coloca estruturas dentro do limite tracejado do acampamento.'
+    ),
     met: state.buildings.length>=r.buildings,
     progress: Math.min(state.buildings.length,r.buildings)+'/'+r.buildings
   });
   if(r.species!=null) list.push({
     label:'Descobrir '+r.species+' espécies de dinossauros',
-    hint:'Explora o vale e prime E perto de um dinossauro para o estudar.',
+    hint: deviceHint(
+      'Explora o vale e prime E perto de um dinossauro para o estudar.',
+      'Explora o vale e toca em Interagir perto de um dinossauro para o estudar.'
+    ),
     met: state.discovered.size>=r.species,
     progress: Math.min(state.discovered.size,r.species)+'/'+r.species
   });
   if(r.resources!=null) list.push({
     label:'Recolher '+r.resources+' recursos no total',
-    hint:'Prime E perto de árvores, rochas, arbustos ou água para recolher recursos.',
+    hint: deviceHint(
+      'Prime E perto de árvores, rochas, arbustos ou água para recolher recursos.',
+      'Toca em Interagir perto de árvores, rochas, arbustos ou água para recolher recursos.'
+    ),
     met: state.totalGathered>=r.resources,
     progress: Math.min(state.totalGathered,r.resources)+'/'+r.resources
   });
   if(r.building) list.push({
     label:'Construir um(a) '+buildingDef(r.building).name,
-    hint:'Prime B, seleciona '+buildingDef(r.building).name+' e depois coloca-o no teu acampamento.',
+    hint: deviceHint(
+      'Prime B, seleciona '+buildingDef(r.building).name+' e depois coloca-o no teu acampamento.',
+      'Toca no menu (☰), escolhe Construir, seleciona '+buildingDef(r.building).name+' e depois coloca-o no teu acampamento.'
+    ),
     met: state.buildings.some(b=>b.type===r.building),
     progress: null
   });
   if(r.camps!=null) list.push({
     label:'Fundar '+r.camps+' acampamentos',
-    hint:'Prime B, depois escolhe "Fundar Novo Acampamento" e clica num ponto do vale.',
+    hint: deviceHint(
+      'Prime B, depois escolhe "Fundar Novo Acampamento" e clica num ponto do vale.',
+      'Toca no menu (☰), escolhe Construir, depois "Fundar Novo Acampamento" e toca num ponto do vale.'
+    ),
     met: state.camps.length>=r.camps,
     progress: Math.min(state.camps.length,r.camps)+'/'+r.camps
   });
   if(r.campsConnected) list.push({
     label:'Ligar os teus acampamentos por estrada',
-    hint:'Prime R para entrar no Modo Estradas e arrasta um caminho de estradas entre os teus acampamentos.',
+    hint: deviceHint(
+      'Prime R para entrar no Modo Estradas e arrasta um caminho de estradas entre os teus acampamentos.',
+      'Toca no menu (☰), escolhe Estradas, depois toca em dois pontos para ligares os teus acampamentos.'
+    ),
     met: allCampsConnected(),
     progress: null
   });
