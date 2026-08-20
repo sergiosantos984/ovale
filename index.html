@@ -172,12 +172,25 @@
   }
 
   #objective-tracker{
-    position:absolute; bottom:30px; left:20px; padding:14px 18px; border-radius:16px;
-    max-width:260px; z-index:19;
+    position:absolute; bottom:30px; left:20px; padding:9px 13px; border-radius:14px;
+    max-width:150px; z-index:19; cursor:pointer; touch-action:manipulation;
+    opacity:0.5; transition:opacity .25s ease, max-width .25s ease, padding .25s ease;
   }
-  #objective-tracker .ot-label{ font-size:10px; text-transform:uppercase; letter-spacing:0.15em; color:var(--amber); font-weight:700; margin-bottom:6px; }
-  #objective-tracker .ot-title{ font-size:14px; font-weight:600; margin-bottom:3px; }
-  #objective-tracker .ot-desc{ font-size:12px; color:var(--sand); line-height:1.4; }
+  #objective-tracker:hover{ opacity:0.85; }
+  #objective-tracker.expanded{ opacity:1; max-width:260px; padding:14px 18px; }
+  .ot-header{ display:flex; align-items:center; gap:7px; }
+  .ot-icon{ width:15px; height:15px; flex-shrink:0; }
+  #objective-tracker .ot-label{
+    font-size:10px; text-transform:uppercase; letter-spacing:0.15em; color:var(--amber); font-weight:700;
+    margin-bottom:6px; display:none;
+  }
+  #objective-tracker.expanded .ot-label{ display:block; }
+  #objective-tracker .ot-title{
+    font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  #objective-tracker.expanded .ot-title{ font-size:14px; white-space:normal; margin-bottom:3px; }
+  #objective-tracker .ot-desc{ font-size:12px; color:var(--sand); line-height:1.4; display:none; margin-top:5px; }
+  #objective-tracker.expanded .ot-desc{ display:block; }
 
   /* ---------- Toasts ---------- */
   #toast-container{
@@ -185,16 +198,39 @@
     display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;
   }
   .toast{
-    padding:11px 20px; border-radius:100px; font-size:13px; font-weight:600;
-    display:flex; align-items:center; gap:8px;
-    animation:toast-in .35s ease forwards;
+    padding:10px 18px 10px 12px; border-radius:14px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; gap:10px; max-width:min(78vw, 340px);
+    background:var(--glass-strong); border:1px solid var(--glass-border);
+    backdrop-filter:blur(20px) saturate(140%); -webkit-backdrop-filter:blur(20px) saturate(140%);
+    box-shadow:0 10px 28px rgba(0,0,0,0.35);
+    animation:toast-in .35s cubic-bezier(.2,.8,.3,1.1) forwards;
   }
-  .toast.leaving{ animation:toast-out .35s ease forwards; }
-  .toast .dot{ width:7px; height:7px; border-radius:50%; background:var(--amber); flex-shrink:0; }
-  .toast.mission .dot{ background:var(--moss); }
-  .toast.level .dot{ background:var(--terracotta); }
+  .toast.leaving{ animation:toast-out .3s ease forwards; }
+  .toast-icon{
+    width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; background:rgba(243,238,228,0.14); color:var(--sand);
+  }
+  .toast-icon svg{ width:13px; height:13px; }
+  .toast-text{ line-height:1.35; }
+
+  .toast-success{ border-color:rgba(107,143,92,0.45); }
+  .toast-success .toast-icon{ background:rgba(107,143,92,0.3); color:#A9E092; }
+
+  .toast-error{
+    border-color:rgba(180,72,47,0.55); background:rgba(180,72,47,0.14);
+    animation:toast-in .35s cubic-bezier(.2,.8,.3,1.1) forwards, toast-shake .4s ease .35s;
+  }
+  .toast-error .toast-icon{ background:rgba(180,72,47,0.35); color:#F4B39E; }
+
+  .toast-achievement{
+    border-color:rgba(227,167,88,0.55);
+    background:linear-gradient(135deg, rgba(227,167,88,0.2), rgba(194,101,63,0.14));
+  }
+  .toast-achievement .toast-icon{ background:rgba(227,167,88,0.32); color:#FFDA96; }
+
   @keyframes toast-in{ from{ opacity:0; transform:translateY(-10px) scale(0.95);} to{ opacity:1; transform:translateY(0) scale(1);} }
   @keyframes toast-out{ from{ opacity:1; transform:translateY(0) scale(1);} to{ opacity:0; transform:translateY(-8px) scale(0.96);} }
+  @keyframes toast-shake{ 0%,100%{ transform:translateX(0); } 20%{ transform:translateX(-4px); } 40%{ transform:translateX(4px); } 60%{ transform:translateX(-3px); } 80%{ transform:translateX(3px); } }
 
   /* ---------- Overlay panels (Collection / Missions / Build / Instructions) ---------- */
   .overlay{
@@ -451,9 +487,10 @@
     #level-bar{ padding:6px 12px; min-width:130px; flex:1 1 140px; }
     #age-chip{ padding:6px 12px 6px 7px; }
     #age-chip .age-label, #age-chip .age-name{ font-size:10.5px; }
-    #objective-tracker{ max-width:210px; padding:11px 14px; }
-    #objective-tracker .ot-title{ font-size:12.5px; }
-    #objective-tracker .ot-desc{ font-size:11px; }
+    #objective-tracker{ max-width:130px; }
+    #objective-tracker.expanded{ max-width:210px; }
+    #objective-tracker.expanded .ot-title{ font-size:12.5px; }
+    #objective-tracker.expanded .ot-desc{ font-size:11px; }
 
 
     /* Panels & the Build (construction) menu — bigger touch targets, less
@@ -526,7 +563,10 @@
 
     <div id="objective-tracker" class="glass">
       <div class="ot-label">Objetivo Atual</div>
-      <div class="ot-title" id="ot-title">—</div>
+      <div class="ot-header">
+        <svg class="ot-icon" viewBox="0 0 24 24" fill="none" stroke="#E3A75B" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>
+        <div class="ot-title" id="ot-title">—</div>
+      </div>
       <div class="ot-desc" id="ot-desc">—</div>
     </div>
 
@@ -1036,7 +1076,7 @@ function grantXP(amount){
   state.level = currentLevel(state.xp);
   updateLevelUI();
   if(state.level > before){
-    showToast('Subiste de Nível! Estás agora no Nível '+state.level+' — '+praise(), 'level');
+    showToast('Subiste de Nível! Estás agora no Nível '+state.level+' — '+praise(), 'achievement');
     celebrate(player.x, player.y-56, '★ Level Up! ★', '#E3A75B');
     renderBuildGrid();
   }
@@ -1089,11 +1129,18 @@ function payCost(cost){
 /* =====================================================================
    TOASTS
 ===================================================================== */
+const TOAST_ICONS = {
+  success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
+  error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8.5v4.5"/><path d="M12 16.2h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+  achievement: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.7 9 22 9.6 16.4 14.4 18.2 21.6 12 17.7 5.8 21.6 7.6 14.4 2 9.6 9.3 9 Z"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>'
+};
 function showToast(text, type){
+  type = (type && TOAST_ICONS[type]) ? type : 'info';
   const container = document.getElementById('toast-container');
   const el = document.createElement('div');
-  el.className = 'toast'+(type?(' '+type):'');
-  el.innerHTML = '<span class="dot"></span><span>'+text+'</span>';
+  el.className = 'toast toast-'+type;
+  el.innerHTML = '<span class="toast-icon">'+TOAST_ICONS[type]+'</span><span class="toast-text">'+text+'</span>';
   container.appendChild(el);
   setTimeout(()=>{
     el.classList.add('leaving');
@@ -1744,22 +1791,22 @@ function performCareAction(d){
     n.hunger = clamp(n.hunger+35,0,100);
     n.happiness = clamp(n.happiness+6,0,100);
     spawnFloatingText(d.x, d.y-46, '+35 Fome', '#E3A75B');
-    showToast(sp.name+' gostou da refeição', null);
+    showToast(sp.name+' gostou da refeição', 'success');
   } else if(action==='water'){
     addResource('water', -1);
     n.thirst = clamp(n.thirst+35,0,100);
     n.happiness = clamp(n.happiness+6,0,100);
     spawnFloatingText(d.x, d.y-46, '+35 Sede', '#6C9EAA');
-    showToast(sp.name+' bebeu bastante', null);
+    showToast(sp.name+' bebeu bastante', 'success');
   } else {
     const now = performance.now();
     if(now - (n.lastPet||0) > 12000){
       n.lastPet = now;
       n.happiness = clamp(n.happiness+8,0,100);
       spawnFloatingText(d.x, d.y-46, '❤ Felicidade', '#C2653F');
-      showToast(sp.name+' aconchega-se mais perto', null);
+      showToast(sp.name+' aconchega-se mais perto', 'success');
     } else {
-      showToast(sp.name+' está satisfeito por agora', null);
+      showToast(sp.name+' está satisfeito por agora', 'info');
     }
   }
 }
@@ -2637,12 +2684,12 @@ function handleRoadClick(wx, wy){
   }
   const len = dist(roadDragStart.x, roadDragStart.y, pt.x, pt.y);
   if(len < ROAD_GRID*0.9){
-    showToast('Toca um pouco mais longe para desenhares a estrada', null);
+    showToast('Toca um pouco mais longe para desenhares a estrada', 'error');
     return; // keep the start point active so they can just try again
   }
   const cost = { wood: roadCost(len), stone:0, food:0 };
   if(!canAfford(cost)){
-    showToast('Madeira insuficiente para esta estrada', null);
+    showToast('Madeira insuficiente para esta estrada', 'error');
     return; // keep the start point active — gather more Wood and tap the same spot again
   }
   payCost(cost);
@@ -2843,7 +2890,7 @@ function demolishBuilding(b){
   state.notifiedUpgrades.delete(b.gx+'_'+b.gy);
   if(state.inspectingBuilding===b) state.inspectingBuilding = null;
   demolishConfirming = false;
-  showToast(buildingDef(b.type).name+' demolido — '+refund.wood+' madeira, '+refund.stone+' pedra devolvidas', null);
+  showToast(buildingDef(b.type).name+' demolido — '+refund.wood+' madeira, '+refund.stone+' pedra devolvidas', 'info');
   closeAllOverlays();
   checkAgeReady();
 }
@@ -2857,7 +2904,7 @@ function upgradeBuilding(b){
   b.level = nextLevel.level;
   b.bornAt = performance.now(); // replay the construction pop-in animation in the world
   state.notifiedUpgrades.delete(b.gx+'_'+b.gy); // it just upgraded — allow a fresh notification for the level after this one
-  showToast('Melhorado para '+nextLevel.name+(Math.random()<0.5 ? ' — '+praise() : ''), 'level');
+  showToast('Melhorado para '+nextLevel.name+(Math.random()<0.5 ? ' — '+praise() : ''), 'achievement');
   spawnFloatingText(b.cx, b.cy-50, '★ Upgraded! ★', '#E3A75B');
   renderInspector();
   grantXP(20);
@@ -2883,7 +2930,7 @@ function checkBuildingUpgradeNotifications(){
     if(ready && !state.notifiedUpgrades.has(key)){
       state.notifiedUpgrades.add(key);
       const lv = levelDef(b.type, (b.level||1)+1);
-      showToast((levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' pode ser melhorado para '+lv.name, 'mission');
+      showToast((levelDef(b.type,b.level||1)||buildingDef(b.type)).name+' pode ser melhorado para '+lv.name, 'info');
     } else if(!ready && state.notifiedUpgrades.has(key)){
       state.notifiedUpgrades.delete(key); // resources spent elsewhere — re-notify once it's ready again
     }
@@ -2949,6 +2996,13 @@ document.addEventListener('click', (e)=>{
   if(dd.classList.contains('open') && !wrap.contains(e.target)){
     closeHudMenu();
   }
+});
+
+/* The objective tracker stays compact and faded by default so it doesn't
+   crowd the screen — tap it to read the full hint, tap again to collapse. */
+document.getElementById('objective-tracker').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('objective-tracker').classList.toggle('expanded');
 });
 
 function closeAllOverlays(){
@@ -3208,9 +3262,9 @@ function campFoundValid(wx, wy){
   return clearOfCamps && withinWorld;
 }
 function attemptFoundCampAt(wx, wy){
-  if(!campFoundValid(wx,wy)){ showToast('Demasiado perto de outro acampamento, ou demasiado perto do limite do vale', null); return; }
+  if(!campFoundValid(wx,wy)){ showToast('Demasiado perto de outro acampamento, ou demasiado perto do limite do vale', 'error'); return; }
   const cost = { wood:20, stone:12, food:0 };
-  if(!canAfford(cost)){ showToast('Recursos insuficientes para fundar um acampamento', null); return; }
+  if(!canAfford(cost)){ showToast('Recursos insuficientes para fundar um acampamento', 'error'); return; }
   payCost(cost);
   const camp = {
     id: 'camp'+(state.camps.length+1),
@@ -3222,7 +3276,7 @@ function attemptFoundCampAt(wx, wy){
   roadGraphDirty = true;
   state.foundingCamp = false;
   document.getElementById('placement-banner').classList.remove('show');
-  showToast(camp.name+' fundado — '+praise(), 'level');
+  showToast(camp.name+' fundado — '+praise(), 'achievement');
   celebrate(wx, wy-40, '★ New Camp! ★', '#E3A75B');
   grantXP(50);
   checkAgeReady();
@@ -3243,17 +3297,17 @@ function attemptMoveAt(wx, wy){
   const b = state.movingBuilding;
   if(!b) return;
   const camp = campContaining(wx,wy);
-  if(!camp){ showToast('Isso está fora do limite de qualquer acampamento', null); return; }
+  if(!camp){ showToast('Isso está fora do limite de qualquer acampamento', 'error'); return; }
   const gx = Math.floor((wx-camp.x)/camp.cell);
   const gy = Math.floor((wy-camp.y)/camp.cell);
   const occupied = state.buildings.some(bd=>bd!==b && bd.campId===camp.id && bd.gx===gx && bd.gy===gy);
-  if(occupied){ showToast('Já existe algo nesse local', null); return; }
+  if(occupied){ showToast('Já existe algo nesse local', 'error'); return; }
   b.campId = camp.id;
   b.gx = gx; b.gy = gy;
   b.cx = camp.x + gx*camp.cell + camp.cell/2;
   b.cy = camp.y + gy*camp.cell + camp.cell/2;
   b.bornAt = performance.now();
-  showToast('Movido', null);
+  showToast('Movido', 'success');
   cancelPlacement();
   scheduleSave();
 }
@@ -3261,12 +3315,12 @@ function attemptPlaceAt(wx, wy){
   const b = BUILDINGS.find(bb=>bb.id===state.placingType);
   if(!b) return;
   const camp = campContaining(wx,wy);
-  if(!camp){ showToast('Isso está fora do limite de qualquer acampamento', null); return; }
+  if(!camp){ showToast('Isso está fora do limite de qualquer acampamento', 'error'); return; }
   const gx = Math.floor((wx-camp.x)/camp.cell);
   const gy = Math.floor((wy-camp.y)/camp.cell);
   const occupied = state.buildings.some(bd=>bd.campId===camp.id && bd.gx===gx && bd.gy===gy);
-  if(occupied){ showToast('Já existe algo nesse local', null); return; }
-  if(!canAfford(b.cost)){ showToast('Recursos insuficientes', null); return; }
+  if(occupied){ showToast('Já existe algo nesse local', 'error'); return; }
+  if(!canAfford(b.cost)){ showToast('Recursos insuficientes', 'error'); return; }
   payCost(b.cost);
   const bcx = camp.x + gx*camp.cell + camp.cell/2, bcy = camp.y + gy*camp.cell + camp.cell/2;
   state.buildings.push({
@@ -3276,7 +3330,7 @@ function attemptPlaceAt(wx, wy){
     lastProduced: performance.now(),
     level: 1
   });
-  showToast(b.name+' construído'+(Math.random()<0.5 ? ' — '+praise() : ''), null);
+  showToast(b.name+' construído'+(Math.random()<0.5 ? ' — '+praise() : ''), 'success');
   celebrate(bcx, bcy-46, '+'+b.name, '#8FE3A7');
   cancelPlacement();
   grantXP(15);
@@ -3372,7 +3426,7 @@ function checkAgeReady(){
   // civilization advances on its own — no button required.
   if(ready && state.started && !state.transitioning && !document.getElementById('discovery-overlay').classList.contains('open')){
     state.transitioning = true; // claim immediately so repeated calls during the delay can't double-fire
-    showToast('Todos os objetivos cumpridos — a avançar para a Idade '+na.name, 'mission');
+    showToast('Todos os objetivos cumpridos — a avançar para a Idade '+na.name, 'achievement');
     setTimeout(()=>{ advanceAge(); }, 900);
   }
 }
@@ -3547,15 +3601,15 @@ function finishAgeAdvance(na){
   state.transitioning = false;
   state.paused = false;
 
-  showToast('Bem-vindo à Idade '+na.name+' — '+praise(), 'level');
+  showToast('Bem-vindo à Idade '+na.name+' — '+praise(), 'achievement');
   celebrate(player.x, player.y-70, '★ '+na.name+' Age! ★', '#E3A75B');
   grantXP(40*na.id); // reaching a new Age is itself a major source of experience
   if(na.unlocks && na.unlocks.length){
     const names = na.unlocks.map(id=>buildingDef(id).name).join(', ');
-    showToast('Novo: '+names, null);
+    showToast('Novo: '+names, 'info');
   }
   if(arrivedSpecies.length){
-    showToast('Novas chegadas ao vale: '+arrivedSpecies.join(', '), 'mission');
+    showToast('Novas chegadas ao vale: '+arrivedSpecies.join(', '), 'info');
   }
   checkAgeReady();
 
@@ -3919,7 +3973,7 @@ window.addEventListener('beforeunload', ()=>{ if(state.started) saveGame(); });
 async function continueGame(){
   const data = await loadGame();
   if(!data){
-    showToast('Nenhuma civilização guardada encontrada — a começar do zero', null);
+    showToast('Nenhuma civilização guardada encontrada — a começar do zero', 'info');
     beginPlay();
     return;
   }
@@ -3929,7 +3983,7 @@ async function continueGame(){
   skylineBuildings = null;
   applyLoadedState(data);
   beginPlay();
-  showToast('Bem-vindo de volta à tua civilização', 'level');
+  showToast('Bem-vindo de volta à tua civilização', 'success');
 }
 function beginPlay(){
   titleRunning = false;
@@ -3975,4 +4029,4 @@ requestAnimationFrame(gameLoop);
 })();
 </script>
 </body>
-</html>-
+</html>
