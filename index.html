@@ -950,7 +950,16 @@ const AGES = [
     req:{ level:8, buildings:15, resources:140, building:'datacenter' }, year:240, unlocks:['researchlab'], autoVehicle:true },
   { id:10, name:'Moderna', epithet:'Uma metrópole nascida de um único acampamento.',
     palette:{ ground:'#24302E', path:'#2E3838', pathW:52, structure:'#2E3838', accent:'#1A2422', roof:'#E3A75B' },
-    req:{ level:9, buildings:18, resources:160, building:'researchlab' }, year:280, unlocks:['metropolistower'], skyline:true }
+    req:{ level:9, buildings:18, resources:160, building:'researchlab' }, year:280, unlocks:['metropolistower','arcology'], skyline:true },
+  { id:11, name:'Espacial', epithet:'Foguetões erguem-se sobre o vale.',
+    palette:{ ground:'#202C2A', path:'#2A3434', pathW:54, structure:'#2A3434', accent:'#161E1C', roof:'#6C9EAA' },
+    req:{ level:10, buildings:20, resources:180, building:'windfarm' }, year:320, unlocks:['spaceport'], skyline:true },
+  { id:12, name:'Estelar', epithet:'As primeiras naves partem rumo às estrelas.',
+    palette:{ ground:'#1C2624', path:'#26302E', pathW:56, structure:'#26302E', accent:'#121816', roof:'#8C7EE8' },
+    req:{ level:11, buildings:23, resources:200, building:'spaceport', camps:3, campsConnected:true }, year:360, unlocks:['stellarforge'], skyline:true },
+  { id:13, name:'Singularidade', epithet:'A civilização transcende tudo o que veio antes.',
+    palette:{ ground:'#181E1E', path:'#222A28', pathW:58, structure:'#222A28', accent:'#0E1412', roof:'#FFFFFF' },
+    req:{ level:12, buildings:26, resources:220, building:'stellarforge' }, year:400, unlocks:['singularitycore'], skyline:true }
 ];
 function ageById(n){ return AGES.find(a=>a.id===n); }
 
@@ -966,15 +975,26 @@ const BUILDINGS = [
   { id:'habitat',  name:'Habitat dos Dinossauros', cost:{wood:5,stone:2,food:0}, minAge:1, desc:'Um espaço cuidado onde os dinossauros podem descansar. Melhorá-lo ajuda todos os dinossauros descobertos a recuperar felicidade mais depressa.' },
   { id:'storage',  name:'Cabana de Armazenamento', cost:{wood:5,stone:2,food:0}, minAge:2, desc:'Mantém os recursos recolhidos em segurança.' },
   { id:'farm',     name:'Quinta', cost:{wood:6,stone:0,food:1}, minAge:2, desc:'Produz comida lentamente, por conta própria.', produce:{key:'food',amount:1,interval:20} },
+  { id:'well',     name:'Poço', cost:{wood:5,stone:3,food:0}, minAge:2, desc:'Traz água limpa à superfície, gota a gota.', produce:{key:'water',amount:1,interval:20} },
   { id:'workshop', name:'Oficina', cost:{wood:8,stone:4,food:0}, minAge:3, desc:'Artesanato organizado para a povoação.' },
   { id:'market',   name:'Mercado', cost:{wood:7,stone:3,food:2}, minAge:3, desc:'O comércio traz um fluxo constante de bens.', produce:{key:'wood',amount:1,interval:22} },
+  { id:'obelisk',  name:'Obelisco', cost:{wood:4,stone:10,food:0}, minAge:3, desc:'Uma coluna erguida em honra aos primeiros anos da povoação.' },
   { id:'monument', name:'Monumento', cost:{wood:10,stone:12,food:0}, minAge:4, desc:'Uma marca duradoura da civilização.' },
+  { id:'aqueduct', name:'Aqueduto', cost:{wood:6,stone:12,food:0}, minAge:4, desc:'Canaliza água de longe para todo o acampamento.', produce:{key:'water',amount:2,interval:18} },
   { id:'library',  name:'Biblioteca', cost:{wood:9,stone:8,food:0}, minAge:5, desc:'O conhecimento preservado acelera o progresso.' },
+  { id:'amphitheater', name:'Anfiteatro', cost:{wood:8,stone:14,food:0}, minAge:5, desc:'Um espaço para histórias, música e assembleia.' },
   { id:'factory',  name:'Fábrica', cost:{wood:8,stone:14,food:0}, minAge:6, desc:'Produção mecânica, em grande escala.', produce:{key:'stone',amount:2,interval:20} },
   { id:'powerplant', name:'Central Elétrica', cost:{wood:6,stone:16,food:0}, minAge:7, desc:'A eletricidade espalha-se pelo acampamento.' },
+  { id:'observatory', name:'Observatório', cost:{wood:6,stone:18,food:0}, minAge:7, desc:'Aponta para o céu à procura de padrões que ninguém viu antes.' },
   { id:'datacenter', name:'Centro de Dados', cost:{wood:5,stone:18,food:0}, minAge:8, desc:'Capacidade de computação para uma civilização digital.' },
+  { id:'greenhouse', name:'Estufa', cost:{wood:5,stone:16,food:2}, minAge:8, desc:'Cultiva alimento todo o ano, chuva ou sol.', produce:{key:'food',amount:3,interval:16} },
   { id:'researchlab', name:'Laboratório de Investigação', cost:{wood:6,stone:20,food:0}, minAge:9, desc:'Sistemas autónomos, investigação genética.' },
-  { id:'metropolistower', name:'Torre da Metrópole', cost:{wood:8,stone:26,food:0}, minAge:10, desc:'O marco final da civilização.' }
+  { id:'windfarm', name:'Parque Eólico', cost:{wood:7,stone:20,food:0}, minAge:9, desc:'Turbinas silenciosas convertem vento em energia para toda a povoação.' },
+  { id:'metropolistower', name:'Torre da Metrópole', cost:{wood:8,stone:26,food:0}, minAge:10, desc:'Um marco imponente da civilização moderna.' },
+  { id:'arcology', name:'Arcologia', cost:{wood:8,stone:28,food:0}, minAge:10, desc:'Uma cidade inteira contida dentro de um único edifício monumental.' },
+  { id:'spaceport', name:'Porto Espacial', cost:{wood:8,stone:30,food:0}, minAge:11, desc:'Foguetões partem daqui rumo ao desconhecido.' },
+  { id:'stellarforge', name:'Forja Estelar', cost:{wood:9,stone:34,food:0}, minAge:12, desc:'Onde se constroem as naves que hão de levar a civilização até às estrelas.' },
+  { id:'singularitycore', name:'Núcleo da Singularidade', cost:{wood:10,stone:40,food:0}, minAge:13, desc:'O ápice de tudo o que esta civilização alcançou, desde a primeira fogueira.' }
 ];
 function buildingDef(id){ return BUILDINGS.find(b=>b.id===id); }
 
@@ -1069,8 +1089,8 @@ function currentProduce(b){
    WORLD CONSTANTS
 ===================================================================== */
 const WORLD_W = 4200, WORLD_H = 2900;
-const CAMP_W = 560, CAMP_H = 400, CAMP_CELL = 80;
-const XP_THRESHOLDS = [0,80,180,320,520,800,1150,1550,2000,2500]; // index = level-1
+const CAMP_W = 400, CAMP_H = 320, CAMP_CELL = 80;
+const XP_THRESHOLDS = [0,80,180,320,520,800,1150,1550,2000,2500,3050,3650,4300,5000]; // index = level-1
 
 /* =====================================================================
    GAME STATE
@@ -2395,6 +2415,58 @@ function drawGenericStructure(ctx, type, pal, minAge, level){
       ctx.beginPath(); ctx.arc(0,-h-40,3.4,0,Math.PI*2); ctx.fill();
       break;
     }
+    case 'obelisk':
+      ctx.fillStyle = pal.roof;
+      ctx.beginPath();
+      ctx.moveTo(-5,-h); ctx.lineTo(5,-h); ctx.lineTo(3,-h-52); ctx.lineTo(0,-h-60); ctx.lineTo(-3,-h-52);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,225,170,0.3)';
+      ctx.beginPath(); ctx.moveTo(-1,-h-10); ctx.lineTo(1,-h-10); ctx.lineTo(0.6,-h-48); ctx.lineTo(-0.6,-h-48); ctx.closePath(); ctx.fill();
+      break;
+    case 'aqueduct':
+      ctx.fillStyle = pal.structure;
+      for(let i=-2;i<=2;i++){
+        ctx.beginPath(); ctx.arc(i*14, -6, 8, 0, Math.PI, true); ctx.fill();
+      }
+      ctx.fillRect(-32,-6,64,5);
+      break;
+    case 'observatory':
+      ctx.fillStyle = pal.roof;
+      ctx.beginPath(); ctx.arc(0,-h-6,16,Math.PI,0); ctx.fill();
+      ctx.strokeStyle = pal.accent; ctx.lineWidth=3; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(4,-h-8); ctx.lineTo(22,-h-24); ctx.stroke();
+      if(level>=2){
+        ctx.fillStyle = 'rgba(230,230,230,0.35)';
+        ctx.beginPath(); ctx.arc(22,-h-24,2.6,0,Math.PI*2); ctx.fill();
+      }
+      break;
+    case 'spaceport': {
+      ctx.fillStyle = pal.structure;
+      roundRectPath(ctx,-6,-h-40,12,34,4); ctx.fill();
+      ctx.fillStyle = pal.roof;
+      ctx.beginPath(); ctx.moveTo(-6,-h-40); ctx.lineTo(0,-h-56); ctx.lineTo(6,-h-40); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = pal.accent;
+      ctx.beginPath(); ctx.moveTo(-6,-h-8); ctx.lineTo(-14,-h+2); ctx.lineTo(-6,-h-2); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(6,-h-8); ctx.lineTo(14,-h+2); ctx.lineTo(6,-h-2); ctx.closePath(); ctx.fill();
+      const t = performance.now()/300;
+      ctx.globalAlpha = Math.max(0, 1-((t*30)%40)/40);
+      ctx.fillStyle = 'rgba(227,167,88,0.6)';
+      ctx.beginPath(); ctx.arc(0,-h-4+((t*30)%40),3,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+      break;
+    }
+    case 'singularitycore': {
+      const pulse = 0.85 + Math.sin(performance.now()/450)*0.15;
+      ctx.fillStyle = pal.structure;
+      roundRectPath(ctx,-16,-h-6,32,10,3); ctx.fill();
+      const g = ctx.createRadialGradient(0,-h-30,2,0,-h-30,22*pulse);
+      g.addColorStop(0,'#FFFFFF'); g.addColorStop(0.4,'#E3A75B'); g.addColorStop(1,'rgba(194,101,63,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(0,-h-30,22*pulse,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath(); ctx.arc(0,-h-30,5*pulse,0,Math.PI*2); ctx.fill();
+      break;
+    }
   }
 }
 
@@ -3271,7 +3343,7 @@ function renderMissionList(){
   if(header) header.textContent = na ? 'Objetivos — Idade '+na.name : 'Objetivos';
   if(sub) sub.textContent = na
     ? 'Cumpre estes objetivos e a tua civilização avança automaticamente para a Idade '+na.name+'.'
-    : 'A tua civilização atingiu a Idade Moderna. Não há mais objetivos.';
+    : 'A tua civilização atingiu a Idade '+AGES[AGES.length-1].name+'. Não há mais objetivos.';
 
   const objectives = currentObjectives();
   list.innerHTML='';
@@ -3302,7 +3374,7 @@ function updateObjectiveTracker(){
   const titleEl = document.getElementById('ot-title'), descEl = document.getElementById('ot-desc'), labelEl = document.querySelector('#objective-tracker .ot-label');
   if(!na){
     if(labelEl) labelEl.textContent = 'Civilização Completa';
-    titleEl.textContent = 'A Idade Moderna foi alcançada';
+    titleEl.textContent = 'A Idade '+AGES[AGES.length-1].name+' foi alcançada';
     descEl.textContent = 'Continua a explorar o vale livremente.';
     return;
   }
