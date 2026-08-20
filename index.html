@@ -363,22 +363,23 @@
     display:flex;
   }
   #touch-interact-btn{
-    position:absolute; right:24px; bottom:calc(24px + env(safe-area-inset-bottom,0px));
-    width:84px; height:84px; border-radius:50%; z-index:22; touch-action:none;
+    position:absolute; right:24px; z-index:22; touch-action:none;
+    /* Centered on the joystick's center, not just matched to its bottom
+       offset — the two circles are different sizes (84px vs 120px), so
+       equal bottom offsets alone would leave them visibly misaligned. */
+    bottom:calc(24px + (120px - 84px)/2 + env(safe-area-inset-bottom,0px));
+    width:84px; height:84px; border-radius:50%;
     align-items:center; justify-content:center; font-size:12.5px; font-weight:700;
     opacity:0; pointer-events:none; transition:opacity .2s ease, transform .15s ease;
   }
   #touch-interact-btn.show{ opacity:1; pointer-events:auto; }
   #touch-interact-btn:active{ transform:scale(0.92); background:rgba(227,167,88,0.35); }
 
-  /* On touch devices the joystick and Interact button occupy the bottom
-     corners, so the informational hint pill must stay clear of both — it
-     used to be free-width nowrap text, which could stretch wide enough on
-     a phone to overlap the joystick or button. */
-  body.has-touch #interact-hint{
-    bottom:calc(140px + env(safe-area-inset-bottom,0px));
-    max-width:min(72vw, 320px); white-space:normal; text-align:center; border-radius:20px;
-  }
+  /* On touch devices the dedicated Interact button already communicates
+     what's interactable — the desktop hint pill (with its "E" key chip,
+     meaningless with no keyboard) would just be redundant clutter, so it
+     never shows at all on touch rather than merely being repositioned. */
+  body.has-touch #interact-hint{ display:none !important; }
   /* The joystick occupies the bottom-left corner (24px offset, 120px
      tall), so the objective tracker — which also anchors bottom-left —
      needs to sit clear above it rather than underneath/behind it. */
